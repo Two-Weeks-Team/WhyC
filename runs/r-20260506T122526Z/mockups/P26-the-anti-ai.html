@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — Deployment Console</title>
+<style>
+  :root {
+    --bg:        oklch(98.6% 0.004 95);
+    --panel:     oklch(100% 0 0);
+    --ink:       oklch(20% 0.012 260);
+    --ink-2:     oklch(38% 0.012 260);
+    --muted:     oklch(58% 0.010 260);
+    --line:      oklch(90% 0.006 260);
+    --line-2:    oklch(82% 0.008 260);
+    --accent:    oklch(64% 0.190 48);   /* YC-orange parody, used sparingly */
+    --accent-ink:oklch(28% 0.090 48);
+    --ok:        oklch(56% 0.130 150);
+    --warn:      oklch(70% 0.150 80);
+    --err:       oklch(58% 0.180 27);
+    --row-hover: oklch(97% 0.004 260);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  .app { max-width: 1080px; margin: 0 auto; padding: 24px 28px 64px; }
+
+  /* Header — deliberately boring */
+  .hdr { display:flex; align-items:center; justify-content:space-between; padding-bottom:16px; border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand-mark { width:22px; height:22px; }
+  .brand-name { font-weight:600; letter-spacing:-0.01em; font-size:15px; }
+  .brand-name .ver { color: var(--muted); font-weight:400; margin-left:6px; font-family: var(--mono); font-size:12px; }
+  .nav { display:flex; gap:22px; color: var(--ink-2); font-size:13px; }
+  .nav a { text-decoration:none; }
+  .nav a.active { color: var(--ink); border-bottom:2px solid var(--ink); padding-bottom:13px; }
+  .acct { font-family: var(--mono); font-size:12px; color: var(--muted); }
+
+  /* Page title row */
+  .page-head { padding: 24px 0 18px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .page-head h1 { margin:0; font-size: 22px; font-weight:600; letter-spacing:-0.015em; }
+  .page-head p  { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
+  .page-meta { font-family: var(--mono); font-size:12px; color: var(--muted); text-align:right; }
+
+  /* Submit form */
+  .form { background: var(--panel); border:1px solid var(--line); border-radius:6px; padding: 18px 20px; }
+  .form-row { display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:stretch; }
+  .label { display:block; font-size:12px; color: var(--ink-2); margin-bottom:6px; font-weight:500; }
+  .field { font-family: var(--mono); font-size: 13px; padding: 10px 12px; border:1px solid var(--line-2); border-radius:4px; background:#fff; color: var(--ink); width:100%; }
+  .field:focus { outline: 2px solid var(--accent); outline-offset:-1px; border-color: var(--accent); }
+  .btn {
+    font-family: var(--sans); font-weight:600; font-size:13px;
+    padding: 0 18px; border-radius:4px; border:1px solid var(--accent-ink);
+    background: var(--accent); color:#fff; cursor:pointer; letter-spacing: 0.01em;
+    min-width: 132px;
+  }
+  .btn:hover { filter: brightness(0.96); }
+  .btn:active { transform: translateY(1px); }
+  .help { margin-top:10px; font-size:12px; color: var(--muted); display:flex; gap:18px; }
+  .help kbd { font-family: var(--mono); background: var(--bg); border:1px solid var(--line-2); border-bottom-width:2px; border-radius:3px; padding: 1px 6px; font-size:11px; }
+
+  /* Status strip — current job */
+  .strip { margin-top: 22px; background: var(--panel); border:1px solid var(--line); border-radius:6px; }
+  .strip-head { padding: 12px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+  .strip-head h2 { margin:0; font-size:13px; font-weight:600; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .strip-head .id { font-family: var(--mono); font-size:12px; color: var(--muted); }
+  .strip-body { padding: 16px 18px 18px; }
+
+  .stages { display:grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 8px; }
+  .stage {
+    position: relative; padding: 10px 8px 12px; text-align:center;
+    border-top: 2px solid var(--line-2);
+    font-size: 11.5px; color: var(--muted);
+  }
+  .stage .n { font-family: var(--mono); font-size:10.5px; color: var(--muted); display:block; margin-bottom:3px; letter-spacing:0.05em; }
+  .stage .name { color: var(--ink-2); }
+  .stage.done   { border-top-color: var(--ok); }
+  .stage.done   .name, .stage.done .n { color: var(--ok); }
+  .stage.active { border-top-color: var(--accent); }
+  .stage.active .name { color: var(--accent-ink); font-weight:600; }
+  .stage.active .n { color: var(--accent); }
+
+  .meters { display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
+  .meter { border:1px solid var(--line); border-radius:4px; padding: 11px 14px; background: #fff; }
+  .meter .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .meter .v { font-family: var(--mono); font-size: 18px; color: var(--ink); margin-top: 4px; }
+  .meter .v small { color: var(--muted); font-size: 12px; margin-left: 4px; }
+
+  /* History table */
+  .table-wrap { margin-top: 28px; background: var(--panel); border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .table-head { padding: 12px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+  .table-head h2 { margin:0; font-size:13px; font-weight:600; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .filter { display:flex; gap:6px; }
+  .chip { font-size:12px; padding: 3px 9px; border:1px solid var(--line-2); border-radius:999px; color: var(--ink-2); background:#fff; cursor:pointer; }
+  .chip.on { background: var(--ink); color:#fff; border-color: var(--ink); }
+  table { width:100%; border-collapse: collapse; }
+  th, td { text-align:left; padding: 10px 16px; font-size: 13px; border-top: 1px solid var(--line); }
+  th { background: var(--bg); font-weight:500; font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-top: none; }
+  tbody tr:hover { background: var(--row-hover); }
+  td.mono, th.mono { font-family: var(--mono); font-size: 12.5px; }
+  td .url { color: var(--ink); text-decoration:none; border-bottom:1px solid var(--line-2); padding-bottom:1px; }
+  td .url:hover { border-bottom-color: var(--ink); }
+  .badge { display:inline-flex; align-items:center; gap:6px; font-size: 11.5px; padding: 2px 8px; border-radius:3px; font-family: var(--mono); }
+  .badge .dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+  .b-conv  { background: oklch(96% 0.030 150); color: var(--ok); }
+  .b-conv  .dot { background: var(--ok); }
+  .b-run   { background: oklch(96% 0.030 80); color: oklch(48% 0.140 80); }
+  .b-run   .dot { background: var(--warn); }
+  .b-fail  { background: oklch(96% 0.030 27); color: var(--err); }
+  .b-fail  .dot { background: var(--err); }
+  .b-queue { background: oklch(96% 0.005 260); color: var(--ink-2); }
+  .b-queue .dot { background: var(--muted); }
+
+  .fit { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+  .fit .bar { display:inline-block; width: 70px; height: 4px; background: var(--line); border-radius: 2px; vertical-align: middle; margin-left: 8px; overflow:hidden; }
+  .fit .bar i { display:block; height:100%; background: var(--ok); }
+  .fit.warn .bar i { background: var(--warn); }
+
+  /* Footer — engineering honesty, no AI branding */
+  .foot { margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--line); display:flex; justify-content:space-between; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .foot a { color: var(--ink-2); text-decoration:none; margin-right: 16px; }
+  .foot a:hover { color: var(--ink); }
+
+  @media (max-width: 720px) {
+    .meters { grid-template-columns: 1fr; }
+    .stages { grid-template-columns: repeat(3, 1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    .nav { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header: looks like any internal SaaS console -->
+  <header class="hdr">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="1" y="1" width="22" height="22" rx="4" fill="oklch(20% 0.012 260)"/>
+        <path d="M5 8 L9 16 L12 10 L15 16 L19 8" stroke="oklch(64% 0.190 48)" stroke-width="2" fill="none" stroke-linecap="square" stroke-linejoin="miter"/>
+      </svg>
+      <span class="brand-name">WhyC<span class="ver">v0.4.1</span></span>
+    </div>
+    <nav class="nav">
+      <a href="#" class="active">Console</a>
+      <a href="#">Jobs</a>
+      <a href="#">Logs</a>
+      <a href="#">Settings</a>
+    </nav>
+    <div class="acct">sejun@whyc.run</div>
+  </header>
+
+  <!-- Page head -->
+  <section class="page-head">
+    <div>
+      <h1>Deployment Console</h1>
+      <p>Submit a job posting URL. Receive a deployed Cloud Run URL.</p>
+    </div>
+    <div class="page-meta">
+      region: us-central1<br/>
+      queue: 0 waiting · 1 active
+    </div>
+  </section>
+
+  <!-- Submit -->
+  <form class="form" onsubmit="return false;">
+    <label class="label" for="src">Source URL or company description</label>
+    <div class="form-row">
+      <input id="src" class="field" type="text" value="https://www.workatastartup.com/jobs/82957" autocomplete="off" />
+      <button class="btn" type="submit">Deploy</button>
+    </div>
+    <div class="help">
+      <span>Accepts: workatastartup.com/jobs/* · company landing page · plain description (≤ 2 000 chars)</span>
+      <span><kbd>⌘</kbd>+<kbd>Enter</kbd> to submit</span>
+    </div>
+  </form>
+
+  <!-- Live status strip — deterministic stages, no streaming tokens -->
+  <section class="strip" aria-label="Active job">
+    <div class="strip-head">
+      <h2>Active Job</h2>
+      <span class="id">job_2026_05_06_a91f · started 12:25:31 PT</span>
+    </div>
+    <div class="strip-body">
+      <div class="stages" role="list">
+        <div class="stage done"><span class="n">01</span><span class="name">Queued</span></div>
+        <div class="stage done"><span class="n">02</span><span class="name">Extract Spec</span></div>
+        <div class="stage done"><span class="n">03</span><span class="name">Generate</span></div>
+        <div class="stage active"><span class="n">04</span><span class="name">Deploy</span></div>
+        <div class="stage"><span class="n">05</span><span class="name">Judge</span></div>
+        <div class="stage"><span class="n">06</span><span class="name">Converge</span></div>
+      </div>
+      <div class="meters">
+        <div class="meter">
+          <div class="k">Elapsed</div>
+          <div class="v">00:08:42 <small>/ 24:00:00 budget</small></div>
+        </div>
+        <div class="meter">
+          <div class="k">Spec-fit (last pass)</div>
+          <div class="v">71% <small>target ≥ 92%</small></div>
+        </div>
+        <div class="meter">
+          <div class="k">Preview URL</div>
+          <div class="v" style="font-size:13px;">pending — issued at stage 04</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- History table -->
+  <section class="table-wrap">
+    <div class="table-head">
+      <h2>Recent Deployments</h2>
+      <div class="filter">
+        <span class="chip on">All</span>
+        <span class="chip">Converged</span>
+        <span class="chip">Running</span>
+        <span class="chip">Failed</span>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th class="mono">Job ID</th>
+          <th>Source</th>
+          <th>Status</th>
+          <th>Spec-fit</th>
+          <th>Time</th>
+          <th>Preview</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">job_…_a91f</td>
+          <td>workatastartup.com/jobs/82957</td>
+          <td><span class="badge b-run"><span class="dot"></span>running</span></td>
+          <td><span class="fit warn">71% <span class="bar"><i style="width:71%"></i></span></span></td>
+          <td class="mono">00:08:42</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="mono">job_…_77c2</td>
+          <td>anon-jd · "Series-A infra co."</td>
+          <td><span class="badge b-conv"><span class="dot"></span>converged</span></td>
+          <td><span class="fit">96% <span class="bar"><i style="width:96%"></i></span></span></td>
+          <td class="mono">19:42:11</td>
+          <td><a class="url" href="#">whyc-77c2.run.app</a></td>
+        </tr>
+        <tr>
+          <td class="mono">job_…_5e08</td>
+          <td>anon-jd · "Dev-tools, AI-assisted coding"</td>
+          <td><span class="badge b-conv"><span class="dot"></span>converged</span></td>
+          <td><span class="fit">94% <span class="bar"><i style="width:94%"></i></span></span></td>
+          <td class="mono">22:11:03</td>
+          <td><a class="url" href="#">whyc-5e08.run.app</a></td>
+        </tr>
+        <tr>
+          <td class="mono">job_…_3b1d</td>
+          <td>anon-jd · "Vertical SaaS, healthcare ops"</td>
+          <td><span class="badge b-conv"><span class="dot"></span>converged</span></td>
+          <td><span class="fit">92% <span class="bar"><i style="width:92%"></i></span></span></td>
+          <td class="mono">17:55:48</td>
+          <td><a class="url" href="#">whyc-3b1d.run.app</a></td>
+        </tr>
+        <tr>
+          <td class="mono">job_…_0c44</td>
+          <td>anon-jd · "Consumer marketplace"</td>
+          <td><span class="badge b-fail"><span class="dot"></span>failed</span></td>
+          <td><span class="fit warn">63% <span class="bar"><i style="width:63%; background:oklch(58% 0.180 27)"></i></span></span></td>
+          <td class="mono">23:59:59</td>
+          <td class="mono">—</td>
+        </tr>
+        <tr>
+          <td class="mono">job_…_1aa9</td>
+          <td>anon-jd · "Fintech, SMB lending"</td>
+          <td><span class="badge b-queue"><span class="dot"></span>queued</span></td>
+          <td class="mono" style="color:var(--muted)">—</td>
+          <td class="mono">—</td>
+          <td class="mono">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Footer: zero AI/model branding. Just engineering metadata. -->
+  <footer class="foot">
+    <div>
+      <a href="#">Docs</a>
+      <a href="#">Changelog</a>
+      <a href="#">Status</a>
+      <a href="#">Repo (Apache-2.0)</a>
+    </div>
+    <div>build 2026.05.06 · region us-central1 · p95 deploy 18m</div>
+  </footer>
+</div>
+</body>
+</html>

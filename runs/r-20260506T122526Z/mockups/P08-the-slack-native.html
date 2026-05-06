@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — Slack-Native Preview · P08</title>
+<style>
+  :root{
+    --bg: oklch(98% 0.005 250);
+    --panel: oklch(100% 0 0);
+    --ink: oklch(20% 0.02 260);
+    --muted: oklch(48% 0.02 260);
+    --line: oklch(92% 0.01 260);
+    --hover: oklch(96% 0.01 260);
+    --slack-purple: oklch(28% 0.07 305);
+    --slack-aubergine: oklch(22% 0.05 305);
+    --yc-orange: oklch(72% 0.18 50);
+    --green: oklch(62% 0.15 145);
+    --amber: oklch(78% 0.16 80);
+    --red: oklch(62% 0.20 25);
+    --link: oklch(48% 0.18 255);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.45}
+  .stage{max-width:1180px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .caption{grid-column:1/-1;display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:4px}
+  .caption h1{margin:0;font-size:16px;font-weight:700;letter-spacing:-0.01em}
+  .caption .tag{font-size:11px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:2px 8px;border-radius:99px}
+  .caption .crumb{margin-left:auto;font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* Slack window */
+  .slack{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 0 oklch(0% 0 0 / 0.03)}
+  .slack .titlebar{background:var(--slack-aubergine);color:oklch(94% 0.01 305);padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:12px}
+  .slack .titlebar .dots{display:flex;gap:6px}
+  .slack .titlebar .dots i{width:10px;height:10px;border-radius:50%;display:block;background:oklch(50% 0.04 305)}
+  .slack .titlebar .ws{font-weight:600}
+  .slack .body{display:grid;grid-template-columns:180px 1fr;min-height:520px}
+  .sidebar{background:var(--slack-purple);color:oklch(86% 0.02 305);padding:12px 8px;font-size:13px}
+  .sidebar .ws-name{color:#fff;font-weight:700;font-size:13px;padding:4px 6px;border-bottom:1px solid oklch(35% 0.06 305);margin-bottom:8px}
+  .sidebar .group{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(70% 0.03 305);margin:10px 6px 4px}
+  .sidebar .ch{padding:3px 8px;border-radius:4px;cursor:default}
+  .sidebar .ch.active{background:oklch(38% 0.10 255);color:#fff}
+  .sidebar .ch::before{content:"# ";color:oklch(70% 0.03 305)}
+  .sidebar .ch.dm::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:1px}
+
+  .channel{display:flex;flex-direction:column;background:var(--panel)}
+  .channel-head{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+  .channel-head .name{font-weight:700}
+  .channel-head .meta{color:var(--muted);font-size:12px;margin-left:auto}
+  .messages{flex:1;padding:8px 12px;overflow:auto}
+  .msg{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:6px 4px;border-radius:6px}
+  .msg:hover{background:var(--hover)}
+  .avatar{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px}
+  .a-aria{background:linear-gradient(135deg,oklch(60% 0.15 280),oklch(45% 0.18 290))}
+  .a-bot{background:var(--yc-orange);color:oklch(20% 0.05 50)}
+  .a-marcus{background:linear-gradient(135deg,oklch(60% 0.13 200),oklch(45% 0.16 220))}
+  .who{font-weight:700;font-size:14px}
+  .who .badge{font-size:9px;background:oklch(38% 0.10 255);color:#fff;padding:1px 4px;border-radius:3px;margin-left:4px;font-weight:600;letter-spacing:0.04em;vertical-align:1px}
+  .ts{color:var(--muted);font-size:11px;margin-left:6px}
+  .text{margin-top:1px}
+  .text a{color:var(--link);text-decoration:none}
+  .text a:hover{text-decoration:underline}
+  code{background:oklch(95% 0.01 260);padding:1px 5px;border-radius:3px;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:oklch(35% 0.10 0)}
+
+  /* Slash command preview */
+  .slash{margin-top:6px;border:1px solid var(--line);border-left:3px solid var(--yc-orange);background:var(--bg);border-radius:4px;padding:8px 10px;font-size:13px;max-width:560px}
+  .slash .head{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .slash .head b{color:var(--ink)}
+
+  /* Bot block-kit message */
+  .block{margin-top:6px;border:1px solid var(--line);border-left:4px solid var(--yc-orange);background:var(--panel);border-radius:4px;padding:10px 12px;max-width:560px}
+  .block .b-title{font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px}
+  .block .b-sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .progress{margin-top:8px}
+  .progress .row{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .progress .ico{width:14px;text-align:center}
+  .progress .ico.done{color:var(--green)}
+  .progress .ico.run{color:var(--amber)}
+  .progress .ico.wait{color:var(--muted)}
+  .progress .lbl{flex:1}
+  .progress .t{color:var(--muted)}
+  .bar{margin-top:8px;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--yc-orange),oklch(78% 0.16 80));width:62%}
+  .meta-row{display:flex;gap:14px;margin-top:8px;font-size:11px;color:var(--muted)}
+  .meta-row b{color:var(--ink);font-weight:600}
+
+  /* Unfurl card (final deploy) */
+  .unfurl{margin-top:6px;border:1px solid var(--line);border-left:4px solid var(--green);background:var(--panel);border-radius:4px;padding:10px 12px;display:grid;grid-template-columns:1fr 110px;gap:10px;max-width:560px}
+  .unfurl .domain{font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .unfurl .u-title{font-weight:700;font-size:14px;color:var(--link);margin-top:2px}
+  .unfurl .u-desc{color:var(--ink);font-size:12px;margin-top:4px}
+  .unfurl .u-stats{display:flex;gap:10px;margin-top:6px;font-size:11px;color:var(--muted)}
+  .unfurl .u-stats b{color:var(--ink)}
+  .u-thumb{border:1px solid var(--line);border-radius:4px;background:var(--bg);display:flex;align-items:center;justify-content:center}
+
+  .actions{display:flex;gap:6px;margin-top:8px}
+  .btn{font-size:12px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:var(--panel);cursor:default;font-family:inherit}
+  .btn.primary{background:var(--green);color:#fff;border-color:var(--green);font-weight:600}
+
+  .composer{border-top:1px solid var(--line);padding:8px 12px}
+  .composer .box{border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--muted);font-size:13px}
+  .composer .box .typed{color:var(--ink)}
+
+  /* Right panel: web dashboard (auxiliary) */
+  .web{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+  .web .chrome{padding:8px 12px;background:oklch(96% 0.01 260);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;font-size:12px}
+  .web .chrome .url{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted)}
+  .web .chrome .url b{color:var(--ink)}
+  .web .pad{padding:14px 16px}
+  .web h2{margin:0;font-size:18px;letter-spacing:-0.01em}
+  .web .lede{color:var(--muted);font-size:12px;margin-top:2px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .stat{border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+  .stat .k{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted)}
+  .stat .v{font-size:20px;font-weight:700;letter-spacing:-0.01em;margin-top:2px}
+  .stat .v.green{color:var(--green)}
+  .stat .v.amber{color:oklch(58% 0.15 70)}
+  .iters{margin-top:14px;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .iters h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);font-weight:600}
+  .iter{display:grid;grid-template-columns:30px 1fr 60px 80px;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);align-items:center;font-size:12px}
+  .iter:last-child{border-bottom:none}
+  .iter .n{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}
+  .iter .lbl{color:var(--ink)}
+  .iter .delta{color:var(--green);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+  .iter .score{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600;text-align:right}
+  .preview-frame{margin-top:14px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .preview-frame .pf-head{background:oklch(96% 0.01 260);padding:5px 10px;font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;border-bottom:1px solid var(--line)}
+  .pf-stage{height:170px;background:linear-gradient(180deg,oklch(98% 0.01 250),oklch(94% 0.02 50));display:flex;align-items:center;justify-content:center;position:relative}
+  .pf-stage .head{position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px}
+  .pf-stage .head .dot{width:10px;height:10px;border-radius:2px;background:var(--yc-orange)}
+  .pf-stage .pitch{position:absolute;bottom:14px;left:14px;right:14px;font-size:13px;font-weight:700;letter-spacing:-0.01em}
+  .pf-stage .pitch span{color:var(--yc-orange)}
+
+  .footnote{grid-column:1/-1;font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+  .footnote code{font-size:10px}
+</style>
+</head>
+<body>
+  <div class="stage">
+
+    <div class="caption">
+      <h1>P08 · The Slack-Native</h1>
+      <span class="tag">primary surface: Slack bot</span>
+      <span class="tag">aux: web report</span>
+      <span class="crumb">/whyc &lt;yc-url&gt; → in-channel unfurl + DM progress</span>
+    </div>
+
+    <!-- LEFT: Slack thread -->
+    <div class="slack" aria-label="Slack thread mockup">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <span class="ws">Sequoia Capital · Slack</span>
+        <span style="margin-left:auto;opacity:.6">⌘K  Search</span>
+      </div>
+      <div class="body">
+        <nav class="sidebar">
+          <div class="ws-name">Sequoia Capital</div>
+          <div class="group">Channels</div>
+          <div class="ch">general</div>
+          <div class="ch active">portfolio-watch</div>
+          <div class="ch">deal-flow</div>
+          <div class="ch">demo-day-2026</div>
+          <div class="group">Direct messages</div>
+          <div class="ch dm">WhyC App</div>
+          <div class="ch dm">Marcus Wei</div>
+        </nav>
+
+        <section class="channel">
+          <header class="channel-head">
+            <span class="name"># portfolio-watch</span>
+            <span style="color:var(--muted);font-size:12px">14 members</span>
+            <span class="meta">2026-05-06 · Wed</span>
+          </header>
+
+          <div class="messages">
+            <!-- Aria types slash command -->
+            <div class="msg">
+              <div class="avatar a-aria">AP</div>
+              <div>
+                <div><span class="who">Aria Patel</span><span class="ts">10:42 AM</span></div>
+                <div class="text">found another one. seed round Aug 2025, still hiring "founding eng" 9 months later. can we get a build-capability read before tomorrow's partner meeting?</div>
+                <div class="slash">
+                  <div class="head">Only visible to you · <b>/whyc</b></div>
+                  <div><code>/whyc https://workatastartup.com/companies/redacted-ai</code></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bot acknowledges in-channel with progress block -->
+            <div class="msg">
+              <div class="avatar a-bot">W</div>
+              <div>
+                <div><span class="who">WhyC<span class="badge">APP</span></span><span class="ts">10:42 AM</span></div>
+                <div class="text">Aria, on it. Pipeline started — I'll DM you milestones and edit this message when the deploy URL is live.</div>
+                <div class="block" role="status" aria-live="polite">
+                  <div class="b-title">
+                    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="oklch(72% 0.18 50)" stroke-width="1.5"/><path d="M5 8 L7 10 L11 6" fill="none" stroke="oklch(72% 0.18 50)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    WhyC pipeline · run <code>r-20260506T1042</code>
+                  </div>
+                  <div class="b-sub">target: <b>redacted-ai</b> · YC W25 · spec extracted from 1 job posting + landing copy</div>
+                  <div class="progress">
+                    <div class="row"><span class="ico done">✓</span><span class="lbl">extract_spec (Gemini)</span><span class="t">00:32</span></div>
+                    <div class="row"><span class="ico done">✓</span><span class="lbl">design_tokens + IA</span><span class="t">01:14</span></div>
+                    <div class="row"><span class="ico done">✓</span><span class="lbl">codegen Next.js + 2 API routes</span><span class="t">04:47</span></div>
+                    <div class="row"><span class="ico run">●</span><span class="lbl">cloud_run_deploy</span><span class="t">running…</span></div>
+                    <div class="row"><span class="ico wait">○</span><span class="lbl">phoenix_judge_loop (background)</span><span class="t">queued</span></div>
+                  </div>
+                  <div class="bar"><i></i></div>
+                  <div class="meta-row">
+                    <span><b>62%</b> spec-fit (provisional)</span>
+                    <span>elapsed <b>06:48</b></span>
+                    <span>ETA <b>~3 min</b> for first URL</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Marcus quick reply -->
+            <div class="msg">
+              <div class="avatar a-marcus">MW</div>
+              <div>
+                <div><span class="who">Marcus Wei</span><span class="ts">10:43 AM</span></div>
+                <div class="text">lol. ok but if it actually ships before standup tomorrow I owe you coffee ☕</div>
+              </div>
+            </div>
+
+            <!-- Bot edited message: deploy URL with unfurl card -->
+            <div class="msg">
+              <div class="avatar a-bot">W</div>
+              <div>
+                <div><span class="who">WhyC<span class="badge">APP</span></span><span class="ts">10:51 AM</span><span class="ts" style="color:var(--green)">· edited</span></div>
+                <div class="text">First deploy is live. Background judge loop will keep raising spec-fit — I'll ping this thread when it crosses 90%.</div>
+                <div class="unfurl">
+                  <div>
+                    <div class="domain">whyc.app</div>
+                    <div class="u-title">redacted-ai · auto-generated preview</div>
+                    <div class="u-desc">"AI-native ops copilot for mid-market logistics" — landing, signup, dashboard mock, 2 working API routes.</div>
+                    <div class="u-stats">
+                      <span>spec-fit <b style="color:var(--amber)">71%</b></span>
+                      <span>iter <b>1/?</b></span>
+                      <span>built in <b>9 min</b></span>
+                    </div>
+                    <div class="actions">
+                      <button class="btn primary">Open preview ↗</button>
+                      <button class="btn">View Phoenix traces</button>
+                      <button class="btn">Report (web)</button>
+                    </div>
+                  </div>
+                  <div class="u-thumb" aria-hidden="true">
+                    <svg width="92" height="74" viewBox="0 0 92 74">
+                      <rect width="92" height="74" rx="3" fill="oklch(98% 0.01 50)"/>
+                      <rect x="6" y="6" width="22" height="6" rx="1.5" fill="oklch(72% 0.18 50)"/>
+                      <rect x="6" y="18" width="60" height="3" rx="1" fill="oklch(80% 0.02 260)"/>
+                      <rect x="6" y="24" width="48" height="3" rx="1" fill="oklch(85% 0.01 260)"/>
+                      <rect x="6" y="36" width="38" height="22" rx="2" fill="oklch(94% 0.02 50)" stroke="oklch(72% 0.18 50)" stroke-width="0.6"/>
+                      <rect x="48" y="36" width="38" height="22" rx="2" fill="oklch(96% 0.01 260)" stroke="oklch(85% 0.01 260)" stroke-width="0.6"/>
+                      <rect x="6" y="63" width="80" height="4" rx="1" fill="oklch(90% 0.01 260)"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aria reaction -->
+            <div class="msg">
+              <div class="avatar a-aria">AP</div>
+              <div>
+                <div><span class="who">Aria Patel</span><span class="ts">10:53 AM</span></div>
+                <div class="text">...it's actually clickable. <b>9 minutes.</b> they've had 9 months. 🫠</div>
+              </div>
+            </div>
+
+            <!-- Background loop notification (simulated DM relay) -->
+            <div class="msg">
+              <div class="avatar a-bot">W</div>
+              <div>
+                <div><span class="who">WhyC<span class="badge">APP</span></span><span class="ts">2:18 PM</span></div>
+                <div class="text">📈 Background self-improvement loop crossed <b>90%</b> spec-fit on run <code>r-20260506T1042</code>. Three flows regenerated (signup CTA, empty-state, /api/quote response). <a>View diff →</a></div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="composer">
+            <div class="box"><span class="typed">/whyc </span><span style="color:oklch(70% 0.02 260)">paste a YC company URL or workatastartup.com/jobs/&lt;id&gt;…</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- RIGHT: Auxiliary web report (only when partner clicks "Report") -->
+    <aside class="web" aria-label="Auxiliary web dashboard">
+      <div class="chrome">
+        <span style="color:var(--muted)">←  →  ↻</span>
+        <div class="url">whyc.app/r/<b>r-20260506T1042</b>/report</div>
+      </div>
+      <div class="pad">
+        <h2>redacted-ai · build-capability report</h2>
+        <div class="lede">Auxiliary view for the Slack thread above. Shareable read-only link, lives at the same run id.</div>
+
+        <div class="grid">
+          <div class="stat"><div class="k">final spec-fit</div><div class="v green">94%</div></div>
+          <div class="stat"><div class="k">judge iterations</div><div class="v">7</div></div>
+          <div class="stat"><div class="k">time to first URL</div><div class="v amber">9 min</div></div>
+          <div class="stat"><div class="k">time to converged</div><div class="v">3 h 36 m</div></div>
+        </div>
+
+        <div class="iters">
+          <h3>Phoenix judge loop · spec-fit trajectory</h3>
+          <div class="iter"><span class="n">#1</span><span class="lbl">first deploy · landing + 2 API</span><span class="delta">—</span><span class="score" style="color:var(--amber)">71%</span></div>
+          <div class="iter"><span class="n">#2</span><span class="lbl">regenerate signup CTA copy</span><span class="delta">+8</span><span class="score" style="color:var(--amber)">79%</span></div>
+          <div class="iter"><span class="n">#3</span><span class="lbl">fix empty-state on /dashboard</span><span class="delta">+5</span><span class="score" style="color:var(--amber)">84%</span></div>
+          <div class="iter"><span class="n">#4</span><span class="lbl">tighten /api/quote response shape</span><span class="delta">+6</span><span class="score" style="color:var(--green)">90%</span></div>
+          <div class="iter"><span class="n">#5</span><span class="lbl">design-token drift on hero</span><span class="delta">+2</span><span class="score" style="color:var(--green)">92%</span></div>
+          <div class="iter"><span class="n">#7</span><span class="lbl">converged · judge satisfied</span><span class="delta">+2</span><span class="score" style="color:var(--green)">94%</span></div>
+        </div>
+
+        <div class="preview-frame">
+          <div class="pf-head">iframe · whyc-r1042-redacted.run.app</div>
+          <div class="pf-stage">
+            <div class="head"><span class="dot"></span> redacted-ai</div>
+            <div class="pitch">AI-native ops copilot for mid-market logistics. <span>Ship in a day, not a quarter.</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="footnote">
+      P08 · The Slack-Native — primary surface is the bot; the web report is just a sharable artifact at <code>whyc.app/r/&lt;id&gt;</code>. Hackathon "web platform" requirement satisfied by the dashboard URL; partners never need to open it.
+    </div>
+
+  </div>
+</body>
+</html>

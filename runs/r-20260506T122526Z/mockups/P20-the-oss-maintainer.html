@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>whyc/whyc · while YC hires, we ship</title>
+<style>
+  :root {
+    --bg:        oklch(98.5% 0.004 250);
+    --surface:   oklch(100% 0 0);
+    --border:    oklch(89% 0.008 250);
+    --border-2:  oklch(82% 0.012 250);
+    --ink:       oklch(22% 0.02 260);
+    --ink-soft:  oklch(45% 0.015 260);
+    --ink-mute:  oklch(58% 0.012 260);
+    --link:      oklch(48% 0.16 255);
+    --accent:    oklch(72% 0.19 55);   /* a certain orange */
+    --accent-2:  oklch(58% 0.20 50);
+    --ok:        oklch(58% 0.15 145);
+    --warn:      oklch(70% 0.16 80);
+    --danger:    oklch(58% 0.20 25);
+    --code-bg:   oklch(96% 0.005 250);
+    --shadow:    0 1px 0 oklch(89% 0.008 250), 0 1px 2px oklch(89% 0.008 250 / 0.5);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre { font-family: var(--mono); font-size: 12.5px; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; overflow-x: auto; margin: 0; }
+  code.inl { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 12px; }
+
+  /* GitHub-style top nav */
+  .nav { background: oklch(18% 0.02 260); color: oklch(95% 0.005 250); padding: 10px 24px; display: flex; align-items: center; gap: 16px; font-size: 13px; }
+  .nav .logo { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .nav input { background: oklch(28% 0.015 260); border: 1px solid oklch(35% 0.015 260); color: oklch(85% 0.005 250); border-radius: 6px; padding: 5px 10px; width: 280px; font-family: var(--sans); font-size: 12px; }
+  .nav .right { margin-left: auto; display: flex; gap: 14px; align-items: center; color: oklch(82% 0.005 250); }
+
+  .wrap { max-width: 1012px; margin: 0 auto; padding: 24px; }
+
+  /* Repo header */
+  .repo-head { padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .repo-title { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 400; margin-bottom: 8px; }
+  .repo-title svg { color: var(--ink-mute); }
+  .repo-title .org { color: var(--link); font-weight: 600; }
+  .repo-title .slash { color: var(--ink-mute); }
+  .repo-title .name { color: var(--link); font-weight: 600; }
+  .repo-title .pub { font-size: 11px; border: 1px solid var(--border-2); border-radius: 999px; padding: 2px 8px; color: var(--ink-soft); margin-left: 4px; }
+  .repo-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .btn { background: var(--surface); border: 1px solid var(--border-2); border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 500; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .btn .count { background: var(--code-bg); border-left: 1px solid var(--border-2); margin: -5px -12px -5px 6px; padding: 5px 10px; border-radius: 0 6px 6px 0; }
+  .btn-primary { background: var(--ok); color: white; border-color: oklch(48% 0.15 145); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-top: 12px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tab { padding: 8px 14px; font-size: 13px; color: var(--ink-soft); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .tab.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab .badge { background: var(--code-bg); border: 1px solid var(--border); border-radius: 999px; padding: 0 6px; font-size: 11px; color: var(--ink-soft); }
+
+  /* Layout */
+  .grid { display: grid; grid-template-columns: 1fr 296px; gap: 24px; margin-top: 20px; }
+
+  /* File listing strip */
+  .filebar { border: 1px solid var(--border); border-radius: 6px; background: var(--surface); margin-bottom: 16px; }
+  .filebar-head { padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--ink-soft); display: flex; gap: 12px; align-items: center; }
+  .filebar-head b { color: var(--ink); font-weight: 600; }
+  .files { font-size: 13px; }
+  .file-row { display: grid; grid-template-columns: 24px 220px 1fr 110px; gap: 8px; padding: 6px 14px; border-top: 1px solid var(--border); align-items: center; }
+  .file-row:first-child { border-top: 0; }
+  .file-row .nm { color: var(--link); }
+  .file-row .msg { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-row .age { color: var(--ink-mute); text-align: right; font-size: 12px; }
+  .ico { color: var(--ink-mute); }
+  .ico.dir { color: oklch(60% 0.15 60); }
+
+  /* README */
+  .readme { border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+  .readme-head { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--ink-soft); display: flex; gap: 8px; align-items: center; }
+  .readme-body { padding: 28px 36px; }
+  .readme-body h1 { font-size: 28px; margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .readme-body h1 .em { color: var(--accent-2); }
+  .readme-body h2 { font-size: 20px; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .readme-body h3 { font-size: 15px; margin: 20px 0 8px; }
+  .readme-body p { margin: 8px 0; color: var(--ink); }
+  .readme-body ul { margin: 6px 0; padding-left: 22px; }
+  .readme-body li { margin: 3px 0; }
+  blockquote { border-left: 3px solid var(--border-2); margin: 10px 0; padding: 4px 12px; color: var(--ink-soft); font-style: italic; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0 6px; }
+  .badge-img { display: inline-flex; height: 20px; border-radius: 3px; overflow: hidden; font-size: 11px; font-family: var(--sans); font-weight: 500; }
+  .badge-img .l { background: oklch(35% 0.015 260); color: white; padding: 0 7px; display: flex; align-items: center; }
+  .badge-img .r { padding: 0 7px; display: flex; align-items: center; color: white; }
+
+  /* Sidebar */
+  .side h3 { font-size: 13px; margin: 0 0 8px; color: var(--ink); font-weight: 600; }
+  .side .block { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .side .block:last-child { border-bottom: 0; }
+  .side p { font-size: 13px; color: var(--ink-soft); margin: 4px 0; }
+  .topic { display: inline-block; background: oklch(94% 0.04 255); color: var(--link); border-radius: 999px; padding: 3px 10px; font-size: 12px; margin: 2px 4px 2px 0; }
+  .stat-row { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ink-soft); margin: 5px 0; }
+  .contribs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .av { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); display: inline-block; }
+
+  /* Pipeline diagram */
+  .pipe { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin: 12px 0; }
+
+  /* Issue / PR mock */
+  .issue { border: 1px solid var(--border); border-radius: 6px; margin: 10px 0; background: var(--surface); }
+  .issue-h { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .issue-h .state { background: oklch(60% 0.18 290); color: white; border-radius: 999px; padding: 3px 9px; font-size: 11px; font-weight: 600; }
+  .issue-h .state.open { background: var(--ok); }
+  .issue-h .ttl { font-weight: 600; flex: 1; }
+  .issue-b { padding: 12px 14px; font-size: 13px; color: var(--ink-soft); }
+  .convergence { display: flex; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
+  .conv { background: oklch(96% 0.02 145); border: 1px solid oklch(85% 0.05 145); border-radius: 4px; padding: 4px 8px; font-family: var(--mono); font-size: 11px; color: oklch(35% 0.12 145); }
+  .conv.warn { background: oklch(96% 0.04 80); border-color: oklch(85% 0.08 80); color: oklch(40% 0.13 80); }
+
+  /* Footer / yc swipe */
+  .swipe { margin: 18px 0; padding: 14px 16px; border: 1px dashed var(--accent); border-radius: 6px; background: oklch(98% 0.04 55); color: oklch(38% 0.12 50); font-size: 13px; }
+  .swipe b { color: oklch(45% 0.18 50); }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .nav input { width: 160px; } .file-row { grid-template-columns: 24px 1fr 90px; } .file-row .msg { display: none; } }
+</style>
+</head>
+<body>
+
+<nav class="nav" role="navigation">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2c-3.34.73-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.1-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.6-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.21v3.28c0 .32.22.69.83.57A12 12 0 0 0 12 0z"/></svg>
+    <span>whyc</span> <span style="opacity:.4">/</span> <span style="font-weight:400">whyc</span>
+  </div>
+  <input type="text" placeholder="Type / to search" aria-label="search" />
+  <div class="right">
+    <span>Pull requests</span><span>Issues</span><span>Marketplace</span>
+    <span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:oklch(70% 0.15 55)"></span>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- repo header -->
+  <header class="repo-head">
+    <h1 class="repo-title">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25v3.25a.25.25 0 0 0 .4.2l1.45-1.087a.25.25 0 0 1 .3 0L8.6 15.7a.25.25 0 0 0 .4-.2v-3.25a.25.25 0 0 0-.25-.25h-3.5a.25.25 0 0 0-.25.25Z"/></svg>
+      <span class="org">whyc</span><span class="slash">/</span><span class="name">whyc</span>
+      <span class="pub">Public</span>
+    </h1>
+    <div class="repo-actions">
+      <button class="btn">Watch <span class="count">218</span></button>
+      <button class="btn">Fork <span class="count">441</span></button>
+      <button class="btn" style="border-color:oklch(60% 0.15 55);color:oklch(45% 0.18 50)">Star <span class="count">3.7k</span></button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <span class="tab active">Code</span>
+    <span class="tab">Issues <span class="badge">12</span></span>
+    <span class="tab">Pull requests <span class="badge">3</span></span>
+    <span class="tab">Actions</span>
+    <span class="tab">Projects</span>
+    <span class="tab">Wiki</span>
+    <span class="tab">Security</span>
+    <span class="tab">Insights</span>
+  </div>
+
+  <div class="grid">
+
+    <main>
+      <!-- file listing -->
+      <div class="filebar">
+        <div class="filebar-head">
+          <span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:oklch(72% 0.19 55)"></span>
+          <b>sejun-kim</b> <span>convergence reached: spec-fit 96% on synth-jd-08</span>
+          <span style="margin-left:auto;color:var(--ink-mute)">main</span>
+          <code class="inl">a3f91c2</code>
+          <span style="color:var(--ink-mute)">· 14 minutes ago</span>
+          <span style="color:var(--ink-mute)">· <b style="color:var(--ink)">147</b> commits</span>
+        </div>
+        <div class="files">
+          <div class="file-row"><span class="ico dir">▸</span><span class="nm">.github/</span><span class="msg">add issue templates for spec-fit failures</span><span class="age">2 days ago</span></div>
+          <div class="file-row"><span class="ico dir">▸</span><span class="nm">agents/</span><span class="msg">extractor + designer + judge ADK graph</span><span class="age">14 minutes ago</span></div>
+          <div class="file-row"><span class="ico dir">▸</span><span class="nm">phoenix-mcp/</span><span class="msg">trace queries + LLM-as-judge prompt</span><span class="age">3 hours ago</span></div>
+          <div class="file-row"><span class="ico dir">▸</span><span class="nm">preview-runtime/</span><span class="msg">Next.js template + design-token contract</span><span class="age">yesterday</span></div>
+          <div class="file-row"><span class="ico">▤</span><span class="nm">LICENSE</span><span class="msg">Apache-2.0 (OSI-approved)</span><span class="age">36 days ago</span></div>
+          <div class="file-row"><span class="ico">▤</span><span class="nm">README.md</span><span class="msg">while YC hires, we ship</span><span class="age">14 minutes ago</span></div>
+          <div class="file-row"><span class="ico">▤</span><span class="nm">cloudbuild.yaml</span><span class="msg">Cloud Run deploy + Secret Manager wiring</span><span class="age">2 days ago</span></div>
+        </div>
+      </div>
+
+      <!-- README -->
+      <article class="readme">
+        <div class="readme-head">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.74 3.74 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Z"/></svg>
+          <b>README.md</b>
+        </div>
+        <div class="readme-body">
+          <h1>WhyC <span class="em">— while a certain orange accelerator hires, we ship.</span></h1>
+          <div class="badges" aria-label="badges">
+            <span class="badge-img"><span class="l">license</span><span class="r" style="background:oklch(58% 0.15 145)">Apache-2.0</span></span>
+            <span class="badge-img"><span class="l">OSI</span><span class="r" style="background:oklch(48% 0.16 255)">approved</span></span>
+            <span class="badge-img"><span class="l">stack</span><span class="r" style="background:oklch(45% 0.18 280)">Gemini ADK</span></span>
+            <span class="badge-img"><span class="l">obs</span><span class="r" style="background:oklch(42% 0.18 25)">Phoenix MCP</span></span>
+            <span class="badge-img"><span class="l">deploy</span><span class="r" style="background:oklch(50% 0.14 230)">Cloud Run</span></span>
+            <span class="badge-img"><span class="l">spec-fit</span><span class="r" style="background:oklch(58% 0.15 145)">96%</span></span>
+            <span class="badge-img"><span class="l">track</span><span class="r" style="background:oklch(72% 0.19 55)">Arize</span></span>
+            <span class="badge-img"><span class="l">build</span><span class="r" style="background:oklch(58% 0.15 145)">passing</span></span>
+          </div>
+
+          <p>You give us a job-posting URL from <code class="inl">workatastartup.com</code>. We give you a deployed Next.js preview on Cloud Run inside <b>24 hours</b>, then a self-improvement loop keeps regenerating the weak flows until the deployed app actually matches its own spec.</p>
+          <blockquote>Their moat is a closed batch. Ours is <code class="inl">git clone</code>. Every layer below is open source — including the judge that grades us.</blockquote>
+
+          <h2>Quick start</h2>
+<pre><span style="color:var(--ink-mute)"># 1. clone — yes, the whole satire is forkable</span>
+git clone https://github.com/whyc/whyc.git &amp;&amp; cd whyc
+
+<span style="color:var(--ink-mute)"># 2. point it at any YC job post (or paste a company description)</span>
+export GOOGLE_API_KEY=...   # Gemini ADK
+export PHOENIX_ENDPOINT=... # Arize Phoenix MCP
+npx whyc ship --from https://workatastartup.com/jobs/&lt;id&gt;
+
+<span style="color:var(--ok)">→ deployed:  https://preview-7f3a.run.app</span>
+<span style="color:var(--ok)">→ spec-fit:  71%  (loop running in background...)</span></pre>
+
+          <h2>How it works</h2>
+          <div class="pipe">
+            <svg viewBox="0 0 720 150" width="100%" height="150" role="img" aria-label="pipeline diagram">
+              <defs>
+                <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M0,0 L10,5 L0,10 z" fill="oklch(45% 0.015 260)"/>
+                </marker>
+              </defs>
+              <g font-family="ui-monospace, monospace" font-size="11" fill="oklch(22% 0.02 260)">
+                <rect x="8" y="40" width="120" height="50" rx="6" fill="oklch(96% 0.02 255)" stroke="oklch(70% 0.10 255)"/>
+                <text x="68" y="62" text-anchor="middle" font-weight="600">1. Extract</text>
+                <text x="68" y="78" text-anchor="middle" fill="oklch(45% 0.015 260)">Gemini → Spec</text>
+
+                <rect x="158" y="40" width="120" height="50" rx="6" fill="oklch(96% 0.04 145)" stroke="oklch(65% 0.13 145)"/>
+                <text x="218" y="62" text-anchor="middle" font-weight="600">2. Generate</text>
+                <text x="218" y="78" text-anchor="middle" fill="oklch(45% 0.015 260)">tokens + Next.js</text>
+
+                <rect x="308" y="40" width="120" height="50" rx="6" fill="oklch(97% 0.04 230)" stroke="oklch(65% 0.13 230)"/>
+                <text x="368" y="62" text-anchor="middle" font-weight="600">3. Deploy</text>
+                <text x="368" y="78" text-anchor="middle" fill="oklch(45% 0.015 260)">Cloud Run URL</text>
+
+                <rect x="458" y="40" width="120" height="50" rx="6" fill="oklch(97% 0.04 25)" stroke="oklch(65% 0.18 25)"/>
+                <text x="518" y="62" text-anchor="middle" font-weight="600">4. Judge</text>
+                <text x="518" y="78" text-anchor="middle" fill="oklch(45% 0.015 260)">Phoenix MCP + LLM</text>
+
+                <rect x="608" y="40" width="104" height="50" rx="6" fill="oklch(97% 0.06 55)" stroke="oklch(65% 0.18 55)"/>
+                <text x="660" y="62" text-anchor="middle" font-weight="600">5. Regen</text>
+                <text x="660" y="78" text-anchor="middle" fill="oklch(45% 0.015 260)">weak flows only</text>
+
+                <line x1="128" y1="65" x2="155" y2="65" stroke="oklch(45% 0.015 260)" stroke-width="1.5" marker-end="url(#arr)"/>
+                <line x1="278" y1="65" x2="305" y2="65" stroke="oklch(45% 0.015 260)" stroke-width="1.5" marker-end="url(#arr)"/>
+                <line x1="428" y1="65" x2="455" y2="65" stroke="oklch(45% 0.015 260)" stroke-width="1.5" marker-end="url(#arr)"/>
+                <line x1="578" y1="65" x2="605" y2="65" stroke="oklch(45% 0.015 260)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+                <path d="M 660 90 Q 660 130 218 130 Q 218 110 218 90" fill="none" stroke="oklch(58% 0.20 50)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+                <text x="440" y="125" text-anchor="middle" fill="oklch(45% 0.18 50)" font-style="italic">until spec-fit converges</text>
+              </g>
+            </svg>
+          </div>
+
+          <h2>Why this is open source (and why it has to be)</h2>
+          <ul>
+            <li>The hackathon Stage-1 gate <b>requires</b> an OSI-approved license. Apache-2.0, no negotiation.</li>
+            <li>Phoenix is open source. Gemini ADK examples are open source. Next.js is open source. The only thing left for an accelerator to gate-keep is a closed batch — and that is the joke.</li>
+            <li>Every regenerate decision is logged through Phoenix and reproducible from this repo. The judge prompts live in <code class="inl">phoenix-mcp/judge/*.txt</code>. Disagree with our scoring? <b>Open a PR.</b></li>
+          </ul>
+
+          <h2>Convergence, in public</h2>
+          <p>Latest run on a synthetic JD (no real company referenced):</p>
+          <div class="convergence">
+            <span class="conv warn">iter 1 · 71%</span>
+            <span class="conv warn">iter 2 · 84%</span>
+            <span class="conv">iter 3 · 92%</span>
+            <span class="conv">iter 4 · 96% ✓</span>
+          </div>
+          <p style="font-size:12px;color:var(--ink-mute)">Full traces: <a href="#">phoenix-mcp/runs/synth-jd-08.jsonl</a> · LLM-judge diff: <a href="#">agents/judge/diff-iter3.md</a></p>
+
+          <div class="swipe">
+            <b>While they hire, we ship.</b> A certain accelerator's job board has a posting from a Demo Day company that is now <b>197 days old</b>. We took a synthetic version of that JD and shipped a working preview in <b>23h 41m</b>. The repo you are reading is the receipt.
+          </div>
+
+          <h2>Contributing</h2>
+          <p>We accept PRs that (a) add a new judge rubric, (b) tighten the design-token contract, or (c) port the runtime template to a non-Next.js framework. See <a href="#">CONTRIBUTING.md</a>. Be nice in issues. Be ruthless in code review.</p>
+
+          <h2>License</h2>
+          <p>Apache-2.0. © 2026 WhyC contributors. Not affiliated with, endorsed by, or naming any specific accelerator. Categorical satire only.</p>
+        </div>
+      </article>
+
+      <!-- pinned issue mock -->
+      <div class="issue">
+        <div class="issue-h">
+          <span class="state open">Open</span>
+          <span class="ttl">#42 · self-improvement loop didn't catch the missing /pricing flow on iter 2</span>
+          <span style="color:var(--ink-mute)">opened 6 hours ago by <b style="color:var(--ink)">indie-hacker-99</b></span>
+        </div>
+        <div class="issue-b">
+          <p>Repro: ran <code class="inl">npx whyc ship --from synth-jd-04</code>. Spec extracted a <code class="inl">/pricing</code> flow but the deployed preview shipped without it. Phoenix trace shows the judge marked it <b>89%</b> (above our 85% gate) on iter 2 and exited the loop. Suggest tightening the gate to <b>92%</b> when <code class="inl">spec.flows.length &gt; 3</code>.</p>
+          <p style="color:var(--ink-mute)">Labels: <span class="topic">judge</span><span class="topic">good first issue</span></p>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- sidebar -->
+    <aside class="side">
+      <div class="block">
+        <h3>About</h3>
+        <p>Multi-agent pipeline that turns any YC-style job posting into a deployed Next.js preview in under 24 hours. Phoenix MCP grades it. We regenerate until it passes.</p>
+        <p style="margin-top:10px"><a href="#">whyc.run</a></p>
+        <div style="margin-top:8px">
+          <span class="topic">gemini-adk</span>
+          <span class="topic">phoenix-mcp</span>
+          <span class="topic">cloud-run</span>
+          <span class="topic">nextjs</span>
+          <span class="topic">llm-as-judge</span>
+          <span class="topic">self-improvement</span>
+          <span class="topic">satire</span>
+        </div>
+        <div class="stat-row" style="margin-top:12px">★ <b style="color:var(--ink)">3,712</b> stars</div>
+        <div class="stat-row">⑂ <b style="color:var(--ink)">441</b> forks</div>
+        <div class="stat-row">👁 <b style="color:var(--ink)">218</b> watching</div>
+        <div class="stat-row">⚖ Apache-2.0 license</div>
+      </div>
+
+      <div class="block">
+        <h3>Releases <span style="color:var(--ink-mute);font-weight:400">2</span></h3>
+        <p><b style="color:var(--link)">v0.2.0</b> — convergence loop GA <span style="color:var(--ink-mute)">· 14 min ago</span></p>
+        <p style="color:var(--ink-mute);font-size:12px">+ 2 more</p>
+      </div>
+
+      <div class="block">
+        <h3>Contributors <span style="color:var(--ink-mute);font-weight:400">2</span></h3>
+        <div class="contribs" aria-label="avatars">
+          <span class="av" style="background:linear-gradient(135deg, oklch(72% 0.19 55), oklch(58% 0.20 30))"></span>
+          <span class="av" style="background:linear-gradient(135deg, oklch(60% 0.18 280), oklch(50% 0.18 220))"></span>
+        </div>
+        <p style="font-size:12px;margin-top:6px">sejun-kim · co-author</p>
+      </div>
+
+      <div class="block">
+        <h3>Used by <span style="color:var(--ink-mute);font-weight:400">11</span></h3>
+        <div class="contribs">
+          <span class="av" style="width:24px;height:24px;background:oklch(70% 0.10 200)"></span>
+          <span class="av" style="width:24px;height:24px;background:oklch(70% 0.12 110)"></span>
+          <span class="av" style="width:24px;height:24px;background:oklch(70% 0.10 30)"></span>
+          <span class="av" style="width:24px;height:24px;background:oklch(70% 0.10 320)"></span>
+          <span class="av" style="width:24px;height:24px;background:oklch(70% 0.10 60)"></span>
+        </div>
+        <p style="font-size:12px;color:var(--ink-mute);margin-top:6px">+ 6 indie hackers who already shipped before their batch did</p>
+      </div>
+
+      <div class="block">
+        <h3>Languages</h3>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;background:var(--code-bg)">
+          <span style="width:48%;background:oklch(72% 0.16 245)"></span>
+          <span style="width:31%;background:oklch(75% 0.18 95)"></span>
+          <span style="width:14%;background:oklch(70% 0.14 30)"></span>
+          <span style="width:7%;background:oklch(75% 0.10 280)"></span>
+        </div>
+        <p style="font-size:12px;margin-top:8px"><span style="color:oklch(50% 0.16 245)">●</span> TypeScript 48% &nbsp; <span style="color:oklch(55% 0.18 95)">●</span> Python 31%</p>
+        <p style="font-size:12px;margin-top:0"><span style="color:oklch(55% 0.14 30)">●</span> MDX 14% &nbsp; <span style="color:oklch(55% 0.10 280)">●</span> Other 7%</p>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+</body>
+</html>

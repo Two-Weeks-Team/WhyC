@@ -1,0 +1,54 @@
+{
+  "total_cards": 26,
+  "unique_personas": 26,
+  "unique_surfaces": 5,
+  "surfaces": [
+    "CLI",
+    "Embedded SDK",
+    "Mobile Web",
+    "Slack Bot",
+    "Web PWA"
+  ],
+  "duplicates": [],
+  "dom_hash_collisions": [],
+  "dom_near_duplicates": [],
+  "dom_top5_pairs": [
+    {
+      "ids": [
+        "P02",
+        "P13"
+      ],
+      "similarity": 0.193
+    },
+    {
+      "ids": [
+        "P03",
+        "P09"
+      ],
+      "similarity": 0.15
+    },
+    {
+      "ids": [
+        "P10",
+        "P23"
+      ],
+      "similarity": 0.145
+    },
+    {
+      "ids": [
+        "P09",
+        "P19"
+      ],
+      "similarity": 0.141
+    },
+    {
+      "ids": [
+        "P02",
+        "P10"
+      ],
+      "similarity": 0.14
+    }
+  ],
+  "verdict": "pass",
+  "rewrite_requests": []
+}

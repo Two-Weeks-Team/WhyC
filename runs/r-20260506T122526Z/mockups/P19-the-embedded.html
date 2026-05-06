@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC SDK — three lines, one deployed preview</title>
+<style>
+  :root {
+    --bg:        oklch(0.16 0.02 60);
+    --bg-2:      oklch(0.20 0.025 60);
+    --panel:     oklch(0.22 0.03 55);
+    --panel-2:   oklch(0.26 0.035 55);
+    --line:      oklch(0.34 0.04 55);
+    --ink:       oklch(0.96 0.01 90);
+    --ink-mute:  oklch(0.74 0.02 80);
+    --accent:    oklch(0.78 0.18 55);   /* YC-orange parody */
+    --accent-2:  oklch(0.86 0.14 75);
+    --good:      oklch(0.82 0.16 150);
+    --warn:      oklch(0.85 0.16 95);
+    --code-bg:   oklch(0.13 0.015 55);
+    --code-key:  oklch(0.82 0.13 320);
+    --code-str:  oklch(0.86 0.14 130);
+    --code-num:  oklch(0.86 0.14 75);
+    --code-com:  oklch(0.55 0.02 70);
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  code, pre, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  a { color: var(--accent-2); text-decoration: none; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 32px 96px; }
+  /* nav */
+  nav.top { display:flex; align-items:center; justify-content:space-between;
+    padding-bottom:18px; border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-0.01em; }
+  .brand .mark { width:26px; height:26px; }
+  .brand small { color: var(--ink-mute); font-weight:500; margin-left:6px; }
+  nav .links { display:flex; gap:22px; color:var(--ink-mute); font-size:14px; }
+  nav .links a:hover { color: var(--ink); }
+  .pill { font-size:11px; padding:3px 8px; border:1px solid var(--line);
+    border-radius:999px; color:var(--ink-mute); }
+  /* hero */
+  .hero { display:grid; grid-template-columns: 1.05fr 1.25fr; gap:36px;
+    padding: 56px 0 28px; align-items:center; }
+  @media (max-width: 880px) { .hero { grid-template-columns: 1fr; } }
+  h1 { font-size: 46px; line-height:1.05; letter-spacing:-0.025em; margin:0 0 16px; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lede { color: var(--ink-mute); font-size:17px; line-height:1.55; max-width:520px; margin:0 0 24px; }
+  .cta { display:flex; gap:10px; flex-wrap:wrap; }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 16px;
+    border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;
+    border:1px solid transparent; }
+  .btn.primary { background: var(--accent); color: oklch(0.18 0.02 55); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .install { margin-top:22px; display:flex; gap:8px; align-items:center;
+    background: var(--code-bg); border:1px solid var(--line); padding:10px 14px;
+    border-radius:8px; font-family: ui-monospace, monospace; font-size:13.5px;
+    max-width: 460px; }
+  .install .prompt { color: var(--ink-mute); }
+  .install .copy { margin-left:auto; color: var(--ink-mute); font-size:11px;
+    border:1px solid var(--line); padding:2px 8px; border-radius:6px; }
+  /* code block */
+  .codecard { background: var(--code-bg); border:1px solid var(--line);
+    border-radius: var(--radius); overflow:hidden; box-shadow: 0 24px 60px -30px oklch(0 0 0 / 0.6); }
+  .codecard .head { display:flex; align-items:center; gap:10px;
+    padding:10px 14px; background: var(--panel); border-bottom:1px solid var(--line); }
+  .codecard .dots { display:flex; gap:6px; }
+  .dot { width:11px; height:11px; border-radius:50%; background: var(--line); }
+  .codecard .file { color: var(--ink-mute); font-size:12.5px; font-family: ui-monospace, monospace; }
+  .codecard .lang { margin-left:auto; font-size:11px; color: var(--ink-mute);
+    border:1px solid var(--line); border-radius:5px; padding:2px 7px; }
+  .codecard pre { margin:0; padding:18px 20px; font-size:13.5px; line-height:1.65;
+    color: var(--ink); overflow-x:auto; }
+  .k { color: var(--code-key); }
+  .s { color: var(--code-str); }
+  .n { color: var(--code-num); }
+  .c { color: var(--code-com); font-style: italic; }
+  .fn { color: var(--accent-2); }
+  .v { color: var(--ink); }
+  /* sections */
+  section { margin-top: 72px; }
+  .eyebrow { font-size:12px; text-transform:uppercase; letter-spacing:0.14em;
+    color: var(--accent); font-weight:700; margin-bottom:10px; }
+  h2 { font-size: 28px; letter-spacing:-0.02em; margin:0 0 12px; }
+  .sub { color: var(--ink-mute); max-width:640px; line-height:1.55; margin:0 0 28px; }
+  /* gallery grid */
+  .grid3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 880px) { .grid3 { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border:1px solid var(--line);
+    border-radius: var(--radius); padding:18px 18px 16px; }
+  .card .ex-title { font-weight:600; margin:0 0 4px; font-size:15px; }
+  .card .ex-host { color: var(--ink-mute); font-size:12.5px; margin:0 0 12px; }
+  .card pre { margin:0; background: var(--code-bg); border:1px solid var(--line);
+    border-radius:8px; padding:12px 14px; font-size:12.5px; line-height:1.6;
+    overflow-x:auto; font-family: ui-monospace, monospace; }
+  /* req/resp split */
+  .reqresp { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  @media (max-width: 880px) { .reqresp { grid-template-columns: 1fr; } }
+  .lifecycle { display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-top:18px; }
+  @media (max-width: 880px) { .lifecycle { grid-template-columns: repeat(2,1fr); } }
+  .step { background: var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:12px 14px; }
+  .step .num { font-family: ui-monospace, monospace; color: var(--accent);
+    font-size:11px; letter-spacing:0.1em; }
+  .step .ttl { font-weight:600; font-size:13.5px; margin-top:4px; }
+  .step .desc { color: var(--ink-mute); font-size:12.5px; margin-top:4px; line-height:1.5; }
+  /* footer */
+  footer { margin-top:80px; padding-top:24px; border-top:1px solid var(--line);
+    color: var(--ink-mute); font-size:12.5px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  footer .stack span { margin-right:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="6" fill="oklch(0.78 0.18 55)"/>
+        <path d="M8 11 L13 21 L16 14 L19 21 L24 11" stroke="oklch(0.18 0.02 55)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span>whyc<small>/sdk</small></span>
+    </div>
+    <div class="links">
+      <a href="#install">Install</a>
+      <a href="#quickstart">Quickstart</a>
+      <a href="#lifecycle">Lifecycle</a>
+      <a href="#examples">Examples</a>
+      <a href="#"><span class="pill">v0.4.1</span></a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" style="margin-top:0;">
+    <div>
+      <div class="eyebrow">whyc · sdk only</div>
+      <h1>Three lines.<br/>One deployed <em>preview.</em></h1>
+      <p class="lede">
+        <code class="mono">whyc.generate(yc_url)</code> is a single SDK call. It hands a job-posting
+        URL to a Gemini ADK pipeline, runs a Phoenix-traced self-improvement loop, and
+        returns a live Cloud Run URL — usually before they finish writing the JD for round two.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="#quickstart">Read the quickstart →</a>
+        <a class="btn ghost" href="#examples">See embeds</a>
+      </div>
+      <div class="install" id="install">
+        <span class="prompt">$</span>
+        <span><span class="k">npm</span> i whyc &nbsp;<span class="c">#</span> <span class="c">or: pip install whyc</span></span>
+        <span class="copy">copy</span>
+      </div>
+    </div>
+
+    <!-- Hero code -->
+    <div class="codecard" aria-label="hero code sample">
+      <div class="head">
+        <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <span class="file">ship.ts</span>
+        <span class="lang">typescript</span>
+      </div>
+<pre><span class="k">import</span> { <span class="v">whyc</span> } <span class="k">from</span> <span class="s">"whyc"</span>;
+
+<span class="k">const</span> <span class="v">job</span> = <span class="k">await</span> <span class="v">whyc</span>.<span class="fn">generate</span>({
+  <span class="v">url</span>: <span class="s">"https://workatastartup.example/jobs/82957"</span>,
+  <span class="v">webhook</span>: <span class="s">"https://your.app/hooks/whyc"</span>,
+  <span class="v">converge</span>: { <span class="v">specFit</span>: <span class="n">0.92</span> }   <span class="c">// stop when judge agrees</span>
+});
+
+<span class="c">// → { jobId: "wh_4Tq…", statusUrl: "…", previewUrl: null }</span>
+<span class="c">// 24h later, webhook fires with { previewUrl, specFit: 0.96 }</span></pre>
+    </div>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section id="quickstart">
+    <div class="eyebrow">quickstart</div>
+    <h2>Call it. Forget about it. Read the webhook.</h2>
+    <p class="sub">
+      The SDK is async-by-default. A single <code class="mono">generate()</code> call
+      returns a job handle in milliseconds. The convergence loop runs for hours — your
+      host app is free to render whatever UI it wants while it waits.
+    </p>
+
+    <div class="reqresp">
+      <div class="codecard">
+        <div class="head">
+          <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <span class="file">request</span>
+          <span class="lang">curl</span>
+        </div>
+<pre><span class="k">curl</span> https://api.whyc.dev/v1/generate \
+  -H <span class="s">"authorization: bearer $WHYC_KEY"</span> \
+  -H <span class="s">"content-type: application/json"</span> \
+  -d <span class="s">'{
+    "url": "https://workatastartup.example/jobs/82957",
+    "webhook": "https://your.app/hooks/whyc",
+    "converge": { "specFit": 0.92 }
+  }'</span></pre>
+      </div>
+
+      <div class="codecard">
+        <div class="head">
+          <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <span class="file">response · 202 Accepted</span>
+          <span class="lang">json</span>
+        </div>
+<pre>{
+  <span class="k">"jobId"</span>: <span class="s">"wh_4TqMv8nE2xK"</span>,
+  <span class="k">"status"</span>: <span class="s">"queued"</span>,
+  <span class="k">"statusUrl"</span>: <span class="s">"https://api.whyc.dev/v1/jobs/wh_4TqMv8nE2xK"</span>,
+  <span class="k">"previewUrl"</span>: <span class="v">null</span>,
+  <span class="k">"specFit"</span>: <span class="v">null</span>,
+  <span class="k">"trace"</span>: {
+    <span class="k">"phoenixProject"</span>: <span class="s">"whyc-prod"</span>,
+    <span class="k">"rootSpan"</span>: <span class="s">"whyc.generate.wh_4TqMv8nE2xK"</span>
+  },
+  <span class="k">"eta"</span>: <span class="s">"~22h"</span>
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIFECYCLE -->
+  <section id="lifecycle">
+    <div class="eyebrow">lifecycle</div>
+    <h2>API call → webhook → background loop.</h2>
+    <p class="sub">
+      One synchronous call. One async webhook. Zero dashboards required —
+      the host app decides whether to render anything at all.
+    </p>
+    <div class="lifecycle">
+      <div class="step">
+        <div class="num">01 · SYNC</div>
+        <div class="ttl">generate() returns a handle</div>
+        <div class="desc">202 in &lt;200ms with a jobId, statusUrl, and a Phoenix root span you can subscribe to from your own observability stack.</div>
+      </div>
+      <div class="step">
+        <div class="num">02 · BACKGROUND</div>
+        <div class="ttl">ADK pipeline ships v0</div>
+        <div class="desc">URL → spec → Next.js code → Cloud Run. First preview is live and reachable in roughly 10 minutes at ~71% spec-fit.</div>
+      </div>
+      <div class="step">
+        <div class="num">03 · LOOP</div>
+        <div class="ttl">Phoenix-judged regeneration</div>
+        <div class="desc">LLM-as-judge reads OpenInference traces, scores under-spec flows, regenerates only the weak ones. 71 → 84 → 92 → 96.</div>
+      </div>
+      <div class="step">
+        <div class="num">04 · WEBHOOK</div>
+        <div class="ttl">job.converged fires</div>
+        <div class="desc">POST to your webhook with { previewUrl, specFit, traceUrl, judgmentLog }. Ship it, embed it, mock it — your call.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLES / GALLERY -->
+  <section id="examples">
+    <div class="eyebrow">examples</div>
+    <h2>Embed it where the work already happens.</h2>
+    <p class="sub">
+      WhyC owns no surface beyond this docs page. Every example below is a
+      different host app pulling the SDK in unchanged. <em>The product is the package.</em>
+    </p>
+
+    <div class="grid3">
+      <div class="card">
+        <div class="ex-title">VC deal-flow CLI</div>
+        <div class="ex-host">node · diligence script</div>
+<pre><span class="k">for</span> (<span class="k">const</span> <span class="v">co</span> <span class="k">of</span> <span class="v">portfolio</span>) {
+  <span class="k">const</span> <span class="v">job</span> = <span class="k">await</span> <span class="v">whyc</span>.<span class="fn">generate</span>({
+    <span class="v">url</span>: <span class="v">co</span>.<span class="v">jdUrl</span>,
+    <span class="v">webhook</span>: <span class="v">slack</span>(<span class="v">co</span>.<span class="v">channel</span>)
+  });
+  <span class="v">log</span>(<span class="v">co</span>.<span class="v">name</span>, <span class="v">job</span>.<span class="v">jobId</span>);
+}</pre>
+      </div>
+
+      <div class="card">
+        <div class="ex-title">Founder's personal site</div>
+        <div class="ex-host">next.js · server action</div>
+<pre><span class="k">"use server"</span>;
+<span class="k">export async function</span> <span class="fn">roast</span>(<span class="v">url</span>: <span class="k">string</span>) {
+  <span class="k">return</span> <span class="v">whyc</span>.<span class="fn">generate</span>({
+    <span class="v">url</span>,
+    <span class="v">webhook</span>: <span class="s">"/api/whyc/done"</span>,
+    <span class="v">converge</span>: { <span class="v">specFit</span>: <span class="n">0.96</span> }
+  });
+}</pre>
+      </div>
+
+      <div class="card">
+        <div class="ex-title">Slack bot</div>
+        <div class="ex-host">python · slash command</div>
+<pre><span class="k">from</span> whyc <span class="k">import</span> client
+<span class="k">def</span> <span class="fn">on_slash</span>(<span class="v">cmd</span>):
+    <span class="v">job</span> = client.<span class="fn">generate</span>(
+        <span class="v">url</span>=<span class="v">cmd</span>.text,
+        <span class="v">webhook</span>=<span class="v">cmd</span>.response_url
+    )
+    <span class="k">return</span> <span class="s">f"shipping… {job.job_id}"</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- WEBHOOK PAYLOAD -->
+  <section>
+    <div class="eyebrow">webhook</div>
+    <h2>One event. Everything you need.</h2>
+    <p class="sub">
+      When the convergence threshold is hit (or 24h wall-clock fires, whichever first),
+      WhyC posts a single signed payload. No SSE channel, no client lib state, nothing to embed.
+    </p>
+
+    <div class="codecard">
+      <div class="head">
+        <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <span class="file">POST · your.app/hooks/whyc</span>
+        <span class="lang">json</span>
+      </div>
+<pre>{
+  <span class="k">"event"</span>:    <span class="s">"job.converged"</span>,
+  <span class="k">"jobId"</span>:    <span class="s">"wh_4TqMv8nE2xK"</span>,
+  <span class="k">"previewUrl"</span>: <span class="s">"https://wh-4tqmv8.run.app"</span>,
+  <span class="k">"specFit"</span>:   <span class="n">0.96</span>,
+  <span class="k">"iterations"</span>: <span class="n">4</span>,
+  <span class="k">"latencyMs"</span>:  <span class="n">79420318</span>,         <span class="c">// ~22h, well under the 24h headline</span>
+  <span class="k">"judgment"</span>: {
+    <span class="k">"flowsRegenerated"</span>: [<span class="s">"signup"</span>, <span class="s">"pricing"</span>, <span class="s">"docs"</span>],
+    <span class="k">"finalVerdict"</span>:     <span class="s">"matches extracted spec; ship it."</span>
+  },
+  <span class="k">"trace"</span>: {
+    <span class="k">"phoenixUrl"</span>: <span class="s">"https://phoenix.arize.com/projects/whyc/spans/…"</span>
+  }
+}</pre>
+    </div>
+  </section>
+
+  <footer>
+    <div>whyc · sdk · MIT · built on the locked stack, not on opinions about UI</div>
+    <div class="stack">
+      <span>gemini adk</span>
+      <span>agent builder</span>
+      <span>phoenix mcp</span>
+      <span>cloud run</span>
+      <span>next.js</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

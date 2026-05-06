@@ -1,0 +1,12 @@
+{
+  "id": "P16",
+  "advocate": "The Solo Founder",
+  "framing": "WhyC is the solo indie hacker's overnight validation rig: paste your own pitch, sleep, wake up to a deployed preview before you write the resignation email. The YC satire is collateral damage; you are the user.",
+  "target_persona": "The single-operator indie hacker with a day job and three half-finished ideas — wants a working hosted preview by morning so they can decide whether to keep building or kill the idea before sinking another weekend.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-horizon agentic orchestration with sustained tool-use across the overnight self-improvement loop, plus structured cost/spec-fit reasoning that fits a single-operator's mental model (one number to watch, one button to kill).",
+  "mvp_scope": "Personal queue panel: paste URL, set budget cap and quiet hours, hit Ship. One row per run with live spec-fit %, cost-so-far, and a single Kill switch. Demo shows the overnight job converging from 71% to 96% while the founder sleeps. | surface: Single-account web admin panel. No teams, no roles, no invites. Owner = admin = user. One Google login, one Cloud Run project, one queue. Settings page is honest about cost ceilings and notification minimalism.",
+  "one_liner_pitch": "Your overnight build agent. Paste a pitch before bed, wake up to a deployed preview and a spec-fit score. One operator, one budget, one button.",
+  "spec_alignment_notes": "target_persona was filled but I narrowed from 'indie hacker who mocks YC' to the solo-operator angle (sync_model=hybrid + episodic frequency + 'their own ideas similarly stall' from primary_pain) — the spec explicitly calls out that their own ideas stall too, so the user-as-builder lens is canonical, not invented. primary_surface=web/hybrid/no-offline followed verbatim; chose single-account framing because a solo persona has no team dimension to interpret. monetization_model=unknown so I left...",
+  "mockup_path": "mockups/P16-the-solo-founder.html"
+}

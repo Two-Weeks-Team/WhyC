@@ -1,0 +1,53 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+out/
+.turbo/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+
+# Secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# Build artifacts / caches
+.cache/
+coverage/
+.nyc_output/
+
+# Claude Code local-only state (workspace settings.local.json IS committed for collaborator parity)
+.claude/cache/
+.claude/logs/
+
+# pf run scratch (we keep the design-locked run; ignore future scratch)
+runs/.tmp/
+runs/*.tmp/
+
+# OS misc
+Thumbs.db
+ehthumbs.db

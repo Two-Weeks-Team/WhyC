@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC · Enterprise Diligence Console</title>
+<style>
+  :root{
+    --bg: oklch(0.16 0.012 260);
+    --panel: oklch(0.20 0.014 260);
+    --panel-2: oklch(0.23 0.016 260);
+    --line: oklch(0.30 0.018 260);
+    --ink: oklch(0.96 0.005 260);
+    --ink-2: oklch(0.78 0.012 260);
+    --ink-3: oklch(0.58 0.014 260);
+    --ok: oklch(0.78 0.16 152);
+    --warn: oklch(0.82 0.16 86);
+    --err: oklch(0.70 0.20 25);
+    --accent: oklch(0.72 0.16 250);
+    --orange: oklch(0.74 0.18 55);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.45}
+  a{color:inherit;text-decoration:none}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  /* Top utility bar */
+  .util{display:flex;align-items:center;gap:14px;padding:6px 16px;background:oklch(0.13 0.010 260);border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-3)}
+  .util .crumb{color:var(--ink-2)}
+  .util .sep{opacity:.4}
+  .util .right{margin-left:auto;display:flex;gap:14px;align-items:center}
+  .util .pill{padding:2px 8px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+  .util .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)} .dot-err{background:var(--err)}
+
+  /* Header */
+  header{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:.02em}
+  .logo svg{width:26px;height:26px}
+  nav.tabs{display:flex;gap:2px;margin-left:18px}
+  nav.tabs a{padding:8px 12px;font-size:12px;color:var(--ink-2);border-bottom:2px solid transparent}
+  nav.tabs a.active{color:var(--ink);border-color:var(--orange)}
+  nav.tabs a.security{color:var(--ink);border-color:var(--accent);background:oklch(0.24 0.020 260)}
+  .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-2)}
+  .avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,oklch(0.55 0.12 250),oklch(0.45 0.10 30));display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink)}
+
+  /* Sub-header / case */
+  .case{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+  .case h1{font-size:15px;margin:0;font-weight:600}
+  .case .meta{font-size:11px;color:var(--ink-3)}
+  .badges{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:4px;border:1px solid var(--line);background:var(--panel);font-size:11px;color:var(--ink-2)}
+  .badge svg{width:11px;height:11px}
+  .b-ok{border-color:oklch(0.45 0.12 152);color:var(--ok)}
+  .b-warn{border-color:oklch(0.55 0.14 86);color:var(--warn)}
+
+  /* Main grid */
+  main{display:grid;grid-template-columns:280px 1fr 340px;gap:1px;background:var(--line);min-height:calc(100vh - 130px)}
+  section.col{background:var(--bg);padding:14px 14px 18px;overflow:hidden}
+  h2.kicker{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 10px;font-weight:600}
+
+  /* Left rail */
+  .specfit-wrap{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin-bottom:12px}
+  .specfit-num{font-size:32px;font-weight:600;letter-spacing:-.02em}
+  .specfit-num small{font-size:13px;color:var(--ink-3);font-weight:400;margin-left:4px}
+  .specfit-bar{margin-top:8px;height:6px;border-radius:3px;background:oklch(0.28 0.014 260);overflow:hidden}
+  .specfit-bar > div{height:100%;background:linear-gradient(90deg,var(--ok),oklch(0.74 0.14 152));width:96%}
+  .specfit-delta{font-size:11px;color:var(--ok);margin-top:6px}
+
+  .timeline{position:relative;padding-left:14px;margin-top:6px}
+  .timeline::before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:var(--line)}
+  .ti{position:relative;padding:6px 0 6px 8px;font-size:12px}
+  .ti::before{content:"";position:absolute;left:-14px;top:10px;width:9px;height:9px;border-radius:50%;background:var(--panel);border:1.5px solid var(--accent)}
+  .ti.done::before{background:var(--ok);border-color:var(--ok)}
+  .ti.live::before{background:var(--orange);border-color:var(--orange);box-shadow:0 0 0 3px oklch(0.74 0.18 55 / .25)}
+  .ti .t{font-size:10px;color:var(--ink-3);font-family:ui-monospace,Menlo,monospace}
+  .ti .v{color:var(--ink-2)}
+  .ti .v b{color:var(--ink);font-weight:600}
+
+  /* Center */
+  .preview-wrap{border:1px solid var(--line);border-radius:6px;background:oklch(0.98 0.004 260);overflow:hidden;height:540px;display:flex;flex-direction:column}
+  .preview-bar{display:flex;align-items:center;gap:8px;padding:6px 10px;background:oklch(0.94 0.005 260);border-bottom:1px solid oklch(0.86 0.008 260);font-size:11px;color:oklch(0.32 0.014 260)}
+  .preview-bar .traf{display:flex;gap:4px}
+  .preview-bar .traf span{width:9px;height:9px;border-radius:50%;background:oklch(0.78 0.04 30)}
+  .preview-bar .traf span:nth-child(2){background:oklch(0.84 0.10 86)}
+  .preview-bar .traf span:nth-child(3){background:oklch(0.78 0.10 152)}
+  .preview-bar .url{flex:1;background:#fff;border:1px solid oklch(0.86 0.008 260);border-radius:4px;padding:3px 8px;font-family:ui-monospace,Menlo,monospace;color:oklch(0.40 0.014 260)}
+  .preview-bar .lock{color:var(--ok)}
+  .preview-body{flex:1;color:oklch(0.20 0.012 260);padding:22px 26px;overflow:hidden;position:relative}
+  .preview-body h3{margin:0 0 6px;font-size:22px;color:oklch(0.20 0.018 30)}
+  .preview-body .lede{font-size:13px;color:oklch(0.40 0.014 260);max-width:520px}
+  .preview-body .cta{margin-top:14px;display:inline-block;padding:8px 14px;background:oklch(0.62 0.18 30);color:#fff;border-radius:5px;font-weight:600;font-size:12px}
+  .preview-grid{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pcard{border:1px solid oklch(0.88 0.008 260);border-radius:5px;padding:10px;background:#fff}
+  .pcard b{display:block;font-size:11px;color:oklch(0.30 0.014 30);margin-bottom:3px}
+  .pcard span{font-size:11px;color:oklch(0.45 0.012 260)}
+
+  .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .mkpi{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px}
+  .mkpi .lbl{font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em}
+  .mkpi .val{font-size:18px;font-weight:600;margin-top:4px}
+  .mkpi .sub{font-size:10px;color:var(--ink-3);margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+
+  /* Right rail audit log */
+  .audit-controls{display:flex;gap:6px;margin-bottom:8px}
+  .audit-controls button{flex:1;padding:5px 8px;font-size:11px;background:var(--panel);border:1px solid var(--line);color:var(--ink-2);border-radius:4px;cursor:default}
+  .audit-controls button.act{color:var(--ink);border-color:var(--accent)}
+  .log{font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.55;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;max-height:520px;overflow:auto}
+  .log .row{display:flex;gap:8px;padding:3px 0;border-bottom:1px dashed oklch(0.27 0.012 260)}
+  .log .row:last-child{border-bottom:0}
+  .log .ts{color:var(--ink-3);flex-shrink:0;width:60px}
+  .log .lvl{flex-shrink:0;width:38px;text-align:center;border-radius:3px;padding:0 4px;font-size:10px;font-weight:600}
+  .lvl.ok{background:oklch(0.30 0.08 152);color:var(--ok)}
+  .lvl.inf{background:oklch(0.28 0.05 250);color:var(--accent)}
+  .lvl.wrn{background:oklch(0.32 0.08 86);color:var(--warn)}
+  .lvl.aud{background:oklch(0.28 0.04 30);color:var(--orange)}
+  .log .msg{flex:1;color:var(--ink-2)}
+  .log .msg b{color:var(--ink)}
+  .log .tid{color:var(--accent)}
+
+  footer{padding:8px 18px;background:oklch(0.13 0.010 260);border-top:1px solid var(--line);font-size:10px;color:var(--ink-3);display:flex;gap:18px}
+  footer .right{margin-left:auto}
+</style>
+</head>
+<body>
+
+<div class="util">
+  <span class="crumb">Org · Sequoia-Class CVC</span>
+  <span class="sep">/</span>
+  <span class="crumb">Workspace · diligence-prod-eu</span>
+  <span class="sep">/</span>
+  <span class="crumb">Case · WHYC-2026-0517</span>
+  <div class="right">
+    <span class="pill"><span class="dot dot-ok"></span>SAML SSO · Okta</span>
+    <span class="pill"><span class="dot dot-ok"></span>Region eu-west-3</span>
+    <span class="pill"><span class="dot dot-warn"></span>Session 41:22 · re-auth in 18m</span>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 32 32" fill="none">
+      <rect x="2" y="2" width="28" height="28" rx="6" fill="oklch(0.74 0.18 55)"/>
+      <path d="M9 11 L13 22 L16 14 L19 22 L23 11" stroke="oklch(0.16 0.012 260)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="26" cy="7" r="3" fill="oklch(0.78 0.16 152)" stroke="oklch(0.16 0.012 260)" stroke-width="1.5"/>
+    </svg>
+    WhyC <span style="color:var(--ink-3);font-weight:400;margin-left:4px">/ Enterprise Diligence</span>
+  </div>
+  <nav class="tabs">
+    <a>Overview</a>
+    <a class="active">Build Capability</a>
+    <a>Preview</a>
+    <a>Trace Provenance</a>
+    <a class="security">Security &amp; Audit</a>
+    <a>IC Memo Export</a>
+  </nav>
+  <div class="who">
+    <span>m.okafor@sequoia-class.cvc · Diligence Lead</span>
+    <span class="avatar">MO</span>
+  </div>
+</header>
+
+<div class="case">
+  <h1>Prospect: <span style="color:var(--orange)">PortCo #4417 — Anon-Series-A</span></h1>
+  <span class="meta">Source: workatastartup.com/jobs/[redacted] · Submitted 2026-05-06 09:14 UTC by m.okafor</span>
+  <div class="badges">
+    <span class="badge b-ok"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>SAML 2.0</span>
+    <span class="badge b-ok">SCIM v2</span>
+    <span class="badge b-ok">SOC 2 Type II · 2026-Q1</span>
+    <span class="badge b-ok">ISO 27001</span>
+    <span class="badge b-ok">GDPR · DPA on file</span>
+    <span class="badge">Residency: EU</span>
+    <span class="badge b-warn">DPIA pending</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- LEFT: spec-fit timeline -->
+  <section class="col">
+    <h2 class="kicker">Spec-Fit Provenance</h2>
+    <div class="specfit-wrap">
+      <div class="specfit-num">96.4<small>% converged</small></div>
+      <div class="specfit-bar"><div></div></div>
+      <div class="specfit-delta">+25.4 pts since first deploy · 7 regen cycles · judge model gemini-2.5-judge</div>
+    </div>
+
+    <h2 class="kicker">Audit Timeline</h2>
+    <div class="timeline">
+      <div class="ti done"><div class="t">09:14:02 UTC · t-001</div><div class="v"><b>URL ingested</b> — SHA-256 pinned</div></div>
+      <div class="ti done"><div class="t">09:14:48 UTC · t-014</div><div class="v">Spec extracted · <b>Gemini ADK</b> · 41 fields</div></div>
+      <div class="ti done"><div class="t">09:21:11 UTC · t-072</div><div class="v">First Cloud Run deploy · spec-fit <b>71.0%</b></div></div>
+      <div class="ti done"><div class="t">09:34:55 UTC · t-118</div><div class="v">Phoenix MCP judge run #1 · → <b>84.2%</b></div></div>
+      <div class="ti done"><div class="t">10:02:09 UTC · t-203</div><div class="v">Regen weak flow <span class="mono">/checkout</span> · → <b>91.7%</b></div></div>
+      <div class="ti done"><div class="t">11:18:30 UTC · t-388</div><div class="v">Regen weak flow <span class="mono">/api/quote</span> · → <b>94.8%</b></div></div>
+      <div class="ti live"><div class="t">12:25:26 UTC · t-441</div><div class="v"><b>Convergence reached</b> · 96.4% · loop halted</div></div>
+    </div>
+
+    <h2 class="kicker" style="margin-top:18px">Data Subject Rights</h2>
+    <div style="font-size:11px;color:var(--ink-2);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px">
+      <div style="display:flex;justify-content:space-between"><span>PII detected in spec</span><b style="color:var(--ok)">none</b></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px"><span>Retention</span><b>30d auto-purge</b></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px"><span>Right-to-erasure SLA</span><b>72h</b></div>
+    </div>
+  </section>
+
+  <!-- CENTER: embedded preview + KPIs -->
+  <section class="col">
+    <h2 class="kicker">Generated Preview · Cloud Run · pinned to commit <span class="mono">a1f4c2e</span></h2>
+    <div class="preview-wrap">
+      <div class="preview-bar">
+        <div class="traf"><span></span><span></span><span></span></div>
+        <div class="url"><span class="lock">●</span> &nbsp;https://prospect-4417-pv.a.run.app  · TLS 1.3 · cert exp 2026-08-02</div>
+        <span style="color:oklch(0.42 0.04 152)">200 OK · 142ms</span>
+      </div>
+      <div class="preview-body">
+        <h3>Freight quotes in 30 seconds.</h3>
+        <div class="lede">An auto-generated working preview of the prospect's stated product. WhyC's pipeline ingested the spec, built the UI, wired two APIs, and deployed — all auditable below.</div>
+        <span class="cta">Get a quote →</span>
+        <div class="preview-grid">
+          <div class="pcard"><b>/api/quote</b><span>POST · returns rate · &lt;800ms p95</span></div>
+          <div class="pcard"><b>/api/track</b><span>GET · webhook subscribed</span></div>
+          <div class="pcard"><b>Auth</b><span>magic-link · email OTP</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="mkpi"><div class="lbl">Build velocity</div><div class="val">3h 11m</div><div class="sub">vs claimed 6mo</div></div>
+      <div class="mkpi"><div class="lbl">Trace events</div><div class="val">441</div><div class="sub">OpenInference</div></div>
+      <div class="mkpi"><div class="lbl">Regen cycles</div><div class="val">7</div><div class="sub">until convergence</div></div>
+      <div class="mkpi"><div class="lbl">Cost to build</div><div class="val">$4.18</div><div class="sub">Gemini + Cloud Run</div></div>
+    </div>
+  </section>
+
+  <!-- RIGHT: audit log -->
+  <section class="col">
+    <h2 class="kicker">Live Audit Log · Immutable</h2>
+    <div class="audit-controls">
+      <button class="act">All</button>
+      <button>AUTH</button>
+      <button>AGENT</button>
+      <button>JUDGE</button>
+      <button>EXPORT</button>
+    </div>
+    <div class="log">
+      <div class="row"><span class="ts">12:25:26</span><span class="lvl ok">OK</span><span class="msg"><b>convergence_reached</b> spec_fit=0.964 trace=<span class="tid">t-441</span></span></div>
+      <div class="row"><span class="ts">12:25:24</span><span class="lvl aud">AUD</span><span class="msg">audit.export.queued bundle=ic-memo-pdf actor=m.okafor</span></div>
+      <div class="row"><span class="ts">12:25:18</span><span class="lvl inf">INF</span><span class="msg">judge.score flow=/checkout score=0.97 trace=<span class="tid">t-440</span></span></div>
+      <div class="row"><span class="ts">12:24:01</span><span class="lvl inf">INF</span><span class="msg">phoenix.mcp.query span=run_eval ms=312</span></div>
+      <div class="row"><span class="ts">12:18:44</span><span class="lvl inf">INF</span><span class="msg">cloudrun.revision deployed rev=00007-fxn region=eu-west-3</span></div>
+      <div class="row"><span class="ts">12:18:11</span><span class="lvl ok">OK</span><span class="msg">secret.access key=GEMINI_API_KEY by=svc-whyc-runner</span></div>
+      <div class="row"><span class="ts">12:17:55</span><span class="lvl wrn">WRN</span><span class="msg">judge.flag flow=/api/quote spec_fit=0.81 → regen</span></div>
+      <div class="row"><span class="ts">11:42:09</span><span class="lvl aud">AUD</span><span class="msg">rbac.check role=diligence_lead allow=preview.view</span></div>
+      <div class="row"><span class="ts">11:18:30</span><span class="lvl ok">OK</span><span class="msg">regen.complete flow=/api/quote spec_fit=0.948</span></div>
+      <div class="row"><span class="ts">10:02:09</span><span class="lvl inf">INF</span><span class="msg">regen.start flow=/checkout reason=judge_below_threshold</span></div>
+      <div class="row"><span class="ts">09:34:55</span><span class="lvl inf">INF</span><span class="msg">judge.run #1 model=gemini-2.5-judge fits=0.842</span></div>
+      <div class="row"><span class="ts">09:21:11</span><span class="lvl ok">OK</span><span class="msg">cloudrun.deploy first url=prospect-4417-pv.a.run.app</span></div>
+      <div class="row"><span class="ts">09:14:48</span><span class="lvl inf">INF</span><span class="msg">spec.extract fields=41 trace=<span class="tid">t-014</span></span></div>
+      <div class="row"><span class="ts">09:14:02</span><span class="lvl aud">AUD</span><span class="msg">case.create id=WHYC-2026-0517 actor=m.okafor saml=okta</span></div>
+      <div class="row"><span class="ts">09:13:58</span><span class="lvl aud">AUD</span><span class="msg">auth.saml.assert idp=okta mfa=webauthn ip=203.0.113.42/EU</span></div>
+    </div>
+
+    <h2 class="kicker" style="margin-top:14px">Export &amp; Hand-off</h2>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:8px 10px;font-size:11px"><span>SIEM stream · Splunk HEC</span><b style="color:var(--ok)">live</b></div>
+      <div style="display:flex;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:8px 10px;font-size:11px"><span>Audit bucket · gs://cvc-audit-eu</span><b style="color:var(--ok)">WORM 7y</b></div>
+      <div style="display:flex;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:8px 10px;font-size:11px"><span>IC memo · PDF + JSON evidence</span><b style="color:var(--accent)">queue · 2</b></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>WhyC Enterprise · v1.7.0-ent</span>
+  <span>Tenant: sequoia-class · Plan: Procurement-Ready</span>
+  <span>Trust portal: trust.whyc.dev</span>
+  <span class="right">© 2026 · Categorical satire only · No real portfolio names rendered</span>
+</footer>
+
+</body>
+</html>

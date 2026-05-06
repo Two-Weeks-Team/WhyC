@@ -1,0 +1,12 @@
+{
+  "id": "P17",
+  "advocate": "The Enterprise Buyer",
+  "framing": "WhyC repackaged as a corporate-VC diligence accelerator: paste a portfolio prospect's job-post URL, get an SOC2-grade build-capability dossier with the auto-generated preview embedded — auditable, SSO-gated, exportable to LP memos.",
+  "target_persona": "Corporate VC associate at Google Ventures / M12 / Salesforce Ventures running technical diligence on Series A prospects (the 'Secondary' VC user from spec, but inside an enterprise IAM perimeter)",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context reasoning over Phoenix OpenInference traces to produce auditor-ready provenance chains: every spec-fit delta tied to a trace ID, judge prompt hash, and regenerated flow — exportable as evidence for IC memos.",
+  "mvp_scope": "Single screen: SSO-authenticated diligence dashboard for one prospect — header with SAML/SOC2/residency badges, left rail = spec-fit timeline (71% → 96%), center = embedded Cloud Run preview, right rail = live audit log of every agent action with trace IDs. | surface: SAML/SCIM-gated diligence portal with audit log stream, data-residency toggle, SOC2 evidence vault, and embedded preview iframe — every spec-fit score timestamped and immutable.",
+  "one_liner_pitch": "Diligence-grade WhyC: SAML-gated, SOC2-audited, trace-provenance dossier that lets corporate VCs prove a portfolio company's build velocity in one click.",
+  "spec_alignment_notes": "target_persona=Secondary VC/angel from spec → narrowed to corporate-VC-arm (enterprise IAM context) because persona bias is SSO/SAML/audit; primary_surface=web hybrid from spec → kept web, surfaced enterprise controls layer the spec leaves null; killer_feature self-improvement loop → reframed as auditable provenance trail (timestamped spec-fit deltas) rather than UX progress bar; monetization_model=unknown in spec → did not invent pricing in pitch, only positioned as enterprise procurement-re...",
+  "mockup_path": "mockups/P17-the-enterprise-buyer.html"
+}

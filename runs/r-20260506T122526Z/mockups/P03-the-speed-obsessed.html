@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — Paste URL. Get Deploy. 24h.</title>
+<style>
+  :root {
+    --bg: oklch(98% 0.01 80);
+    --ink: oklch(18% 0.02 80);
+    --muted: oklch(48% 0.03 80);
+    --line: oklch(88% 0.02 80);
+    --accent: oklch(72% 0.21 52);
+    --accent-ink: oklch(22% 0.06 52);
+    --ok: oklch(68% 0.15 150);
+    --warn: oklch(82% 0.16 90);
+    --paper: oklch(100% 0 0);
+    --shadow: 0 1px 0 oklch(0% 0 0 / 0.04), 0 12px 40px oklch(0% 0 0 / 0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 15px/1.45 system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 28px 24px 64px; }
+
+  /* Top bar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 18px; border-bottom: 1px solid var(--line);
+    margin-bottom: 36px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-mark {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--accent);
+    display: grid; place-items: center; color: var(--accent-ink);
+    font-weight: 800; font-size: 13px;
+  }
+  .brand-name { font-size: 15px; }
+  .brand-tag { color: var(--muted); font-weight: 500; font-size: 13px; margin-left: 4px; }
+  .nav { display: flex; gap: 18px; color: var(--muted); font-size: 13px; }
+  .nav span { cursor: default; }
+  .ship-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 9px; border-radius: 999px;
+    background: oklch(72% 0.21 52 / 0.12);
+    color: var(--accent-ink);
+    font-size: 12px; font-weight: 600;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  /* Hero */
+  .hero { padding: 28px 0 12px; }
+  h1 {
+    font-size: 56px; line-height: 1.0; letter-spacing: -0.035em;
+    margin: 0 0 16px; font-weight: 800;
+  }
+  h1 .strike { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 3px; }
+  h1 .hot { color: var(--accent); }
+  .sub {
+    font-size: 17px; color: var(--muted); max-width: 640px; margin: 0 0 28px;
+    line-height: 1.5;
+  }
+  .sub b { color: var(--ink); font-weight: 600; }
+
+  /* Single CTA */
+  .cta-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .cta-input {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 10px;
+    background: oklch(96% 0.01 80);
+  }
+  .cta-input input {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font: inherit; color: var(--ink);
+    font-size: 15px;
+  }
+  .cta-input input::placeholder { color: oklch(58% 0.02 80); }
+  .cta-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0 22px; min-height: 44px;
+    background: var(--ink); color: var(--bg);
+    border: 0; border-radius: 10px;
+    font: inherit; font-weight: 700; font-size: 14px;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+  }
+  .cta-btn .kbd {
+    font-size: 11px; opacity: 0.7;
+    border: 1px solid oklch(100% 0 0 / 0.25);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  .cta-foot {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    margin-top: 10px; font-size: 12px; color: var(--muted);
+    padding: 0 4px;
+  }
+  .cta-foot b { color: var(--ink); font-weight: 600; }
+  .cta-foot .sep { color: var(--line); }
+
+  /* Onboarding 3 steps */
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin: 36px 0 32px;
+  }
+  .step {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+  }
+  .step-n {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--ink); color: var(--bg);
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .step h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+  .step p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+  .step .t { display: inline-block; margin-top: 8px; font-size: 11px; color: var(--accent-ink); background: oklch(72% 0.21 52 / 0.14); padding: 2px 7px; border-radius: 999px; font-weight: 600; }
+
+  /* Live demo strip */
+  .demo {
+    margin: 8px 0 28px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .demo-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--line);
+    background: oklch(97% 0.01 80);
+    font-size: 12px; color: var(--muted);
+  }
+  .demo-head .lights { display: flex; gap: 6px; }
+  .demo-head .lights span { width: 9px; height: 9px; border-radius: 50%; background: var(--line); display: inline-block; }
+  .demo-head .url {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink);
+  }
+  .demo-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .col { padding: 14px 16px; }
+  .col + .col { border-left: 1px solid var(--line); }
+  .col h4 { margin: 0 0 8px; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .log { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.6; color: var(--muted); }
+  .log .ok { color: var(--ok); }
+  .log .hot { color: var(--accent); }
+  .log .ink { color: var(--ink); }
+  .timer { font-weight: 700; color: var(--ink); font-size: 13px; }
+
+  /* Compare */
+  .compare {
+    margin: 8px 0 28px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .row {
+    display: grid; grid-template-columns: 130px 1fr 1fr;
+    border-top: 1px solid var(--line);
+  }
+  .row:first-child { border-top: 0; background: oklch(97% 0.01 80); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .row > div { padding: 12px 14px; border-left: 1px solid var(--line); }
+  .row > div:first-child { border-left: 0; color: var(--muted); font-size: 13px; }
+  .row .them { color: var(--muted); }
+  .row .us { color: var(--ink); font-weight: 600; }
+  .row .us small { color: var(--accent-ink); background: oklch(72% 0.21 52 / 0.14); padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+
+  /* Foot */
+  footer {
+    margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--muted); flex-wrap: wrap; gap: 8px;
+  }
+
+  @media (max-width: 720px) {
+    h1 { font-size: 38px; }
+    .cta-card { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .demo-body { grid-template-columns: 1fr; }
+    .col + .col { border-left: 0; border-top: 1px solid var(--line); }
+    .row { grid-template-columns: 100px 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Top -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2 7 L6 11 L12 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="brand-name">WhyC</span>
+      <span class="brand-tag">/ ship-in-a-day</span>
+    </div>
+    <nav class="nav" aria-label="primary">
+      <span class="ship-pill"><span class="dot"></span>17 previews shipped today</span>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>
+      They take <span class="strike">6 months</span>.<br/>
+      You ship in <span class="hot">24 hours</span>.
+    </h1>
+    <p class="sub">
+      Paste a job-posting URL. WhyC extracts the spec, generates a Next.js preview, deploys to Cloud Run,
+      and <b>self-improves until the deployed app matches the spec</b>. First URL live in <b>~10 minutes</b>.
+      Convergence by tomorrow morning.
+    </p>
+
+    <!-- Single CTA -->
+    <form class="cta-card" onsubmit="return false">
+      <label class="cta-input" aria-label="job posting url">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M10 14 L14 10 M9 7 L11 5 a4 4 0 0 1 5.66 5.66 L14.66 12.66 M14 17 L12 19 a4 4 0 0 1 -5.66 -5.66 L8.34 11.34" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <input type="url" placeholder="https://workatastartup.com/jobs/82957" value="https://workatastartup.com/jobs/82957" />
+      </label>
+      <button class="cta-btn" type="submit">
+        Ship it
+        <span class="kbd">⏎</span>
+      </button>
+      <div class="cta-foot" style="grid-column: 1 / -1;">
+        <span><b>$0</b> · no signup for 1st preview</span>
+        <span class="sep">·</span>
+        <span>Free tier: <b>3 previews / day</b></span>
+        <span class="sep">·</span>
+        <span>Avg first deploy: <b>9 min 41 s</b></span>
+        <span class="sep">·</span>
+        <span>Convergence median: <b>4h 12m</b></span>
+      </div>
+    </form>
+  </section>
+
+  <!-- 3-step onboarding -->
+  <section class="steps" aria-label="how it works">
+    <div class="step">
+      <div class="step-n">1</div>
+      <h3>Paste URL</h3>
+      <p>workatastartup.com job page, careers page, or 2-line description. No setup.</p>
+      <span class="t">~5 sec</span>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <h3>Watch it ship</h3>
+      <p>Spec → Next.js → Cloud Run. Real-time agent log. First deploy URL in ~10 min.</p>
+      <span class="t">~10 min</span>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <h3>Wake up converged</h3>
+      <p>Phoenix MCP + LLM-judge regenerates only weak flows overnight. Spec-fit climbs to 96%+.</p>
+      <span class="t">overnight</span>
+    </div>
+  </section>
+
+  <!-- Live demo strip -->
+  <section class="demo" aria-label="live preview pipeline">
+    <div class="demo-head">
+      <div class="lights" aria-hidden="true"><span></span><span></span><span></span></div>
+      <span class="url">whyc.run/p/8f2-hireloop-clone</span>
+      <span class="timer">09:41 elapsed · spec-fit 71% → 92%</span>
+    </div>
+    <div class="demo-body">
+      <div class="col">
+        <h4>Agent log</h4>
+        <pre class="log" style="margin:0; white-space: pre-wrap;"><span class="ok">[00:12]</span> spec extracted (Gemini)
+<span class="ok">[01:38]</span> tokens + routes generated
+<span class="ok">[03:55]</span> Next.js build ok
+<span class="ok">[09:41]</span> Cloud Run deploy → <span class="ink">live</span>
+<span class="hot">[loop]</span> Phoenix MCP trace pulled
+<span class="hot">[loop]</span> judge: signup flow 0.62 → regen
+<span class="hot">[loop]</span> judge: pricing 0.91 → keep
+<span class="hot">[loop]</span> redeploy → fit <span class="ink">92%</span>…</pre>
+      </div>
+      <div class="col">
+        <h4>Preview frame</h4>
+        <svg viewBox="0 0 320 180" width="100%" height="auto" role="img" aria-label="generated preview wireframe">
+          <rect x="0" y="0" width="320" height="180" fill="oklch(98% 0.01 80)"/>
+          <rect x="12" y="12" width="80" height="10" rx="3" fill="oklch(82% 0.02 80)"/>
+          <rect x="220" y="12" width="36" height="10" rx="3" fill="oklch(88% 0.02 80)"/>
+          <rect x="262" y="12" width="46" height="14" rx="4" fill="oklch(72% 0.21 52)"/>
+          <rect x="12" y="42" width="170" height="18" rx="4" fill="oklch(20% 0.02 80)"/>
+          <rect x="12" y="66" width="220" height="8" rx="3" fill="oklch(80% 0.02 80)"/>
+          <rect x="12" y="78" width="180" height="8" rx="3" fill="oklch(86% 0.02 80)"/>
+          <rect x="12" y="98" width="92" height="26" rx="6" fill="oklch(20% 0.02 80)"/>
+          <rect x="110" y="98" width="92" height="26" rx="6" fill="none" stroke="oklch(78% 0.02 80)" stroke-width="1.5"/>
+          <rect x="12" y="138" width="96" height="32" rx="6" fill="oklch(94% 0.02 80)"/>
+          <rect x="114" y="138" width="96" height="32" rx="6" fill="oklch(94% 0.02 80)"/>
+          <rect x="216" y="138" width="92" height="32" rx="6" fill="oklch(94% 0.02 80)"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compare row -->
+  <section class="compare" aria-label="speed comparison">
+    <div class="row">
+      <div></div>
+      <div>Their cohort</div>
+      <div>You, with WhyC</div>
+    </div>
+    <div class="row">
+      <div>Setup</div>
+      <div class="them">Hire 4 engineers</div>
+      <div class="us">Paste 1 URL <small>5 sec</small></div>
+    </div>
+    <div class="row">
+      <div>First deploy</div>
+      <div class="them">~6 months</div>
+      <div class="us">~10 minutes <small>2,600× faster</small></div>
+    </div>
+    <div class="row">
+      <div>Spec drift fix</div>
+      <div class="them">Standup, retro, Jira</div>
+      <div class="us">Phoenix MCP self-loop <small>auto</small></div>
+    </div>
+    <div class="row">
+      <div>Tomorrow</div>
+      <div class="them">Still hiring</div>
+      <div class="us">Converged at 96% <small>shipped</small></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>WhyC · built on Gemini ADK + Agent Builder + Phoenix MCP + Cloud Run</span>
+    <span>Categorical satire. No real names, no real logos. Just real deploys.</span>
+  </footer>
+</div>
+</body>
+</html>

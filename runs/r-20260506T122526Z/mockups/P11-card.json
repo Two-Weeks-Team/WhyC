@@ -1,0 +1,12 @@
+{
+  "id": "P11",
+  "advocate": "The Pragmatist",
+  "framing": "Stop redesigning the wrapper. The only thing that matters is showing a real spec-fit number climbing iteration over iteration — that one scoreboard is the whole pitch, ship it on Day 1 in a boring SaaS shell and stop.",
+  "target_persona": "Indie hacker who already opened the repo at 11pm on Day 1 and just wants to see whether the self-improvement loop actually moves a number — not someone watching a marketing video",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context spec extraction + LLM-as-judge scoring across full Phoenix trace tails — Opus reads the entire OpenInference span tree per flow and emits a structured score + one-line judge note that we render verbatim in the table",
+  "mvp_scope": "One run-detail page that shows: current spec-fit score (big number), iteration strip (0.71 → 0.84 → 0.92), per-flow score table with judge notes, live trace tail, and a static preview thumbnail. That is the entire demo. URL submission and deploy can be a hardcoded fixture for the 4-day cut. | surface: Plain Next.js app (pages router is fine), Postgres for run history, server-sent events for the live score updates, deployed on Cloud Run. Classic left-sidebar SaaS dashboard. No design system, no animations beyond a pulse dot, no dark mode. Stack is 3 years old and that is the point.",
+  "one_liner_pitch": "A boring SaaS dashboard that does one thing: show spec-fit climb from 0.71 to 0.96 in real time. That number is the entire product.",
+  "spec_alignment_notes": "killer_feature explicitly names spec-fit % progression (71→96) as the differentiator → made it the literal hero number. primary_surface=web/hybrid → SSE-on-Next.js, no offline. target_persona=indie hacker → stripped out marketing chrome, kept ops-grade detail (span counts, region, trace tail). monetization=unknown → showed plan pill (Hackathon · 12/50 runs) as plausible future hook without committing. Stack constraint (Gemini ADK + Phoenix MCP + Cloud Run) surfaced verbatim in footer to prove...",
+  "mockup_path": "mockups/P11-the-pragmatist.html"
+}

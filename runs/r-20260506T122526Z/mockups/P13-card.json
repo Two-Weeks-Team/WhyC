@@ -1,0 +1,12 @@
+{
+  "id": "P13",
+  "advocate": "The Data Nerd",
+  "framing": "WhyC's satire only lands if the receipts are public. Re-frame the product as a Phoenix-powered scoreboard where founders watch spec-fit climb in real time and screenshot the convergence chart as their flex. The dashboard IS the headline.",
+  "target_persona": "The numerate indie hacker / VC analyst who refuses to believe 'we shipped in a day' until they see traces, token cost per iteration, and a spec-fit time-series with timestamps — the type who lurks Arize Phoenix demos and bookmarks W&B reports",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context trace correlation: Opus 4.7 reads the full OpenInference trace tree (often 200K+ tokens across iterations) and authors the analyst-grade narrative beneath each chart — 'iteration 4 regenerated /pricing because spec-fit dropped 12pts when the judge flagged missing tier comparison' — turning raw spans into board-ready commentary.",
+  "mvp_scope": "One screen: live Phoenix dashboard for a single in-flight WhyC run. Spec-fit time-series (animated), iteration bar chart (token cost), 6-flow heatmap (regen count per flow), 4 KPI tiles, and a 'convergence verdict' banner. Demo plays a 30-second replay of iterations 1→7. | surface: Dashboard + time-series + cohort + funnel is primary. Spec-fit-over-time line chart, per-iteration token-spend bars, regenerated-flow heatmap, KPI tiles (current spec-fit %, iterations, $ spent, convergence ETA), and a flow-by-flow funnel showing which flows passed the LLM-as-judge.",
+  "one_liner_pitch": "While YC hires, we ship — and we have the Phoenix dashboard to prove spec-fit climbed from 41% to 96% in 7 iterations.",
+  "spec_alignment_notes": "target_persona was specified as indie hacker + VC; chose the numerate sub-segment because P13's analytics-first bias serves the VC-diligence use case in the spec ('VC·엔젤 — 포트폴리오 회사의 실제 빌드 능력 진단 도구'). primary_surface=web+hybrid; the hybrid cadence (10min realtime → background loop) maps perfectly onto a streaming dashboard with a convergence chart — followed spec verbatim. killer_feature explicitly lists spec-fit % values (71→84→92→96) which I used as the chart's literal data points.",
+  "mockup_path": "mockups/P13-the-data-nerd.html"
+}

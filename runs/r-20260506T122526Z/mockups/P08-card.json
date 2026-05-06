@@ -1,0 +1,12 @@
+{
+  "id": "P08",
+  "advocate": "The Slack-Native",
+  "framing": "WhyC lives where VC due-diligence chatter already happens: Slack. A partner drops a YC company URL into #portfolio, a bot quietly ships a working preview, and the channel watches a deploy URL appear like magic 24 hours later — receipts in-thread, no new tab required.",
+  "target_persona": "Secondary persona from spec promoted to primary: VC associate or partner who pastes portfolio/competitor YC URLs into a partner Slack workspace and wants build-capability diagnostics without leaving the conversation",
+  "primary_surface": "Slack Bot",
+  "opus_4_7_capability": "Long-running async agent orchestration with conversational checkpoints — Gemini ADK pipeline streams structured progress events that map cleanly to Slack Block Kit message updates, while the self-improvement loop runs for hours and posts delta notifications when spec-fit crosses thresholds.",
+  "mvp_scope": "One Slack slash command (/whyc <yc-url>) that triggers the full pipeline, posts an in-channel ephemeral 'analyzing...' message that updates with live spec-fit %, DMs the requester progress milestones, and finally edits the original message to include the deployed Cloud Run URL preview unfurl. | surface: primary_surface = Slack bot (slash command /whyc + URL unfurl + DM progress + channel post). Web dashboard at whyc.app/r/<id> is auxiliary — only for the converged spec-fit report and the live preview iframe.",
+  "one_liner_pitch": "Paste a YC URL in Slack. Get a deployed working preview back in the same thread before standup tomorrow. While they hire, your bot ships.",
+  "spec_alignment_notes": "primary_surface.platform=web in spec → reframed as Slack-as-input + web-as-result-viewer to honor hackathon 'web platform' requirement while leaning into 'where work happens'; target_persona primary=indie hacker but spec lists VC/angels as secondary use case for build-capability diagnostics — promoted secondary because Slack is the native VC partnership tool; sync_model=hybrid maps directly to Slack's message-edit cadence (real-time progress, then background convergence with notifications); a...",
+  "mockup_path": "mockups/P08-the-slack-native.html"
+}

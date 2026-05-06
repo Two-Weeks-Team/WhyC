@@ -1,0 +1,61 @@
+{
+  "idea_summary": "WhyC — YC 풍자 카운터프로덕트.\n\n문제: YC 배치를 받은 스타트업들이 Demo Day 이후 6개월이 지나도 workatastartup.com에 \"엔지니어/인턴 구함\" 공고만 올리고 정작 제품을 출시하지 못하는 패턴. (예시: workatastartup.com/jobs/82957)\n\n해결: YC 회사의 잡 포스팅 URL(또는 회사 설명)을 입력받아 멀티에이전트 파이프라인이 1일 이내에 호스팅된 *작동하는* 프리뷰를 자동 생성한다. \"그들이 6개월 걸리는 걸 우리는 1일에 만든다\"가 헤드라인 도발.\n\n핵심 차별점 — 단순 코드젠이 아니라 self-improvement loop:\n1) URL → Spec 추출 (Gemini)\n2) Spec → 디자인 토큰 + Next.js 코드 + 핵심 API 1~2개\n3) Cloud Run 배포\n4) Phoenix MCP가 trace 조회 → LLM-as-judge가 \"프리뷰가 추출 spec과 일치하는가\" 평가 → 미흡한 flow만 재생성 → 수렴까지 반복\n\n스택 (해카톤 강제 — 변경 불가):\n- Gemini Enterprise Agent Platform / ADK (code-owned runtime)\n- Google Cloud Agent Builder (오케스트레이션)\n- Arize Phoenix MCP + OpenInference 자동 계측 (Arize 트랙)\n- Cloud Run 배포, Secret Manager\n- 웹 플랫폼 (Next.js 권장)\n\n타겟 사용자:\n- Primary: 인디 해커 / 시리얼 파운더 (\"왜 저들이 못 만들지?\" 진영)\n- Secondary: VC·엔젤 (포트폴리오 회사의 *실제 빌드 능력* 진단 도구)\n- Demo 시청자: 해카톤 심사위원\n\n브랜드 톤:\n- 어그로·도발 카피 풀세게 (제품 헤드라인, Devpost text, README, 웹사이트)\n- \"WHILE YC HIRES, WE SHIP\" 류\n- 픽셀 퍼펙트 sleek UI (브루털리즘 아님, 진지하게 끝난 작품처럼)\n- YC 오렌지에 대한 시각적 패러디 OK, 공식 로고/워드마크 직접 사용은 금지\n\n데모 영상(3분) 톤:\n- 자랑·와우 중심, 특정 YC 회사명·로고는 화면에 안 띄움\n- 합성 JD 또는 익명화한 케이스로 1개 end-to-end 시연\n- \"input → 24h 후 deployed URL\" 비포·애프터 구도\n\n성공 기준 (해카톤 채점):\n- Stage 1 pass: Gemini + Arize MCP + Cloud Run + 공개 레포 + OSI 라이선스 + 3분 영상\n- Stage 2 4축:\n  · Tech Implementation: ADK + Phoenix 깊은 통합, self-improvement loop가 코드로 증명\n  · Design: WhyC 자체 UI + 생성된 프리뷰 둘 다 finished 작품\n  · Potential Impact: \"founder가 1일에 valid prototype 보유\" 함의\n  · Idea Quality: YC 풍자 × 자기개선 에이전트 결합은 갤러리에서 unique\n- Arize 트랙 보너스: self-improvement loop 명시적 시연\n\n팀: 2인 (대표자 Sejun Kim, centisgood@gmail.com).\n마감: 2026-06-11 14:00 PT (오늘 기준 +36일).\n트랙: Arize.\n\n제약 (실격 방지):\n- 5월 5일 이후 신규 창작. pf 플러그인 코드 재사용 금지(메서돌로지 영감만).\n- 영상에서 특정 YC 회사명·로고 금지 (카테고리적 풍자만).\n- AWS·OpenAI·Anthropic API를 에이전트 백본으로 사용 금지.",
+  "target_persona": {
+    "profile": "Indie hacker / serial founder who watches YC Demo Day cohorts and asks 'why can't they ship?' — wants to weaponize that frustration into a working preview to mock and to actually use",
+    "primary_pain": "Sees YC-backed startups posting 'hiring engineers/interns' 6+ months after Demo Day with no shipped product, while their own ideas similarly stall before reaching a working hosted prototype",
+    "usage_frequency": "episodic"
+  },
+  "primary_surface": {
+    "platform": "web",
+    "sync_model": "hybrid",
+    "offline_capable": false
+  },
+  "jobs_to_be_done": {
+    "functional": "Turn a YC job-posting URL (or company description) into a hosted, working Next.js preview on Cloud Run within 24 hours, with a self-improvement loop (Phoenix MCP + LLM-as-judge) that regenerates weak flows until the deployed preview matches the extracted spec",
+    "emotional": "Feel vindicated and a little smug — 'while they hire, we ship' — confident that the satire is backed by a real, finished artifact judges and peers can click",
+    "social": "Be perceived as the team that out-shipped a YC batch in a weekend — credible in indie-hacker / Arize-track / Google Cloud agent-builder circles as serious agent engineers, not just shitposters"
+  },
+  "must_have_constraints": [
+    {
+      "type": "platform",
+      "value": "Hackathon-locked stack: Gemini ADK + Google Cloud Agent Builder + Arize Phoenix MCP + Cloud Run + Next.js. AWS / OpenAI / Anthropic APIs forbidden as agent backbone."
+    },
+    {
+      "type": "regulatory",
+      "value": "OSI-approved open-source license required for hackathon Stage-1 pass; public repo mandatory."
+    },
+    {
+      "type": "other",
+      "value": "Originality rule: all creative work dated on or after 2026-05-05; no reuse of preview-forge plugin code (methodology inspiration only)."
+    },
+    {
+      "type": "other",
+      "value": "Trademark hygiene: no YC company names or official logos in the 3-minute demo video; categorical satire only. YC-orange visual parody acceptable, official wordmark use forbidden."
+    },
+    {
+      "type": "team_size",
+      "value": "2 people (representative: Sejun Kim, centisgood@gmail.com)"
+    },
+    {
+      "type": "latency",
+      "value": "End-to-end pipeline must produce a deployed Cloud Run URL within 24 hours of URL submission (the headline claim)."
+    },
+    {
+      "type": "other",
+      "value": "Hard deadline: 2026-06-11 14:00 PT submission (Arize track)."
+    }
+  ],
+  "killer_feature": "Self-improvement loop: Phoenix MCP queries the agent's own OpenInference traces, an LLM-as-judge scores whether the deployed preview matches the extracted spec, and only the under-spec flows are regenerated until convergence — distinguishing WhyC from one-shot codegen demos.\n\nUX cadence: Hybrid. The user sees real-time agent progress for ~10 minutes until the first Cloud Run URL is live (visible spec-fit score, e.g. 71%). The self-improvement loop then runs for hours in the background, raising spec-fit with each iteration (84% → 92% → 96% converged). The 'we ship in a day' headline covers the fully-converged window.",
+  "non_goals": [
+    "Not a YC accelerator competitor — no funding, mentorship, or batch programming",
+    "Not a general code-review or refactoring tool — input is a URL/description, not an existing repo",
+    "Not a no-code site builder for end-users — the user-facing artifact is a generated preview, not a builder UI",
+    "Not a production-grade hosting platform — Cloud Run previews are demo artifacts, not SLA-backed products",
+    "Not naming or shaming specific YC companies — satire stays categorical; no real names/logos in the video",
+    "Not a replacement for human product design — generated preview anchors discussion, doesn't end it"
+  ],
+  "monetization_model": "unknown",
+  "success_metric": "Hackathon Stage-2 four-axis scoring: (1) Tech Implementation — ADK + Phoenix deep integration with self-improvement loop proven in code; (2) Design — both WhyC's own UI and the generated previews read as finished work; (3) Potential Impact — 'founder holds a valid prototype in 1 day' narrative lands; (4) Idea Quality — YC-satire × self-improving-agent combo is unique in the gallery. Bonus: explicit Arize-track self-improvement loop demo in the 3-minute video.",
+  "_filled_ratio": 0.8889,
+  "_schema_version": "1.6.0"
+}

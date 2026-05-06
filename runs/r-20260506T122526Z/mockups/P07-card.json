@@ -1,0 +1,12 @@
+{
+  "id": "P07",
+  "advocate": "The Mobile-First",
+  "framing": "Founders see YC fundraise/hire tweets on their phone, not their desktop — WhyC must live in the thumb zone so the satirical impulse converts before they re-lock the screen.",
+  "target_persona": "Indie hacker scrolling Twitter on iPhone who spots a 'still hiring 6mo post-Demo Day' tweet and wants to weaponize it in under 60 seconds without switching to laptop.",
+  "primary_surface": "Mobile Web",
+  "opus_4_7_capability": "Long-context spec extraction from a single pasted JD URL plus continuous LLM-as-judge scoring against the deployed preview during the background self-improvement loop — both phases stream status payloads small enough for mobile data.",
+  "mvp_scope": "Paste-URL hero → live run card with 4-step pipeline + animated spec-fit gauge (71% → background) → bottom 'Ship it in 10 min' CTA. One screen, no signup, push notif on convergence. | surface: Mobile PWA, single-column 375px, sticky 56px bottom CTA in thumb zone, 4-tab bottom nav, paste-from-clipboard hero, push notif when 10-min Cloud Run URL is ready.",
+  "one_liner_pitch": "Saw a YC hire-tweet on your phone? Paste, pocket, push notif — your satirical preview ships from the thumb zone before the elevator hits your floor.",
+  "spec_alignment_notes": "primary_surface.platform=web + sync_model=hybrid → interpreted 'web' as Mobile Web/PWA (explicitly allowed in directive) and mapped hybrid (10min realtime → background loop) to a live run card + push notif pattern; target_persona=indie hacker 'episodic' usage → episodic fits perfectly with Twitter-scrolling impulse capture; killer_feature spec-fit % shown verbatim (71% live, 96% converged) per spec; all other fields followed spec verbatim, no YC names/logos used.",
+  "mockup_path": "mockups/P07-the-mobile-first.html"
+}

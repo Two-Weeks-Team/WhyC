@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC · Stealth Mode — Privacy Hawk Preview</title>
+<style>
+  :root{
+    --bg: oklch(16% 0.018 260);
+    --panel: oklch(21% 0.022 260);
+    --panel-2: oklch(25% 0.024 260);
+    --ink: oklch(96% 0.01 260);
+    --ink-2: oklch(78% 0.02 260);
+    --mute: oklch(58% 0.02 260);
+    --line: oklch(32% 0.02 260);
+    --lock: oklch(82% 0.16 145);
+    --warn: oklch(78% 0.16 70);
+    --orange: oklch(72% 0.17 55);
+    --bad: oklch(70% 0.20 25);
+    --shield: oklch(70% 0.13 200);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:28px;max-width:1180px;margin:0 auto}
+  a{color:var(--shield);text-decoration:none}
+  .row{display:flex;gap:14px;align-items:center}
+  .grid{display:grid;gap:14px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid var(--line);border-radius:999px;font-size:11px;color:var(--ink-2);background:var(--panel)}
+  .pill.lock{color:var(--lock);border-color:color-mix(in oklch, var(--lock) 40%, var(--line))}
+  .pill.warn{color:var(--warn);border-color:color-mix(in oklch, var(--warn) 40%, var(--line))}
+  .pill.shield{color:var(--shield);border-color:color-mix(in oklch, var(--shield) 40%, var(--line))}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  /* Top bar */
+  header{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:700;letter-spacing:.5px}
+  .brand small{color:var(--mute);font-weight:500}
+  .topnav{display:flex;gap:10px}
+  /* Hero */
+  .hero{padding:22px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg, var(--panel), var(--panel-2));position:relative;overflow:hidden}
+  .hero h1{margin:0 0 6px;font-size:30px;letter-spacing:-.5px}
+  .hero h1 .strike{color:var(--mute);text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:2px}
+  .hero p.lede{margin:0;color:var(--ink-2);max-width:62ch;line-height:1.55}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  /* Stealth toggle */
+  .stealth{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px}
+  .toggle{display:flex;align-items:center;gap:14px}
+  .switch{width:54px;height:30px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);position:relative;cursor:pointer;flex:0 0 auto}
+  .switch.on{background:color-mix(in oklch, var(--lock) 25%, var(--panel-2))}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--ink);transition:left .15s}
+  .switch.on::after{left:27px;background:var(--lock)}
+  .toggle-text strong{display:block;font-size:14px}
+  .toggle-text span{color:var(--mute);font-size:12px}
+  .stealth-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .stealth-cell{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;color:var(--ink-2)}
+  .stealth-cell b{display:block;color:var(--ink);font-size:12px;margin-bottom:4px}
+  /* Two-col layout */
+  main{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:18px}
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:16px}
+  .card h2{margin:0 0 10px;font-size:14px;letter-spacing:.4px;color:var(--ink-2);text-transform:uppercase}
+  /* URL form */
+  .form{display:grid;gap:8px}
+  .input{display:flex;gap:8px;align-items:stretch;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:8px}
+  .input svg{flex:0 0 auto}
+  .input input{flex:1;background:transparent;border:0;outline:0;color:var(--ink);font-family:ui-monospace,monospace;font-size:13px}
+  .input input::placeholder{color:var(--mute)}
+  .submit{padding:10px 14px;border-radius:10px;border:1px solid color-mix(in oklch, var(--lock) 50%, var(--line));background:color-mix(in oklch, var(--lock) 18%, var(--panel-2));color:var(--lock);font-weight:600;cursor:pointer}
+  .hint{font-size:11px;color:var(--mute);display:flex;align-items:center;gap:6px}
+  /* Data residency */
+  .residency{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px;border:1px dashed var(--line);border-radius:10px;background:var(--panel-2);margin-top:10px}
+  .residency .where{font-family:ui-monospace,monospace;font-size:12px;color:var(--lock)}
+  .residency small{color:var(--mute);font-size:11px}
+  /* Pipeline */
+  .pipe{display:grid;gap:8px}
+  .step{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
+  .step .ic{width:32px;height:32px;border-radius:8px;background:color-mix(in oklch, var(--lock) 12%, var(--panel));display:grid;place-items:center}
+  .step b{font-size:13px}
+  .step span{display:block;color:var(--mute);font-size:11px}
+  .step .tag{font-size:10px;color:var(--lock);font-family:ui-monospace,monospace}
+  .step.untrusted .ic{background:color-mix(in oklch, var(--warn) 12%, var(--panel))}
+  .step.untrusted .tag{color:var(--warn)}
+  /* Trace redaction */
+  .trace{font-family:ui-monospace,monospace;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;max-height:240px;overflow:auto;line-height:1.7}
+  .trace .k{color:var(--mute)}
+  .trace .v{color:var(--ink-2)}
+  .trace .red{background:color-mix(in oklch, var(--bad) 22%, transparent);color:var(--ink);padding:0 4px;border-radius:3px}
+  .trace .ok{color:var(--lock)}
+  .trace .warn{color:var(--warn)}
+  /* Ephemeral preview */
+  .ephem{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
+  .ephem .url{font-family:ui-monospace,monospace;font-size:12px;color:var(--ink)}
+  .ephem .url small{display:block;color:var(--mute);font-size:11px;margin-top:2px}
+  .countdown{font-family:ui-monospace,monospace;font-size:18px;color:var(--warn);text-align:right}
+  .countdown small{display:block;font-size:10px;color:var(--mute);font-weight:400}
+  /* Phoenix toggle */
+  .phx{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .phx label{display:flex;align-items:flex-start;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);cursor:pointer}
+  .phx label.sel{border-color:color-mix(in oklch, var(--lock) 60%, var(--line));background:color-mix(in oklch, var(--lock) 8%, var(--panel-2))}
+  .phx .radio{width:14px;height:14px;border:1px solid var(--mute);border-radius:50%;margin-top:2px;flex:0 0 auto}
+  .phx label.sel .radio{border-color:var(--lock);background:radial-gradient(circle, var(--lock) 40%, transparent 50%)}
+  .phx b{display:block;font-size:12px}
+  .phx span{display:block;color:var(--mute);font-size:11px;margin-top:2px}
+  /* Footer guarantees */
+  footer{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .guar{display:flex;gap:8px;align-items:flex-start;font-size:11.5px;color:var(--ink-2)}
+  .guar svg{flex:0 0 auto;margin-top:1px}
+  .guar b{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}
+  .legal{margin-top:12px;font-size:10.5px;color:var(--mute);text-align:center}
+  @media (max-width:880px){
+    main{grid-template-columns:1fr}
+    .stealth-grid{grid-template-columns:1fr}
+    footer{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <!-- shield logo -->
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" fill="oklch(72% 0.17 55)" opacity=".22"/>
+      <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" stroke="oklch(82% 0.16 145)" stroke-width="1.4"/>
+      <path d="M9 12l2 2 4-4" stroke="oklch(82% 0.16 145)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    WhyC <small>· Stealth Edition</small>
+  </div>
+  <div class="topnav">
+    <span class="pill lock">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
+      E2E by default
+    </span>
+    <span class="pill shield">local-first</span>
+    <span class="pill">v0.4 · Arize track</span>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>While they hire, <span class="strike">we leak</span> we ship — <em>privately</em>.</h1>
+  <p class="lede">Drop a stealth YC URL. WhyC extracts the spec, generates a working Next.js preview, and self-improves on Phoenix traces — without sending your input to anyone you didn't authorize. The roast is public. The artifact is yours alone.</p>
+  <div class="badges">
+    <span class="pill lock">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8"/></svg>
+      Spec encrypted (XChaCha20-Poly1305)
+    </span>
+    <span class="pill shield">Cloud Run preview · ephemeral 24h</span>
+    <span class="pill warn">Phoenix Cloud sends traces externally — opt-out below</span>
+    <span class="pill lock">No retention beyond run-id</span>
+  </div>
+</section>
+
+<section class="stealth">
+  <div class="toggle">
+    <div class="switch on" aria-pressed="true" role="switch"></div>
+    <div class="toggle-text">
+      <strong>Stealth Mode <span class="pill lock" style="margin-left:6px">ON</span></strong>
+      <span>For unlaunched / pre-Demo-Day YC submissions. Hardens every stage of the pipeline.</span>
+    </div>
+  </div>
+  <div class="stealth-grid">
+    <div class="stealth-cell">
+      <b>Input scrubbing</b>
+      Company name, founder names, and YC batch tag stripped from prompts before they reach Gemini. Replaced with synthetic tokens.
+    </div>
+    <div class="stealth-cell">
+      <b>No-train flags</b>
+      Gemini ADK called with <span class="mono">disableDataLogging=true</span>. Cloud Run logs scoped to <span class="mono">run-id</span> only.
+    </div>
+    <div class="stealth-cell">
+      <b>Ephemeral artifacts</b>
+      Preview URL signed for 24h, then revoked. Container image deleted from Artifact Registry on TTL expiry.
+    </div>
+  </div>
+</section>
+
+<main>
+
+  <div class="card">
+    <h2>1 · Submit · client-side encrypted</h2>
+    <div class="form">
+      <div class="input">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="5" y="10" width="14" height="10" rx="2" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/>
+          <circle cx="12" cy="15" r="1.4" fill="oklch(82% 0.16 145)"/>
+        </svg>
+        <input type="text" value="https://workatastartup.com/jobs/REDACTED" />
+        <button class="submit">Encrypt &amp; Run</button>
+      </div>
+      <div class="hint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="oklch(58% 0.02 260)" stroke-width="1.6"/><path d="M12 8v5l3 2" stroke="oklch(58% 0.02 260)" stroke-width="1.6" stroke-linecap="round"/></svg>
+        URL hashed in your browser via SubtleCrypto · only the cipher leaves this tab.
+      </div>
+    </div>
+
+    <div class="residency">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" stroke="oklch(70% 0.13 200)" stroke-width="1.4"/>
+        <path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" stroke="oklch(70% 0.13 200)" stroke-width="1.2"/>
+      </svg>
+      <div>
+        <div class="where">data residency · us-central1 (single region)</div>
+        <small>Spec stays in your project. No cross-region replication. No backups.</small>
+      </div>
+      <span class="pill lock">pinned</span>
+    </div>
+
+    <h2 style="margin-top:18px">2 · Pipeline · per-stage trust labels</h2>
+    <div class="pipe">
+      <div class="step">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/><path d="M8 12h8M12 8v8" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/></svg>
+        </div>
+        <div><b>Spec extract · Gemini ADK</b><span>Scrubbed prompt; no PII; vendor: Google (DPA signed).</span></div>
+        <span class="tag">trusted · no-train</span>
+      </div>
+      <div class="step">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 18l4-10 4 6 4-12 4 16" stroke="oklch(82% 0.16 145)" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg>
+        </div>
+        <div><b>Codegen · Agent Builder</b><span>Outputs Next.js source &amp; design tokens, in your VPC-SC perimeter.</span></div>
+        <span class="tag">trusted</span>
+      </div>
+      <div class="step">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 7h14v10H5z" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/><path d="M5 11h14" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/></svg>
+        </div>
+        <div><b>Deploy · Cloud Run (private)</b><span>Signed URL · 24h TTL · ingress: internal-and-cloud-load-balancing.</span></div>
+        <span class="tag">trusted · ephemeral</span>
+      </div>
+      <div class="step untrusted">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5" stroke="oklch(78% 0.16 70)" stroke-width="1.6" fill="none"/></svg>
+        </div>
+        <div><b>Phoenix MCP · trace + judge</b><span>Default: Phoenix Cloud (external). Switch to self-hosted below to keep traces in-region.</span></div>
+        <span class="tag">external by default</span>
+      </div>
+    </div>
+
+    <h2 style="margin-top:18px">3 · Trace export · what leaves your project</h2>
+    <div class="trace" aria-label="Redacted OpenInference span">
+<span class="k">span.name</span>      <span class="v">whyc.spec.extract</span>
+<span class="k">span.kind</span>      <span class="v">LLM</span>
+<span class="k">attributes:</span>
+  <span class="k">input.value</span>      <span class="red">[REDACTED · 412 bytes]</span>     <span class="ok">// scrubbed before export</span>
+  <span class="k">input.hash</span>       <span class="v">sha256:0x9c4e…b71</span>          <span class="ok">// receipt only</span>
+  <span class="k">company.name</span>     <span class="red">[REDACTED]</span>                   <span class="ok">// stealth-mode rule #1</span>
+  <span class="k">founder.email</span>    <span class="red">[REDACTED]</span>                   <span class="ok">// stealth-mode rule #2</span>
+  <span class="k">spec.shape</span>       <span class="v">{ pages:3, apis:2, persona:"…" }</span>  <span class="warn">// shape only, no values</span>
+  <span class="k">judge.score</span>      <span class="v">0.71</span>
+  <span class="k">judge.notes</span>      <span class="v">"hero copy generic; CTA spec-fit low"</span>
+  <span class="k">model.name</span>       <span class="v">gemini-2.x-pro</span>
+  <span class="k">model.dataLogging</span> <span class="ok">false</span>
+<span class="k">events:</span>
+  <span class="k">- redaction.applied</span>  <span class="v">{ rules: ["yc.batch","founder.pii","company.dn"] }</span>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <h2>Self-hosted Phoenix · keep traces in your region</h2>
+    <div class="phx">
+      <label>
+        <span class="radio"></span>
+        <div>
+          <b>Phoenix Cloud (default)</b>
+          <span>Fastest. Traces leave your VPC to arize.com. Recommended for public ideas only.</span>
+        </div>
+      </label>
+      <label class="sel">
+        <span class="radio"></span>
+        <div>
+          <b>Phoenix self-hosted · GKE</b>
+          <span>Helm chart in your project. Traces never egress. Recommended for stealth submissions.</span>
+        </div>
+      </label>
+    </div>
+
+    <h2 style="margin-top:16px">Ephemeral preview · auto-revokes</h2>
+    <div class="ephem">
+      <div class="url">
+        https://whyc-prv-7g3k.run.app
+        <small>signed v4 url · ingress: private · image: deleted at T+24h</small>
+      </div>
+      <div class="countdown">
+        23:47:12
+        <small>until URL revoke</small>
+      </div>
+    </div>
+
+    <h2 style="margin-top:16px">Receipts &amp; proofs</h2>
+    <div class="grid">
+      <div class="step">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 4h10l4 4v12H5z" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/><path d="M9 13h6M9 17h4" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/></svg>
+        </div>
+        <div><b>Run manifest</b><span>JSON of every redaction rule + key fingerprint, signed by run-id.</span></div>
+        <span class="tag">download</span>
+      </div>
+      <div class="step">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="oklch(82% 0.16 145)" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <div><b>Deletion attestation</b><span>Issued at T+24h · proof Cloud Run image &amp; logs are gone.</span></div>
+        <span class="tag">auto</span>
+      </div>
+      <div class="step">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/></svg>
+        </div>
+        <div><b>Spec-fit log (k-anonymized)</b><span>Score progression 71→84→92→96 · no input values stored.</span></div>
+        <span class="tag">k=5</span>
+      </div>
+    </div>
+
+    <h2 style="margin-top:16px">Threat model · plain English</h2>
+    <ul style="margin:0;padding-left:18px;color:var(--ink-2);font-size:12.5px;line-height:1.7">
+      <li>WhyC operators <b>cannot</b> read your URL — only its hash &amp; redacted spec shape.</li>
+      <li>YC company being parodied <b>cannot</b> link a preview back to a real submitter (no hostname leak in trace).</li>
+      <li>Phoenix Cloud <b>can</b> see span shapes; switch to self-hosted to remove that exposure.</li>
+      <li>Hackathon judges see only what you publish in your 3-min video.</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <div class="guar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" stroke="oklch(82% 0.16 145)" stroke-width="1.4"/><path d="M9 12l2 2 4-4" stroke="oklch(82% 0.16 145)" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <div><b>No input retention</b>Beyond the run-id, your URL and spec are deleted at T+24h.</div>
+  </div>
+  <div class="guar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/></svg>
+    <div><b>E2E by default</b>XChaCha20-Poly1305 in browser → decrypt only inside ADK runtime.</div>
+  </div>
+  <div class="guar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="oklch(70% 0.13 200)" stroke-width="1.4"/><path d="M3 12h18" stroke="oklch(70% 0.13 200)" stroke-width="1.2"/></svg>
+    <div><b>Region-pinned</b>us-central1 only · no cross-region replication or backup tier.</div>
+  </div>
+  <div class="guar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4z" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/><path d="M8 10h8M8 14h5" stroke="oklch(82% 0.16 145)" stroke-width="1.6"/></svg>
+    <div><b>OSI license · auditable</b>Apache-2.0 repo · all redaction rules visible &amp; testable.</div>
+  </div>
+  <div class="legal" style="grid-column:1 / -1">
+    Categorical satire only · no YC names or marks used in this preview · stealth submissions are private artifacts, not press releases.
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "id": "P21",
+  "advocate": "The Indie Hacker",
+  "framing": "YC 풍자는 마케팅이고, 진짜 게임은 인디 해커가 매달 $29~$99 자동 결제로 'YC가 6개월 걸리는 걸 1일에' 찍어내는 셀프-서브 SaaS다. 풍자 헤드라인은 무료 티어 미끼고, MRR은 Founder 티어에서 나온다.",
+  "target_persona": "월 $99 미만에서 결제 거부감 없이 카드를 긁는 부트스트랩 인디 해커 — 한 달에 5~10번씩 새 아이디어를 검증하고 싶은데 매번 Next.js 스캐폴딩 짜기 싫은, 이미 Stripe·Lemon Squeezy 계정 있는 솔로 파운더",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Opus 4.7의 spec→코드 변환 품질이 충분히 안정적이라 한 preview의 GPU/Cloud Run 비용을 unit economics로 예측 가능 → tier별 마진 계산이 가능 → confident pricing 가능. 또한 Phoenix self-improvement loop 수렴 횟수를 토큰 비용으로 환산해 'unlimited' 약속을 진짜로 지킬 수 있음.",
+  "mvp_scope": "4일 데모: Stripe Checkout 1개 + 3-tier pricing table + 'previews used this month' 카운터 1개. 결제→웹훅→Firestore 사용량 차감→preview 생성 트리거. 환불·invoice는 Stripe 기본 UI로 위임. 그게 다. | surface: Stripe 결제 퍼스트 pricing page — 3 tier (Free / Hacker $29 / Founder $99), preview-당 usage meter 시각화, 카드 거절 시 dunning 이메일 자동, invoice PDF 다운로드, 실패한 Cloud Run 빌드는 크레딧 자동 환불",
+  "one_liner_pitch": "YC는 6개월 동안 채용 공고만 올린다. 너는 $29/월로 매주 새 prototype을 ship한다. 결제·해지·환불 다 들어있다.",
+  "spec_alignment_notes": "monetization_model='unknown' → indie hacker bias로 freemium 3-tier SaaS 채택 ($10k MRR 도달 가능 가격대 $29/$99). target_persona.profile=indie hacker/serial founder → spec 그대로 1차 사용자로 채택. primary_surface.platform=web + sync_model=hybrid → Stripe Checkout (web-native, hybrid-friendly) 선택. killer_feature의 spec-fit 점수를 usage meter UI로 시각화해 '결제할 가치'를 정량화. 다른 advocate 영역 침범 없음 — pricing/billing surface에만 집중.",
+  "mockup_path": "mockups/P21-the-indie-hacker.html"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "P24",
+  "advocate": "The Reluctant Adopter",
+  "framing": "Most agent demos are vaporware that crashes the moment a judge clicks the 'try it' link. WhyC's only honest pitch is to show — side by side — exactly what a skeptic expects (broken UI, hallucinated routes, 404s) versus the actual deployed Cloud Run URL the loop produces. The product IS the rebuttal.",
+  "target_persona": "The cynical YC alum / staff engineer who has watched 30 agent-builder demos in 2026 and assumes #31 is also a screen-recorded lie — needs a transparent comparison and a clickable artifact before they will spend 10 minutes evaluating",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context honesty audit — Opus 4.7 reads the full Phoenix trace bundle for a run, drafts the 'where this preview is still wrong' disclosure paragraph, and refuses to publish the deploy URL until the disclosure is attached. Skepticism as a first-class output, not a footer.",
+  "mvp_scope": "Single page with: (1) hero split — 'what skeptics expect' static broken-mock SVG vs 'what WhyC actually deployed' iframe-style preview card with live URL pill; (2) objection-table with 7 rows, each row = objection / our honest answer / link to trace; (3) comparison table WhyC vs one-shot codegen vs hand-coded; (4) public known-failures log with last 3 entries. | surface: Landing page led by a 'Why you'll hate this' section listing the 7 reasons agent codegen normally fails, each crossed out with a one-line mitigation and a Phoenix trace link as evidence. Comparison table vs one-shot codegen and vs hand-coded MVP follows. Live spec-fit score and known-failure log are public.",
+  "one_liner_pitch": "We didn't believe agents could ship either — so we published every trace, every failure, and the deployed URL next to the broken mock skeptics expected.",
+  "spec_alignment_notes": "target_persona=indie hacker / serial founder ('why can't they ship?' camp) → reframed as the harshest variant: the alum-skeptic who already disbelieves agent demos, because skeptical-lens persona requires leading with reasons to hate the product; primary_surface=web hybrid with visible spec-fit score → became the objection-table-first landing where the hybrid 10-min visible / hours-background cadence is disclosed as a limitation, not a feature; killer_feature self-improvement loop → surfaced ...",
+  "mockup_path": "mockups/P24-the-reluctant-adopter.html"
+}

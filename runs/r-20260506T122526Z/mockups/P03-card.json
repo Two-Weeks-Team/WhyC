@@ -1,0 +1,12 @@
+{
+  "id": "P03",
+  "advocate": "The Speed-Obsessed",
+  "framing": "WhyC is a one-input speed weapon: paste a YC job URL, get a deployed Cloud Run preview in ~10 minutes and a self-converged version by morning. The pitch is timestamps, not features.",
+  "target_persona": "Indie hacker scrolling workatastartup.com at midnight who wants to prove a hosted Next.js preview can ship before the YC company finishes its third hiring round — needs zero setup and a single visible CTA.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context spec extraction from a job posting plus rapid full-stack codegen — exactly the path that turns a one-line input into a deployable Next.js artifact in under 10 minutes of pipeline time.",
+  "mvp_scope": "4-day demo: working URL input → Gemini spec extraction → Next.js scaffold → Cloud Run deploy → first spec-fit score visible. Self-improvement loop wired but limited to 2 iterations for demo timing. | surface: Single-page web landing: one URL input, one 'Ship it' button, prefilled example, 3-step onboarding (paste → watch → wake up converged), live agent log strip. No signup for first preview.",
+  "one_liner_pitch": "Paste a YC job URL. Get a deployed working preview in 10 minutes. Wake up to 96% spec-fit. While they hire, you ship.",
+  "spec_alignment_notes": "target_persona=indie hacker / serial founder (spec verbatim) → chose midnight workatastartup.com scroller as concrete instance to keep speed framing native. primary_surface=web hybrid (spec verbatim) → collapsed to single landing + single CTA per persona bias (fastest MVP). killer_feature self-improvement loop honored as 'wake up converged' step rather than removed for speed. mvp_scope respects 24h deploy constraint and 2-person team.",
+  "mockup_path": "mockups/P03-the-speed-obsessed.html"
+}

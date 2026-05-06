@@ -1,0 +1,497 @@
+{
+  "_run_id": "r-20260506T122526Z",
+  "_authored_by": "MD (Mitigation Designer) -> persisted by M1",
+  "_authored_at": "2026-05-06T13:00:00Z",
+  "candidate_set": [
+    "P11",
+    "P26",
+    "P05",
+    "P21",
+    "P16"
+  ],
+  "vetoed_set": [
+    "P06",
+    "P08",
+    "P10",
+    "P15",
+    "P23"
+  ],
+  "raw_dissent_count": 54,
+  "deduped_count": 31,
+  "dedupe_ratio": 0.426,
+  "stack_wide_must_fix": [
+    {
+      "id": "M1",
+      "bucket": "legal",
+      "severity": "must_fix",
+      "action": "OSI LICENSE file in repo root Week 1 (not Week 5).",
+      "sources": [
+        "TP",
+        "RP"
+      ]
+    },
+    {
+      "id": "M2",
+      "bucket": "legal",
+      "severity": "must_fix",
+      "action": "Banned-vendor CI lint: no AWS/OpenAI/Anthropic in agent backbone imports.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M3",
+      "bucket": "legal",
+      "severity": "must_fix",
+      "action": "Originality enforcement: all files first-commit >= 2026-05-05; no pf-plugin code reuse.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M4",
+      "bucket": "legal",
+      "severity": "must_fix",
+      "action": "Trademark hygiene: no YC names/logos/workatastartup IDs in video/README; substitute generic phrasing if naming risk surfaces.",
+      "sources": [
+        "BP",
+        "RP"
+      ]
+    },
+    {
+      "id": "M5",
+      "bucket": "runtime",
+      "severity": "must_fix",
+      "action": "Prompt-injection sanitizer with delimiter isolation on all JD URL inputs. NON-NEGOTIABLE highest-blast-radius runtime risk.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M6",
+      "bucket": "runtime",
+      "severity": "must_fix",
+      "action": "24h signed-URL TTL + noindex meta + robots.txt deny on every generated preview.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M7",
+      "bucket": "runtime",
+      "severity": "must_fix",
+      "action": "Self-improvement loop hard ceiling: max 7 iter OR $5/run budget.",
+      "sources": [
+        "TP",
+        "RP"
+      ]
+    },
+    {
+      "id": "M8",
+      "bucket": "runtime",
+      "severity": "must_fix",
+      "action": "Kill switch: takedown within 1h of complaint, documented in RUNBOOK.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M9",
+      "bucket": "runtime",
+      "severity": "must_fix",
+      "action": "Rate limit: per-IP/per-email throttle, max 3 concurrent Cloud Run deploys.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M10",
+      "bucket": "spec",
+      "severity": "must_fix",
+      "action": "LLM-as-judge prompt versioned at /eval/judge_prompt.v1.md, shown verbatim in UI. Arize-track scoring criterion.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M11",
+      "bucket": "spec",
+      "severity": "must_fix",
+      "action": "Spec-fit score formula deterministic + auditable in SPEC.md.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M12",
+      "bucket": "spec",
+      "severity": "must_fix",
+      "action": "Stable run_id + iteration_id + parent_iter_id schema in Postgres Day 1.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M13",
+      "bucket": "engineering",
+      "severity": "must_fix",
+      "action": "OpenInference auto-instrumentation across ADK + Agent Builder + Gemini -- gap-free span tree.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M14",
+      "bucket": "engineering",
+      "severity": "must_fix",
+      "action": "Phoenix free-tier quota guardrail + sampling policy (50k traces/mo cap).",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M15",
+      "bucket": "testing",
+      "severity": "must_fix",
+      "action": "Convergence chart animates LIVE during demo, not canned replay. Rehearse on submission hardware T-7/T-3/T-1.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M16",
+      "bucket": "engineering",
+      "severity": "must_fix",
+      "action": "Cloud Run cold-start mitigation: pre-warmed image / buildpack cache.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M18",
+      "bucket": "design",
+      "severity": "must_fix",
+      "action": "Public failure log (P24 pattern) regardless of winner.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M19",
+      "bucket": "spec",
+      "severity": "must_fix",
+      "action": "Phoenix MCP queries from agent itself (not sidecar). Integration depth judges check.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M22",
+      "bucket": "runtime",
+      "severity": "must_fix",
+      "action": "Named on-call rotation + abuse@ alias + 24h SLA.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M23",
+      "bucket": "spec",
+      "severity": "must_fix",
+      "action": "2-person scope guard: web only -- no SDK/Slack/CLI surfaces in MVP.",
+      "sources": [
+        "TP"
+      ]
+    }
+  ],
+  "should_fix": [
+    {
+      "id": "M17",
+      "bucket": "engineering",
+      "severity": "should_fix",
+      "action": "Idempotent deploy: deterministic service name per run_id, replace not append.",
+      "sources": [
+        "TP"
+      ]
+    },
+    {
+      "id": "M20",
+      "bucket": "engineering",
+      "severity": "should_fix",
+      "action": "Document Phoenix Cloud trace egress + self-host instructions in README.",
+      "sources": [
+        "RP"
+      ]
+    },
+    {
+      "id": "M21",
+      "bucket": "design",
+      "severity": "should_fix",
+      "action": "WCAG 2.2 AA baseline: landmarks, alt-text, keyboard, prefers-reduced-motion.",
+      "sources": [
+        "UP"
+      ]
+    },
+    {
+      "id": "S1",
+      "bucket": "design",
+      "severity": "should_fix",
+      "action": "P03-style 'minutes vs months' comparison receipts (avoid superlatives like '2,600x faster').",
+      "sources": [
+        "BP",
+        "UP"
+      ]
+    },
+    {
+      "id": "S2",
+      "bucket": "engineering",
+      "severity": "should_fix",
+      "action": "Empty/error/loading states for live demo strip.",
+      "sources": [
+        "UP"
+      ]
+    },
+    {
+      "id": "S3",
+      "bucket": "design",
+      "severity": "should_fix",
+      "action": "Honest narration if iter regresses (P24 pattern) over restart-and-pretend.",
+      "sources": [
+        "UP"
+      ]
+    },
+    {
+      "id": "S4",
+      "bucket": "design",
+      "severity": "should_fix",
+      "action": "Single 'for VCs' callout to address top-5 indie-hacker skew without Slack-NDA risk.",
+      "sources": [
+        "BP"
+      ]
+    },
+    {
+      "id": "S5",
+      "bucket": "legal",
+      "severity": "should_fix",
+      "action": "Any mu/sigma stats in marketing must be REAL data, not LLM-generated (research-fraud risk).",
+      "sources": [
+        "RP"
+      ]
+    }
+  ],
+  "per_candidate_must_fix": {
+    "P11": [
+      {
+        "id": "M11.1",
+        "bucket": "spec",
+        "severity": "must_fix",
+        "action": "Hardcoded URL fixture admitted by P11 -- wire live URL->deploy on stretch-day pre-submission.",
+        "sources": [
+          "TP"
+        ]
+      },
+      {
+        "id": "M11.2",
+        "bucket": "design",
+        "severity": "must_fix",
+        "action": "Mobile breakpoint: 220px sidebar + 1fr/360px split breaks below 900px.",
+        "sources": [
+          "UP"
+        ]
+      },
+      {
+        "id": "M11.3",
+        "bucket": "design",
+        "severity": "should_fix",
+        "action": "Inject one extra aggressive copy beat -- brand voice currently muted.",
+        "sources": [
+          "UP",
+          "BP"
+        ]
+      }
+    ],
+    "P26": [
+      {
+        "id": "M26.1",
+        "bucket": "design",
+        "severity": "must_fix",
+        "action": "Anti-AI minimalism risks 'forgot to design hero' read -- add ONE typographic ambition signal without breaking restraint.",
+        "sources": [
+          "UP"
+        ]
+      },
+      {
+        "id": "M26.2",
+        "bucket": "spec",
+        "severity": "must_fix",
+        "action": "Phoenix loop hidden by design -- surface explicit /audit or /trace page so Arize-track bonus criterion is visibly demoable.",
+        "sources": [
+          "BP"
+        ]
+      }
+    ],
+    "P05": [
+      {
+        "id": "M05.1",
+        "bucket": "design",
+        "severity": "must_fix",
+        "action": "Contrast: oklch(38% 0.012 60) on warm paper borderline 4.5:1 -> tighten to >=4.6:1.",
+        "sources": [
+          "UP"
+        ]
+      },
+      {
+        "id": "M05.2",
+        "bucket": "design",
+        "severity": "must_fix",
+        "action": "Add :focus-visible outlines on .nav-cta/.btn-primary/.btn-ghost.",
+        "sources": [
+          "UP"
+        ]
+      },
+      {
+        "id": "M05.3",
+        "bucket": "design",
+        "severity": "must_fix",
+        "action": "Mobile float-card overlap with metrics row at <960px -> reposition static below preview.",
+        "sources": [
+          "UP"
+        ]
+      },
+      {
+        "id": "M05.4",
+        "bucket": "design",
+        "severity": "should_fix",
+        "action": "Single-fold-everything risk -> add below-fold 'How it works' / convergence inspector.",
+        "sources": [
+          "UP"
+        ]
+      },
+      {
+        "id": "M05.5",
+        "bucket": "design",
+        "severity": "should_fix",
+        "action": "Motion: 2.4s fill -> 1.6s with staggered loop-strip delays.",
+        "sources": [
+          "UP"
+        ]
+      }
+    ],
+    "P21": [
+      {
+        "id": "M21.1",
+        "bucket": "spec",
+        "severity": "must_fix",
+        "action": "DROP live monetization from MVP. Stripe Checkout creates PCI scope on 36-day timeline. Pricing UI may be STATIC mockup only; live billing deferred post-submission.",
+        "sources": [
+          "RP"
+        ]
+      },
+      {
+        "id": "M21.2",
+        "bucket": "design",
+        "severity": "must_fix",
+        "action": "'Mercenary in satire product' tone risk -- frame pricing as future-state preview, not active checkout.",
+        "sources": [
+          "BP"
+        ]
+      },
+      {
+        "id": "M21.3",
+        "bucket": "legal",
+        "severity": "must_fix",
+        "action": "IF any payment UI ships: card data + preview URLs must NOT share tenant boundary; Stripe handles PII, WhyC stores only Stripe customer ID.",
+        "sources": [
+          "RP"
+        ]
+      }
+    ],
+    "P16": [
+      {
+        "id": "M16.1",
+        "bucket": "spec",
+        "severity": "should_fix",
+        "action": "Update SPEC.md JTBD to allow dual-mode input (own pitch OR synthetic-JD demo).",
+        "sources": [
+          "RP"
+        ]
+      },
+      {
+        "id": "M16.2",
+        "bucket": "spec",
+        "severity": "must_fix",
+        "action": "P16 budget-cap + Kill switch + quiet-hours UX is canonical -- adopt as reference even if another candidate wins H1.",
+        "sources": [
+          "RP"
+        ]
+      }
+    ]
+  },
+  "top_3_most_critical_stack_wide": [
+    "M5",
+    "M1+M2+M3+M4",
+    "M10"
+  ],
+  "panel_meta_tally": {
+    "ranking_method": "panel_inclusions(weight=1) + chair_favorite(weight=2)",
+    "ranks": [
+      {
+        "rank": 1,
+        "id": "P11",
+        "score": 5,
+        "panels_top5": [
+          "TP",
+          "UP",
+          "RP"
+        ],
+        "chair_favs": [
+          "TP_LEAD"
+        ]
+      },
+      {
+        "rank": 2,
+        "id": "P26",
+        "score": 3,
+        "panels_top5": [
+          "TP",
+          "UP",
+          "RP"
+        ],
+        "chair_favs": []
+      },
+      {
+        "rank": 3,
+        "id": "P05",
+        "score": 3,
+        "panels_top5": [
+          "UP"
+        ],
+        "chair_favs": [
+          "UP_LEAD"
+        ]
+      },
+      {
+        "rank": 4,
+        "id": "P21",
+        "score": 3,
+        "panels_top5": [
+          "BP"
+        ],
+        "chair_favs": [
+          "BP_LEAD"
+        ]
+      },
+      {
+        "rank": 5,
+        "id": "P16",
+        "score": 3,
+        "panels_top5": [
+          "RP"
+        ],
+        "chair_favs": [
+          "RP_LEAD"
+        ]
+      }
+    ]
+  }
+}

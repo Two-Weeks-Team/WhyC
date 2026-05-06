@@ -1,0 +1,12 @@
+{
+  "id": "P19",
+  "advocate": "The Embedded (SDK only)",
+  "framing": "WhyC is not an app — it's a one-line SDK that any host (a VC's deal-flow tool, a founder's personal site, a Slack bot) embeds to turn a YC-style job-posting URL into a deployed Cloud Run preview. The web docs page is the platform-qualifying surface; the product is the package.",
+  "target_persona": "Engineers at small VC firms and indie hackers building internal tools who want to drop `whyc.generate(url)` into their existing diligence stack rather than send their team to yet another dashboard.",
+  "primary_surface": "Embedded SDK",
+  "opus_4_7_capability": "Long-context spec extraction over scraped JD HTML + Gemini ADK orchestration of the self-improvement loop, exposed as a single idempotent SDK call returning a job handle and webhook contract.",
+  "mvp_scope": "One endpoint — `whyc.generate(yc_url) -> { job_id, status_url, webhook }` — with the docs page rendering a live request/response pair and a copy-paste curl snippet that actually returns a Cloud Run URL on the demo day. | surface: npm/PyPI package (`whyc`) with 3-line install, callable from Node/Python/curl. The only WhyC-owned UI is a Stripe-style docs page with live code samples — host apps own all other UX.",
+  "one_liner_pitch": "Three lines of code. One YC URL in. One deployed preview out. While they hire, your codebase ships.",
+  "spec_alignment_notes": "primary_surface.platform=web honored via docs page (hackathon-qualifying); sync_model=hybrid mapped to async job + webhook + polling status_url; target_persona reframed from 'indie hacker watching Demo Day' to 'indie hacker who embeds tools into existing stacks' to differentiate from dashboard-heavy advocates while staying inside the spec's indie-hacker primary.",
+  "mockup_path": "mockups/P19-the-embedded.html"
+}

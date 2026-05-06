@@ -1,0 +1,12 @@
+{
+  "id": "P06",
+  "advocate": "The Spreadsheet Jockey (B2B power user)",
+  "framing": "WhyC isn't a satire site — it's a portfolio diagnostic terminal. VC analysts track 60+ YC companies in one sortable grid where 'spec-fit % achievable in 24h' becomes the ground-truth signal for actual build velocity vs. hiring theater.",
+  "target_persona": "Seed/Series-A VC associate or platform analyst tracking a 40–100 company YC portfolio watchlist; lives in Airtable/Notion/Excel; needs to triage which portfolio companies are actually shipping vs. perpetually hiring; wants pivot-table-grade filtering, not a marketing landing page",
+  "primary_surface": "Web PWA",
+  "mockup_path": "mockups/P06-the-spreadsheet-jockey.html",
+  "opus_4_7_capability": "Long-context multi-row reasoning — Opus 4.7 ingests Phoenix trace dumps for dozens of generated previews simultaneously, computes per-flow LLM-as-judge deltas across iterations, and emits structured row-level diagnostics (spec_fit, weakest_flow, regen_eta) that populate the grid without per-cell round-trips",
+  "mvp_scope": "4-day demo: one populated leaderboard page rendering 12 anonymized portfolio rows with live spec-fit % from real Phoenix traces, sortable by 3 columns, one-click 'Re-run loop' per row triggering ADK pipeline; CSV export stub. | surface: Dense leaderboard table — sticky header row, sticky first column (company), sortable by every column (spec-fit %, days-since-DemoDay, jobs-posted, last-deploy-Δ, judge score), multi-select filter chips, column resizers, keyboard shortcuts (J/K row nav, /-search, S-sort, F-filter, R-rerun), per-row inline sparkline of spec-fit convergence (71→84→92→96), pivot/group-by batch, footer status bar with row count + selection aggregates",
+  "one_liner_pitch": "The VC terminal that ranks YC portfolio companies by what they could ship in 24h — sortable, filterable, brutally factual.",
+  "spec_alignment_notes": "target_persona: spec listed primary=indie hacker, secondary=VC/angel — chose secondary VC as native dense-grid persona (indie hacker is single-user, VC tracks portfolios → grid). primary_surface: spec=web/hybrid → leaderboard table fits. killer_feature spec-fit convergence (71→84→92→96) mapped verbatim into sparkline column. mvp_scope respects 4-day window + locked stack (ADK/Phoenix/CloudRun). Trademark constraint honored: rows show anonymized codenames (YC-A1F2 etc.), no real company names."
+}

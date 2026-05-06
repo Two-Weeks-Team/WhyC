@@ -1,0 +1,12 @@
+{
+  "id": "P05",
+  "advocate": "The Design-Forward",
+  "framing": "WhyC's first impression must already feel like a finished, shipped product — the satire is only credible if the surface itself out-classes the YC companies it mocks. The hero is the proof.",
+  "target_persona": "Indie hacker scrolling past 'we're hiring' posts who lands on WhyC.run and within two seconds feels the cohort-shaming is earned because the page they're looking at is sleeker than 80% of YC portfolio sites — and the live preview window is updating its spec-fit score in front of them.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context aesthetic synthesis — Opus 4.7 reads the entire idea spec (constraints, tone, hybrid UX cadence, trademark hygiene) and resolves it into a single coherent visual system: typography weights, OKLCH gradients, motion timing, copy rhythm, and the hero-as-pitch composition all aligned without needing per-element prompts.",
+  "mvp_scope": "One pixel-perfect hero screen for the 4-day demo: headline + lede + dual CTA, four trust metrics, and the animated preview-window component showing the spec-fit climb and 4-step loop strip. No second viewport, no scroll narrative — the hero alone closes the pitch. | surface: Editorial-grade landing hero: oversized display headline 'While they hire, we ship.' with strike-through animation, paired with a tilted living preview window that shows a generated Cloud Run URL, a 71→84→92→96 spec-fit climb on the Phoenix self-improvement loop, and a quiet float-quote dagger. Polish-rich, animated entrance, abstract inline-SVG product imagery (no real logos), warm-paper background with OKLCH YC-orange parody as the only accent.",
+  "one_liner_pitch": "A landing page so finished that the joke writes itself: while they post job openings, we ship the product they were going to build.",
+  "spec_alignment_notes": "All spec fields populated except monetization_model (null, intentionally ignored — landing hero doesn't need pricing). target_persona pulled verbatim from spec.target_persona.profile (indie hacker / serial founder). primary_surface=web hybrid → chose editorial hero with live-updating preview component to honor hybrid cadence (real-time first deploy + background loop). Killer feature (self-improvement loop with 71→96 trajectory) rendered literally as the scorecard. Trademark constraint honored...",
+  "mockup_path": "mockups/P05-the-design-forward.html"
+}

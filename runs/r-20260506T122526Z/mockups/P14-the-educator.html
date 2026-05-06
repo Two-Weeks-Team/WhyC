@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC · Build Academy — learn-while-you-ship</title>
+<style>
+  :root{
+    --bg: oklch(98% 0.01 75);
+    --ink: oklch(22% 0.03 60);
+    --muted: oklch(48% 0.02 60);
+    --line: oklch(90% 0.02 70);
+    --paper: oklch(100% 0 0);
+    --accent: oklch(72% 0.19 55);      /* parodic orange, not YC */
+    --accent-deep: oklch(54% 0.18 45);
+    --good: oklch(68% 0.16 150);
+    --warn: oklch(78% 0.15 85);
+    --info: oklch(70% 0.13 230);
+    --tip: oklch(96% 0.04 80);
+    --shadow: 0 1px 2px oklch(0% 0 0 / .06), 0 8px 24px oklch(0% 0 0 / .06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding:24px}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .mark{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--paper);font-weight:800}
+  .brand small{display:block;font-weight:500;color:var(--muted);letter-spacing:0}
+  .badge{font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:var(--paper)}
+  .academy-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--tip);border:1px solid oklch(88% 0.06 80);border-radius:999px;font-size:12px;color:var(--accent-deep);font-weight:600}
+
+  /* Hero */
+  .hero{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
+  .hero h1{margin:6px 0 6px;font-size:28px;letter-spacing:-.02em;line-height:1.15}
+  .hero h1 em{font-style:normal;color:var(--accent-deep);background:linear-gradient(transparent 60%, oklch(94% 0.08 80) 60%)}
+  .hero p{margin:0;color:var(--muted);max-width:62ch}
+  .hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:center}
+  .input-row{display:flex;gap:8px;margin-top:14px}
+  .input-row input{flex:1;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--bg)}
+  .input-row button{padding:11px 16px;border:0;border-radius:10px;background:var(--ink);color:var(--paper);font-weight:600;cursor:pointer}
+  .hero-art{position:relative;aspect-ratio:4/3;border-radius:12px;background:linear-gradient(135deg, oklch(94% 0.06 75), oklch(88% 0.10 60));overflow:hidden;border:1px solid var(--line)}
+
+  /* Progress academy strip */
+  .progress{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:18px}
+  .prog-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .prog-head h3{margin:0;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .prog-head .fit{font-variant-numeric:tabular-nums;font-weight:700}
+  .bar{position:relative;height:10px;background:oklch(94% 0.01 70);border-radius:999px;overflow:hidden}
+  .bar > i{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--accent),var(--accent-deep));border-radius:999px;transition:width .6s}
+  .stages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .stage{position:relative;border:1px solid var(--line);border-radius:10px;padding:11px;background:var(--bg);cursor:help}
+  .stage[data-state=done]{border-color:oklch(85% 0.10 150);background:oklch(97% 0.04 150)}
+  .stage[data-state=active]{border-color:var(--accent);background:oklch(98% 0.05 80);box-shadow:0 0 0 3px oklch(92% 0.08 80)}
+  .stage[data-state=todo]{opacity:.7}
+  .stage h4{margin:0 0 2px;font-size:13px;display:flex;align-items:center;gap:6px}
+  .stage small{color:var(--muted);font-size:12px}
+  .dot{width:8px;height:8px;border-radius:999px;background:oklch(80% 0.02 70);display:inline-block}
+  .stage[data-state=done] .dot{background:var(--good)}
+  .stage[data-state=active] .dot{background:var(--accent);animation:pulse 1.4s infinite}
+  @keyframes pulse{50%{transform:scale(1.4);opacity:.55}}
+
+  /* Tooltip system — pure CSS */
+  [data-tip]{position:relative}
+  [data-tip]:hover::after,[data-tip]:focus::after{
+    content:attr(data-tip);position:absolute;left:0;right:0;bottom:calc(100% + 8px);
+    background:var(--ink);color:var(--paper);padding:9px 11px;border-radius:8px;font-size:12px;line-height:1.4;
+    box-shadow:var(--shadow);z-index:20;white-space:normal;
+  }
+  [data-tip]:hover::before,[data-tip]:focus::before{
+    content:"";position:absolute;left:18px;bottom:calc(100% + 2px);
+    border:6px solid transparent;border-top-color:var(--ink);
+  }
+  .why-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 7px;border-radius:6px;background:var(--tip);color:var(--accent-deep);border:1px solid oklch(88% 0.06 80);cursor:help;font-weight:600}
+
+  /* Two-column body */
+  .body{display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+  .panel h2{margin:0 0 4px;font-size:17px;letter-spacing:-.01em}
+  .panel > .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+
+  /* Lesson cards inside */
+  .lesson{border:1px dashed var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--bg)}
+  .lesson .ltop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+  .lesson .ltag{font-size:11px;color:var(--accent-deep);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .lesson p{margin:0;color:var(--ink);font-size:13.5px}
+  .lesson .quoted{display:block;margin-top:6px;padding:8px 10px;background:oklch(99% 0.01 80);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}
+
+  /* Tutor toast */
+  .toast{position:relative;display:flex;gap:10px;padding:12px;border:1px solid oklch(88% 0.06 230);background:oklch(97% 0.03 230);border-radius:10px;margin-bottom:12px}
+  .toast .av{width:32px;height:32px;border-radius:50%;background:var(--info);flex:0 0 32px;display:grid;place-items:center;color:var(--paper);font-weight:700}
+  .toast .tx{font-size:13px;color:var(--ink)}
+  .toast .tx b{color:var(--accent-deep)}
+  .toast .x{position:absolute;top:6px;right:8px;font-size:14px;color:var(--muted);cursor:pointer;background:transparent;border:0}
+
+  /* Phoenix trace mini-list */
+  .traces{display:flex;flex-direction:column;gap:6px}
+  .trace{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--bg)}
+  .trace .d{width:8px;height:8px;border-radius:50%;background:var(--good)}
+  .trace[data-low] .d{background:var(--warn)}
+  .trace[data-fail] .d{background:oklch(62% 0.20 25)}
+  .trace span:nth-child(2){color:var(--ink)}
+  .trace span:last-child{color:var(--muted)}
+
+  /* Recap */
+  .recap{background:linear-gradient(180deg, oklch(99% 0.02 80), oklch(97% 0.04 80));border:1px solid oklch(88% 0.06 80);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-top:18px}
+  .recap h3{margin:0 0 4px;font-size:16px}
+  .recap .sub{color:var(--muted);margin-bottom:12px;font-size:13px}
+  .takeaways{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .ta{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .ta b{display:block;font-size:13px;margin-bottom:4px}
+  .ta small{color:var(--muted);font-size:12px;line-height:1.5;display:block}
+  .ta .num{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--accent);color:var(--paper);font-size:12px;font-weight:700;margin-right:6px}
+
+  .foot{margin-top:18px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+
+  @media (max-width:880px){
+    .hero-grid,.body,.takeaways,.stages{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP -->
+  <header class="top">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">W</div>
+      <div>WhyC<small>Build Academy · learn-while-you-ship</small></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="academy-pill" data-tip="Tooltips are everywhere on this page. Hover any underlined or highlighted element to learn the 'why'.">Tutorial mode: ON</span>
+      <span class="badge">Arize track · demo</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <span class="why-chip" data-tip="Educator framing: WhyC is satire that doubles as a free curriculum. While it ships, it teaches.">LESSON 00 · why this exists</span>
+        <h1>While they hire interns, you <em>learn how to ship</em>.</h1>
+        <p>Paste a job-posting URL. WhyC builds a working Next.js preview in under a day — and explains <em>every</em> design choice as the agents make it. Each tooltip is a lesson YC charges 7% equity for.</p>
+        <div class="input-row">
+          <input value="https://workatastartup.example/jobs/82957" data-tip="Why a job URL? Listings expose the gap between intent and shipped product — perfect ground truth for a spec extractor." />
+          <button data-tip="Click to start the 4-stage pipeline. The first deployed URL appears in ~10 minutes; the self-improvement loop runs in the background after that.">Build &amp; teach me</button>
+        </div>
+      </div>
+
+      <!-- inline SVG hero art -->
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 400 300" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="oklch(72% 0.19 55)"/>
+              <stop offset="1" stop-color="oklch(54% 0.18 45)"/>
+            </linearGradient>
+          </defs>
+          <rect x="20" y="30" width="360" height="44" rx="8" fill="oklch(100% 0 0)" stroke="oklch(90% 0.02 70)"/>
+          <rect x="32" y="44" width="180" height="16" rx="4" fill="oklch(92% 0.02 70)"/>
+          <rect x="320" y="40" width="48" height="24" rx="6" fill="url(#g1)"/>
+          <!-- timeline -->
+          <line x1="40" y1="130" x2="360" y2="130" stroke="oklch(90% 0.02 70)" stroke-width="2"/>
+          <g font-family="system-ui" font-size="10" fill="oklch(48% 0.02 60)">
+            <circle cx="60" cy="130" r="8" fill="oklch(68% 0.16 150)"/><text x="48" y="155">Spec</text>
+            <circle cx="160" cy="130" r="8" fill="oklch(68% 0.16 150)"/><text x="142" y="155">Codegen</text>
+            <circle cx="260" cy="130" r="10" fill="url(#g1)"/><text x="240" y="158">Deploy</text>
+            <circle cx="350" cy="130" r="6" fill="oklch(85% 0.04 70)" stroke="oklch(72% 0.19 55)" stroke-dasharray="2 2"/><text x="320" y="155">Self-improve</text>
+          </g>
+          <!-- annotation arrow -->
+          <path d="M260 145 Q 240 200 200 215" stroke="oklch(54% 0.18 45)" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+          <rect x="80" y="215" width="200" height="50" rx="8" fill="oklch(96% 0.04 80)" stroke="oklch(88% 0.06 80)"/>
+          <text x="92" y="234" font-family="system-ui" font-size="11" fill="oklch(54% 0.18 45)" font-weight="700">WHY THIS DESIGN?</text>
+          <text x="92" y="252" font-family="system-ui" font-size="11" fill="oklch(22% 0.03 60)">Hybrid cadence: ship fast, then learn.</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS / 4 STAGES -->
+  <section class="progress" aria-label="Pipeline progress">
+    <div class="prog-head">
+      <h3>Pipeline progress · spec-fit score</h3>
+      <span class="fit" data-tip="Spec-fit = LLM-as-judge score comparing the deployed preview against the extracted spec. The loop stops when this stabilises above ~92%.">62% → climbing</span>
+    </div>
+    <div class="bar"><i></i></div>
+    <div class="stages">
+      <div class="stage" data-state="done" data-tip="Stage 1 · Gemini extracts a structured spec (jobs-to-be-done, surfaces, must-have constraints) from the URL. Why first? The spec becomes the eval rubric.">
+        <h4><span class="dot"></span>1 · Spec extract</h4>
+        <small>Gemini · 41s · ✓ done</small>
+      </div>
+      <div class="stage" data-state="done" data-tip="Stage 2 · ADK agents emit design tokens, a Next.js scaffold, and 1–2 core APIs. Why design tokens before code? They make later regeneration cheap and consistent.">
+        <h4><span class="dot"></span>2 · Codegen</h4>
+        <small>ADK · 3m12s · ✓ done</small>
+      </div>
+      <div class="stage" data-state="active" data-tip="Stage 3 · Cloud Run deploys the preview. Why Cloud Run? Stateless containers + scale-to-zero match the 'episodic' usage in the spec.">
+        <h4><span class="dot"></span>3 · Deploy</h4>
+        <small>Cloud Run · running…</small>
+      </div>
+      <div class="stage" data-state="todo" data-tip="Stage 4 · Phoenix MCP queries the agent's own OpenInference traces. LLM-as-judge re-scores each user flow. Only the under-spec flows get regenerated. This is the loop the Arize track rewards.">
+        <h4><span class="dot"></span>4 · Self-improve loop</h4>
+        <small>Phoenix MCP · queued</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- BODY: lessons + traces -->
+  <section class="body">
+    <div class="panel">
+      <h2>Live lessons <span class="why-chip" data-tip="A lesson is emitted whenever an agent makes a non-obvious choice. Each lesson cites the trace span that triggered it.">grounded in traces</span></h2>
+      <p class="sub">The agent narrates its own reasoning as it works. Hover a card for the trace span ID.</p>
+
+      <!-- friendly toast tutor -->
+      <div class="toast" role="status">
+        <div class="av" aria-hidden="true">i</div>
+        <div class="tx">
+          <b>Tutor:</b> Notice the spec-fit only hit 62% on first deploy — that's <i>by design</i>. We ship fast, then let the loop close the gap. <b>Why hybrid?</b> Because waiting for 96% before a URL exists is how you become the YC company that hires for 6 months. <button class="x" aria-label="dismiss">×</button>
+        </div>
+      </div>
+
+      <article class="lesson" data-tip="Trace span: agent.spec_extract / 0x7f2a">
+        <div class="ltop"><span class="ltag">Lesson 01 · spec → eval rubric</span><span class="why-chip">why first?</span></div>
+        <p>We extract the spec <em>before</em> writing a single line of UI. Reason: that same spec doubles as the LLM-as-judge rubric in stage 4. One artefact, two jobs.</p>
+        <code class="quoted">jobs_to_be_done.functional → judge.criterion[0]</code>
+      </article>
+
+      <article class="lesson" data-tip="Trace span: agent.codegen.tokens / 0x91ab">
+        <div class="ltop"><span class="ltag">Lesson 02 · design tokens first</span><span class="why-chip">why tokens?</span></div>
+        <p>Generating OKLCH design tokens before components means later regenerations stay visually coherent — the loop can rewrite a flow without re-skinning the whole app.</p>
+        <code class="quoted">--accent: oklch(72% 0.19 55) // parodic, not trademarked</code>
+      </article>
+
+      <article class="lesson" data-tip="Trace span: agent.deploy.cloudrun / 0xc44d">
+        <div class="ltop"><span class="ltag">Lesson 03 · stateless container</span><span class="why-chip">why Cloud Run?</span></div>
+        <p>Cloud Run scale-to-zero matches the spec's <code>usage_frequency: episodic</code>. A founder who pastes a URL once a week shouldn't pay for an idle VM.</p>
+      </article>
+
+      <article class="lesson" data-tip="Trace span: judge.flow_eval / 0xe018 — pending">
+        <div class="ltop"><span class="ltag">Lesson 04 · regenerate only weak flows</span><span class="why-chip">why partial?</span></div>
+        <p>The loop targets flows scoring under threshold, not the whole app. This is the difference between <em>self-improvement</em> and <em>thrash</em> — and the reason Phoenix traces matter.</p>
+      </article>
+    </div>
+
+    <aside class="panel">
+      <h2>Phoenix traces <span class="badge" style="vertical-align:middle">live</span></h2>
+      <p class="sub">Each row is one OpenInference span. Click in the real product to drill into the prompt + response.</p>
+      <div class="traces" aria-label="trace list">
+        <div class="trace" data-tip="Spec extraction succeeded with high confidence. No retry needed."><span class="d"></span><span>spec.extract → ok</span><span>0.94</span></div>
+        <div class="trace" data-tip="Token generation: this span feeds Lesson 02."><span class="d"></span><span>codegen.tokens → ok</span><span>0.91</span></div>
+        <div class="trace" data-low data-tip="Score below threshold. The judge flagged the onboarding flow — stage 4 will target this span specifically."><span class="d"></span><span>codegen.flow.onboard → low</span><span>0.61</span></div>
+        <div class="trace" data-tip="API stub built and unit-pinged."><span class="d"></span><span>codegen.api.search → ok</span><span>0.88</span></div>
+        <div class="trace" data-tip="Cloud Run deploy in progress."><span class="d"></span><span>deploy.cloudrun → running</span><span>—</span></div>
+        <div class="trace" data-tip="Self-improvement loop will fire after first deploy. Hybrid cadence."><span class="d"></span><span>judge.loop → queued</span><span>—</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- RECAP -->
+  <section class="recap" aria-label="Lesson recap">
+    <h3>Lesson recap · what you can steal for your own startup tomorrow</h3>
+    <p class="sub">Three takeaways the agent earned by doing — not by reading a Substack.</p>
+    <div class="takeaways">
+      <div class="ta" data-tip="Most teams write code first, then bolt on evals. Inverting that order is the cheapest unlock in agent engineering.">
+        <b><span class="num">1</span>Spec is your eval.</b>
+        <small>If you can't write the rubric, you can't ship the agent. Extract structure first, code second.</small>
+      </div>
+      <div class="ta" data-tip="The 'we ship in a day' headline is a hybrid claim — first URL fast, convergence in the background. Be honest about which window you're in.">
+        <b><span class="num">2</span>Ship before you converge.</b>
+        <small>10 minutes to a live URL beats 6 months to a perfect one. Let the loop close the gap.</small>
+      </div>
+      <div class="ta" data-tip="Targeting only the under-spec flows is what separates self-improvement from infinite regeneration.">
+        <b><span class="num">3</span>Regenerate the weak flow, not the app.</b>
+        <small>Trace-driven, surgical fixes are the Arize-track moat. Whole-app rewrites are how token bills explode.</small>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>WhyC · Build Academy preview · OSI-licensed · no real YC names or logos used.</span>
+    <span data-tip="Educator persona (P14) — every interaction includes a 'why this design choice' tooltip. Tutorial mode can be toggled off in real product.">P14 · The Educator</span>
+  </footer>
+</div>
+</body>
+</html>

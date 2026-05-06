@@ -1,0 +1,12 @@
+{
+  "id": "P12",
+  "advocate": "The Privacy Hawk",
+  "framing": "WhyC's killer-feature contradiction is that founders may submit URLs to *unlaunched* stealth YC startups, while Phoenix Cloud + Cloud Run + Gemini all egress data by default. Reframe WhyC as a privacy-hardened satire tool: the roast is public, but the stealth artifact never leaves the submitter's trust boundary.",
+  "target_persona": "Stealth-mode indie hacker (and the cautious VC associate) who wants to satirize / pre-validate a pre-Demo-Day YC company without leaking the parody target's URL or their own submission to Arize, Google, or hackathon judges.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context reasoning over the full hackathon-locked stack to (a) trace every PII/identifier flow across ADK -> Agent Builder -> Cloud Run -> Phoenix MCP and (b) auto-generate the redaction rule manifest + threat-model copy that matches each submission's stealth posture.",
+  "mvp_scope": "Stealth-Mode toggle that, when ON: scrubs company/founder/batch tokens before any Gemini call, sets disableDataLogging on ADK, deploys the Cloud Run preview as private with a 24h signed URL + image-TTL, and routes Phoenix traces to a self-hosted Phoenix endpoint. Demoable as a single switch with a live 'what leaves your project' redacted-trace panel. | surface: Web (Next.js) with browser-side XChaCha20 encryption of URL/spec, run-scoped data residency (us-central1 pinned), ephemeral 24h-signed Cloud Run preview, opt-in self-hosted Phoenix to keep OpenInference traces inside the user's VPC instead of Phoenix Cloud.",
+  "one_liner_pitch": "The only YC-roasting agent that won't leak your stealth target — encrypted input, region-pinned spec, ephemeral preview, self-hostable Phoenix.",
+  "spec_alignment_notes": "spec_alignment_notes: target_persona was filled (indie hacker / serial founder) — narrowed to the stealth-submission subset because the user directive explicitly raised unlaunched-YC privacy. primary_surface platform=web and sync_model=hybrid followed verbatim; offline_capable=false respected (encryption is client-side but the pipeline still requires network). monetization_model=unknown left untouched. killer_feature self-improvement loop preserved — privacy lens applied as redaction layer ov...",
+  "mockup_path": "mockups/P12-the-privacy-hawk.html"
+}

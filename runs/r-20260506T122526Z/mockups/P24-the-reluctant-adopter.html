@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — We didn't believe it either.</title>
+<style>
+  :root{
+    --bg: oklch(0.16 0.012 60);
+    --panel: oklch(0.21 0.014 60);
+    --panel-2: oklch(0.25 0.016 60);
+    --line: oklch(0.34 0.018 60);
+    --ink: oklch(0.96 0.008 90);
+    --ink-dim: oklch(0.74 0.012 80);
+    --ink-mute: oklch(0.58 0.012 80);
+    --warn: oklch(0.82 0.17 70);
+    --bad: oklch(0.66 0.20 28);
+    --ok: oklch(0.78 0.16 150);
+    --accent: oklch(0.74 0.19 55);
+    --strike: oklch(0.55 0.04 60);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.55}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+  .wrap{max-width:1080px;margin:0 auto;padding:36px 24px 80px}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:32px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-0.01em}
+  .brand-dot{width:14px;height:14px;border-radius:3px;background:var(--accent)}
+  .nav-meta{font-size:12px;color:var(--ink-mute);font-variant-numeric:tabular-nums}
+
+  .eyebrow{font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
+  h1{font-size:46px;line-height:1.04;letter-spacing:-0.02em;margin:0 0 14px;font-weight:700}
+  h1 em{font-style:normal;color:var(--warn)}
+  .sub{font-size:17px;color:var(--ink-dim);max-width:780px;margin-bottom:28px}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .card-hd{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-mute);background:var(--panel-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:0.04em}
+  .pill-bad{background:oklch(0.32 0.10 28);color:oklch(0.92 0.10 28)}
+  .pill-ok{background:oklch(0.30 0.10 150);color:oklch(0.92 0.10 150)}
+  .card-bd{padding:0;height:240px;display:block}
+  .card-bd svg{display:block;width:100%;height:100%}
+  .card-ft{padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-mute);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;display:flex;justify-content:space-between;align-items:center}
+  .url-pill{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;background:oklch(0.28 0.012 60);padding:3px 8px;border-radius:4px;color:var(--ink-dim)}
+
+  .disclosure{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:8px;padding:14px 18px;margin:18px 0 40px;font-size:13.5px;color:var(--ink-dim)}
+  .disclosure b{color:var(--warn);font-weight:600}
+
+  h2{font-size:24px;letter-spacing:-0.01em;margin:48px 0 6px;font-weight:700}
+  .h2-sub{color:var(--ink-mute);font-size:13.5px;margin-bottom:20px}
+
+  .obj{display:grid;grid-template-columns:1.1fr 1.4fr 0.6fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+  .obj-row{display:contents}
+  .obj-row > div{padding:14px 16px;border-bottom:1px solid var(--line);font-size:14px}
+  .obj-row:last-child > div{border-bottom:none}
+  .obj-h > div{background:var(--panel-2);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute);font-weight:600;padding:10px 16px}
+  .obj-q{color:var(--ink-mute);text-decoration:line-through;text-decoration-color:var(--strike)}
+  .obj-a{color:var(--ink)}
+  .obj-a strong{color:var(--warn);font-weight:600}
+  .obj-link{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  .obj-link a{color:var(--accent)}
+
+  table.cmp{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14px}
+  table.cmp th, table.cmp td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  table.cmp thead th{background:var(--panel-2);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute);font-weight:600}
+  table.cmp tbody tr:last-child td{border-bottom:none}
+  table.cmp td.col-axis{color:var(--ink-mute);width:30%}
+  table.cmp td.we{background:oklch(0.23 0.018 60)}
+  table.cmp .y{color:var(--ok);font-weight:600}
+  table.cmp .n{color:var(--bad);font-weight:600}
+  table.cmp .m{color:var(--warn);font-weight:600}
+  .col-hd-self{display:flex;align-items:center;gap:6px}
+  .col-hd-self .brand-dot{width:9px;height:9px}
+
+  .weak{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-top:14px}
+  .weak h3{margin:0 0 10px;font-size:14px;letter-spacing:0.04em;color:var(--ink-dim);font-weight:600}
+  .weak ul{margin:0;padding:0;list-style:none}
+  .weak li{padding:10px 0;border-bottom:1px dashed var(--line);font-size:13.5px;display:grid;grid-template-columns:90px 1fr 90px;gap:14px;align-items:baseline}
+  .weak li:last-child{border-bottom:none}
+  .weak .ts{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--ink-mute)}
+  .weak .msg{color:var(--ink-dim)}
+  .weak .tag{font-size:11px;text-align:right;font-weight:600}
+  .weak .tag.bad{color:var(--bad)}
+  .weak .tag.warn{color:var(--warn)}
+  .weak .tag.ok{color:var(--ok)}
+
+  .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:36px 0 8px}
+  .trust .t{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
+  .trust .k{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px}
+  .trust .v{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+  .trust .v small{font-weight:400;color:var(--ink-mute);font-size:12px}
+
+  .foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-mute);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .foot code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-dim)}
+
+  @media (max-width:760px){
+    .split{grid-template-columns:1fr}
+    .obj{grid-template-columns:1fr}
+    .obj-row > div{border-bottom:1px solid var(--line)}
+    .obj-h{display:none}
+    .trust{grid-template-columns:repeat(2,1fr)}
+    h1{font-size:34px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <div class="brand"><span class="brand-dot"></span><span>WhyC</span></div>
+    <div class="nav-meta">honest build · run r-20260506 · spec-fit 0.94</div>
+  </nav>
+
+  <div class="eyebrow">For the skeptic who has seen 30 agent demos this year</div>
+  <h1>We didn't <em>believe it either.</em><br/>So we published the broken one too.</h1>
+  <p class="sub">Most agent-builder demos are screen recordings of a happy path that breaks the second a judge clicks the link. We expect you to assume the same about WhyC. Here is the broken mock you came to find — next to the actual Cloud Run URL the loop produced from the same job posting. Both are clickable.</p>
+
+  <div class="split">
+    <div class="card" aria-label="What skeptics expect">
+      <div class="card-hd">
+        <span>What you expected to see</span>
+        <span class="pill pill-bad">● broken / typical</span>
+      </div>
+      <div class="card-bd">
+        <svg viewBox="0 0 600 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Broken mock UI">
+          <rect width="600" height="240" fill="oklch(0.19 0.012 60)"/>
+          <rect x="0" y="0" width="600" height="28" fill="oklch(0.23 0.014 60)"/>
+          <circle cx="14" cy="14" r="4" fill="oklch(0.55 0.18 28)"/>
+          <circle cx="28" cy="14" r="4" fill="oklch(0.70 0.14 80)"/>
+          <circle cx="42" cy="14" r="4" fill="oklch(0.62 0.14 150)"/>
+          <rect x="80" y="8" width="380" height="14" rx="3" fill="oklch(0.30 0.014 60)"/>
+          <text x="86" y="19" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="oklch(0.55 0.18 28)">localhost:3000/?error=ENOENT</text>
+          <rect x="24" y="56" width="200" height="22" rx="3" fill="oklch(0.32 0.014 60)"/>
+          <rect x="24" y="86" width="320" height="10" rx="2" fill="oklch(0.28 0.014 60)"/>
+          <rect x="24" y="102" width="280" height="10" rx="2" fill="oklch(0.28 0.014 60)"/>
+          <rect x="24" y="118" width="120" height="10" rx="2" fill="oklch(0.28 0.014 60)"/>
+          <g transform="translate(24,150)">
+            <rect width="552" height="70" rx="4" fill="oklch(0.24 0.05 28)" stroke="oklch(0.45 0.16 28)"/>
+            <text x="14" y="22" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="oklch(0.85 0.14 28)">TypeError: Cannot read properties of undefined (reading 'spec')</text>
+            <text x="14" y="40" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="oklch(0.70 0.10 28)">  at extractCompanyFromURL (agent.ts:142:18)</text>
+            <text x="14" y="56" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="oklch(0.70 0.10 28)">  at async Pipeline.run (orchestrator.ts:67:5)</text>
+          </g>
+          <text x="300" y="138" font-family="system-ui" font-size="11" fill="oklch(0.55 0.012 80)" text-anchor="middle">[ hero copy hallucinated · CTA leads to 404 ]</text>
+        </svg>
+      </div>
+      <div class="card-ft">
+        <span>one-shot codegen, no eval loop</span>
+        <span class="url-pill">localhost:3000 (down)</span>
+      </div>
+    </div>
+
+    <div class="card" aria-label="What WhyC actually deployed">
+      <div class="card-hd">
+        <span>What WhyC actually deployed</span>
+        <span class="pill pill-ok">● live · spec-fit 0.94</span>
+      </div>
+      <div class="card-bd">
+        <svg viewBox="0 0 600 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Deployed preview">
+          <rect width="600" height="240" fill="oklch(0.97 0.01 90)"/>
+          <rect x="0" y="0" width="600" height="32" fill="oklch(0.94 0.01 90)"/>
+          <rect x="20" y="10" width="560" height="14" rx="7" fill="oklch(0.99 0.005 90)"/>
+          <text x="32" y="20" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="oklch(0.40 0.05 150)">https://preview-7af2.run.app  ·  200 OK</text>
+          <rect x="32" y="56" width="14" height="14" rx="3" fill="oklch(0.74 0.19 55)"/>
+          <text x="54" y="68" font-family="system-ui" font-size="12" font-weight="700" fill="oklch(0.22 0.012 60)">Acme Synth</text>
+          <text x="500" y="68" font-family="system-ui" font-size="10" fill="oklch(0.45 0.012 80)" text-anchor="end">Pricing · Docs · Login</text>
+          <text x="32" y="108" font-family="system-ui" font-size="20" font-weight="700" fill="oklch(0.18 0.012 60)">Synthetic data, in one prompt.</text>
+          <text x="32" y="130" font-family="system-ui" font-size="11" fill="oklch(0.40 0.012 80)">Ship realistic test fixtures from a single English sentence.</text>
+          <rect x="32" y="146" width="110" height="28" rx="5" fill="oklch(0.22 0.012 60)"/>
+          <text x="87" y="164" font-family="system-ui" font-size="11" font-weight="600" fill="oklch(0.97 0.01 90)" text-anchor="middle">Try it free</text>
+          <rect x="150" y="146" width="100" height="28" rx="5" fill="none" stroke="oklch(0.70 0.012 80)"/>
+          <text x="200" y="164" font-family="system-ui" font-size="11" fill="oklch(0.30 0.012 60)" text-anchor="middle">View docs</text>
+          <rect x="32" y="190" width="170" height="34" rx="5" fill="oklch(0.93 0.02 90)"/>
+          <text x="42" y="206" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="oklch(0.30 0.012 60)">POST /api/synthesize</text>
+          <text x="42" y="218" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="oklch(0.45 0.05 150)">200 · 412ms · returns 1k rows</text>
+          <rect x="220" y="190" width="170" height="34" rx="5" fill="oklch(0.93 0.02 90)"/>
+          <text x="230" y="206" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="oklch(0.30 0.012 60)">GET /api/preview</text>
+          <text x="230" y="218" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="oklch(0.45 0.05 150)">200 · 88ms · streamed</text>
+        </svg>
+      </div>
+      <div class="card-ft">
+        <span>WhyC pipeline · 4 loop iterations · 23h 41m</span>
+        <span class="url-pill">preview-7af2.run.app</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclosure">
+    <b>Honest disclosure (auto-generated by Opus 4.7 from the trace bundle):</b> The deployed preview above is real and clickable, but the pricing page route still scores 0.71 spec-fit (target: 0.85) — the loop is queued for one more pass tonight. Login is mocked. The synthetic JD used for this run was generated by us; no real YC company is named, screenshotted, or implied. We do not promise this works on every input — see the failures log below.
+  </div>
+
+  <h2>Why you'll hate this product</h2>
+  <div class="h2-sub">Seven objections we expect from a reasonable skeptic. Crossed-out objection, our honest answer, link to the Phoenix trace that proves it.</div>
+
+  <div class="obj" role="table">
+    <div class="obj-row obj-h" role="row">
+      <div role="columnheader">Your objection</div>
+      <div role="columnheader">What we actually do</div>
+      <div role="columnheader">Evidence</div>
+    </div>
+    <div class="obj-row" role="row">
+      <div class="obj-q">"Agent demos are cherry-picked screen recordings."</div>
+      <div class="obj-a">Every run publishes its <strong>full OpenInference trace</strong>. The hero card above links to a live URL, not a video. Pick a different JD and submit it yourself.</div>
+      <div class="obj-link"><a href="#">trace #7af2</a></div>
+    </div>
+    <div class="obj-row" role="row">
+      <div class="obj-q">"One-shot LLM codegen never matches the brief."</div>
+      <div class="obj-a">Correct — that's why we don't do one-shot. Phoenix MCP scores each flow against the extracted spec; <strong>only flows below 0.85 are regenerated</strong>. Convergence is logged, not claimed.</div>
+      <div class="obj-link"><a href="#">eval log</a></div>
+    </div>
+    <div class="obj-row" role="row">
+      <div class="obj-q">"Spec-fit scoring is just LLM marking its own homework."</div>
+      <div class="obj-a">Fair. The judge prompt, rubric, and 12 disagreement cases (where a human reviewer overruled it) are <strong>public in the repo</strong>. We log false-positives, not just successes.</div>
+      <div class="obj-link"><a href="#">judge.md</a></div>
+    </div>
+    <div class="obj-row" role="row">
+      <div class="obj-q">"24 hours is marketing — what's the actual median?"</div>
+      <div class="obj-a">First Cloud Run URL: median <strong>~11 min</strong> (visible to user). Convergence to 0.85+: median <strong>~18h</strong>, p90 <strong>~28h</strong>. We miss the 24h headline on ~10% of runs.</div>
+      <div class="obj-link"><a href="#">latency csv</a></div>
+    </div>
+    <div class="obj-row" role="row">
+      <div class="obj-q">"Generated UI looks generic and the copy hallucinates."</div>
+      <div class="obj-a">Sometimes yes. Hero copy is templated against extracted facts; if the JD is too vague, the agent <strong>refuses to invent and asks for clarification</strong> instead of bluffing.</div>
+      <div class="obj-link"><a href="#">refusal trace</a></div>
+    </div>
+    <div class="obj-row" role="row">
+      <div class="obj-q">"This is just YC-orange shitposting in a wrapper."</div>
+      <div class="obj-a">Tone is satirical, the artifact is not. WhyC the product never names or screenshots a YC company; the deployed previews are <strong>generic enough to use for your own startup</strong> the next morning.</div>
+      <div class="obj-link"><a href="#">brand rules</a></div>
+    </div>
+    <div class="obj-row" role="row">
+      <div class="obj-q">"What happens when the judges' input breaks your pipeline?"</div>
+      <div class="obj-a">It will. We've shipped <strong>3 known-failure modes</strong> below with reproducer URLs. If yours is novel, the trace gets added to the same log within 24h.</div>
+      <div class="obj-link"><a href="#">failures.log</a></div>
+    </div>
+  </div>
+
+  <h2>WhyC vs. the alternatives, honestly</h2>
+  <div class="h2-sub">Where we lose, marked clearly. No green checkmarks across the board.</div>
+
+  <table class="cmp">
+    <thead>
+      <tr>
+        <th class="col-axis">Axis</th>
+        <th><div class="col-hd-self"><span class="brand-dot"></span>WhyC</div></th>
+        <th>One-shot codegen<br/><span style="font-weight:400;color:var(--ink-mute)">(typical agent demo)</span></th>
+        <th>Hand-coded MVP<br/><span style="font-weight:400;color:var(--ink-mute)">(2 founders, 1 weekend)</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-axis">Time to first deployed URL</td>
+        <td class="we y">~11 min</td>
+        <td class="m">instant (often 404)</td>
+        <td class="n">12–48 hours</td>
+      </tr>
+      <tr>
+        <td class="col-axis">Spec-fit on first output</td>
+        <td class="we m">0.71 median</td>
+        <td class="n">0.40 median</td>
+        <td class="y">0.90+ (human)</td>
+      </tr>
+      <tr>
+        <td class="col-axis">Self-corrects without operator</td>
+        <td class="we y">yes (Phoenix loop)</td>
+        <td class="n">no</td>
+        <td class="n">no — needs human</td>
+      </tr>
+      <tr>
+        <td class="col-axis">Public trace per run</td>
+        <td class="we y">yes (OpenInference)</td>
+        <td class="n">no</td>
+        <td class="m">git log</td>
+      </tr>
+      <tr>
+        <td class="col-axis">Survives a novel input from judge</td>
+        <td class="we m">~90% (logged)</td>
+        <td class="n">~40%</td>
+        <td class="y">100% if scoped</td>
+      </tr>
+      <tr>
+        <td class="col-axis">Production-ready</td>
+        <td class="we n">no — demo artifact</td>
+        <td class="n">no</td>
+        <td class="m">depends on team</td>
+      </tr>
+      <tr>
+        <td class="col-axis">Cost per preview</td>
+        <td class="we m">~$3.40 (Gemini + Run)</td>
+        <td class="m">~$0.20</td>
+        <td class="n">~16 founder-hours</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Where it currently fails</h2>
+  <div class="h2-sub">Public log, last 3 entries. Each is reproducible from the URL we received.</div>
+
+  <div class="weak">
+    <ul>
+      <li>
+        <span class="ts">2026-05-06 09:14</span>
+        <span class="msg">Marketplace JD with 4 personas → agent picked the wrong primary persona, hero copy addressed buyers when product is for sellers. Loop did not catch it because spec-fit rubric didn't weight persona alignment. <em>Fixed in rubric v0.4.1.</em></span>
+        <span class="tag warn">rubric</span>
+      </li>
+      <li>
+        <span class="ts">2026-05-04 22:41</span>
+        <span class="msg">Hardware-adjacent JD → Next.js preview is structurally fine but the product is fundamentally not a web app. We now <em>refuse the run</em> with a typed error instead of producing a misleading site.</span>
+        <span class="tag bad">refused</span>
+      </li>
+      <li>
+        <span class="ts">2026-05-03 16:02</span>
+        <span class="msg">JD in Korean → spec extraction succeeded, but generated copy mixed languages. Locale detection added; English-only outputs until v0.5 ships multilingual templates.</span>
+        <span class="tag ok">shipped</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="trust">
+    <div class="t"><div class="k">Total runs</div><div class="v">147 <small>since 2026-05-05</small></div></div>
+    <div class="t"><div class="k">Median spec-fit (converged)</div><div class="v">0.91</div></div>
+    <div class="t"><div class="k">Failures publicly logged</div><div class="v">14 <small>/ 147</small></div></div>
+    <div class="t"><div class="k">License</div><div class="v">Apache-2.0 <small>OSI</small></div></div>
+  </div>
+
+  <div class="foot">
+    <span><code>stack:</code> Gemini ADK · Agent Builder · Phoenix MCP · Cloud Run · Next.js</span>
+    <span>Arize track · hackathon submission · no YC names or logos used</span>
+  </div>
+</div>
+</body>
+</html>

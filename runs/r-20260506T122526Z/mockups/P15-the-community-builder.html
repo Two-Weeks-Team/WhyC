@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC Gallery — The Roast Wall</title>
+<style>
+  :root {
+    --bg: oklch(0.16 0.02 50);
+    --panel: oklch(0.21 0.025 50);
+    --panel-2: oklch(0.25 0.03 55);
+    --line: oklch(0.32 0.025 55);
+    --ink: oklch(0.96 0.01 80);
+    --ink-2: oklch(0.78 0.015 70);
+    --ink-3: oklch(0.58 0.02 65);
+    --yc: oklch(0.72 0.19 55);
+    --yc-deep: oklch(0.58 0.21 45);
+    --ship: oklch(0.78 0.18 145);
+    --warn: oklch(0.78 0.16 85);
+    --bad: oklch(0.66 0.21 25);
+    --me: oklch(0.72 0.16 285);
+    --radius: 14px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, sans-serif; }
+  a { color: inherit; }
+  .app { max-width: 1240px; margin: 0 auto; padding: 18px 22px 60px; }
+
+  /* top bar */
+  .top { display: flex; align-items: center; gap: 14px; padding: 10px 14px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--yc);
+    display: grid; place-items: center; color: oklch(0.18 0.04 45); font-weight: 900; }
+  .brand small { color: var(--ink-3); font-weight: 500; margin-left: 4px; letter-spacing: 0; }
+  .pill { font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--ink-2); }
+  .pill.live::before { content: ""; display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--ship); margin-right: 6px; vertical-align: 1px;
+    box-shadow: 0 0 0 0 oklch(0.78 0.18 145 / 0.6); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 6px oklch(0.78 0.18 145 / 0); } }
+  .grow { flex: 1; }
+  .presence { display: flex; align-items: center; gap: -6px; }
+  .presence .av { width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--panel); margin-left: -6px; display: grid; place-items: center;
+    font-size: 10px; font-weight: 700; color: oklch(0.16 0.02 50); }
+  .btn { background: var(--yc); color: oklch(0.16 0.04 45); border: 0;
+    padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 600; }
+
+  /* hero strip */
+  .hero { margin-top: 14px; padding: 18px 20px; border-radius: var(--radius);
+    background: linear-gradient(135deg, oklch(0.24 0.05 55) 0%, oklch(0.19 0.03 50) 100%);
+    border: 1px solid var(--line); display: flex; align-items: center; gap: 22px; }
+  .hero h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+  .hero h1 em { font-style: normal; color: var(--yc); }
+  .hero p { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
+  .stats { margin-left: auto; display: flex; gap: 22px; }
+  .stat { text-align: right; }
+  .stat b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* layout */
+  .grid { display: grid; grid-template-columns: 220px 1fr 300px; gap: 18px; margin-top: 18px; }
+  .side, .side2, .feed { min-width: 0; }
+
+  /* side cohort rooms */
+  .card { background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 14px; }
+  .card h3 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--ink-3); }
+  .room { display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    border-radius: 9px; cursor: pointer; }
+  .room:hover { background: var(--panel-2); }
+  .room.active { background: var(--panel-2); border: 1px solid var(--line); }
+  .room .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yc); }
+  .room .label { flex: 1; font-weight: 600; font-size: 13px; }
+  .room .count { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  /* feed cards */
+  .feed-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .tabs { display: flex; gap: 4px; background: var(--panel); padding: 4px;
+    border-radius: 10px; border: 1px solid var(--line); }
+  .tab { padding: 6px 12px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    color: var(--ink-2); cursor: pointer; }
+  .tab.on { background: var(--panel-2); color: var(--ink); }
+
+  .preview { background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; }
+  .pv-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+  .pv-head .av { width: 30px; height: 30px; border-radius: 50%; display: grid;
+    place-items: center; font-weight: 700; font-size: 12px; color: oklch(0.16 0.02 50); }
+  .pv-head .who { font-size: 13px; }
+  .pv-head .who b { font-weight: 700; }
+  .pv-head .who span { color: var(--ink-3); }
+  .pv-head .meta { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .pv-body { display: grid; grid-template-columns: 1.1fr 1fr; gap: 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .pv-shot { background: oklch(0.13 0.015 50); padding: 14px; min-height: 200px; position: relative; }
+  .pv-shot .frame { background: var(--ink); border-radius: 8px; padding: 14px;
+    color: oklch(0.16 0.02 50); height: 100%; }
+  .pv-shot .frame h4 { margin: 0; font-size: 16px; letter-spacing: -0.01em; }
+  .pv-shot .frame p { margin: 4px 0 10px; font-size: 11px; color: oklch(0.44 0.02 50); }
+  .pv-shot .frame .row { display: flex; gap: 6px; margin-top: 8px; }
+  .pv-shot .frame .chip { background: oklch(0.94 0.01 80); border-radius: 6px;
+    padding: 4px 8px; font-size: 10px; color: oklch(0.32 0.02 50); }
+  .pv-shot .frame .cta { margin-top: 10px; background: var(--yc); color: oklch(0.16 0.04 45);
+    padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    display: inline-block; }
+  .pv-shot .url { position: absolute; bottom: 8px; left: 14px; right: 14px;
+    font-size: 10px; color: var(--ink-3); font-family: ui-monospace, monospace; }
+
+  .pv-side { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .pv-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .pv-sub { font-size: 12px; color: var(--ink-3); margin-top: -8px; }
+  .specfit { display: flex; align-items: center; gap: 10px; }
+  .bar { flex: 1; height: 6px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--warn), var(--ship)); }
+  .specfit b { font-variant-numeric: tabular-nums; font-size: 13px; }
+  .specfit .delta { font-size: 10px; color: var(--ship); }
+
+  .reacts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .react { display: inline-flex; align-items: center; gap: 5px;
+    background: var(--panel-2); border: 1px solid var(--line); padding: 4px 9px;
+    border-radius: 999px; font-size: 11px; cursor: pointer; }
+  .react.mine { border-color: var(--yc); background: oklch(0.32 0.06 55); }
+  .react b { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .pv-foot { padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .commentbox { flex: 1; display: flex; align-items: center; gap: 8px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 9px; padding: 6px 10px; }
+  .commentbox input { flex: 1; background: transparent; border: 0; color: var(--ink);
+    font: inherit; outline: none; }
+  .commentbox .me { width: 22px; height: 22px; border-radius: 50%;
+    background: var(--me); color: oklch(0.16 0.02 50); display: grid; place-items: center;
+    font-weight: 700; font-size: 10px; }
+  .mention { color: var(--yc); font-weight: 700; }
+
+  .threads { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .thread { display: flex; gap: 9px; align-items: flex-start; }
+  .thread .av { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    display: grid; place-items: center; font-weight: 700; font-size: 10px;
+    color: oklch(0.16 0.02 50); }
+  .thread .body { background: var(--panel-2); border-radius: 10px;
+    padding: 7px 11px; font-size: 13px; }
+  .thread .body b { font-weight: 700; margin-right: 6px; }
+  .thread .body .when { color: var(--ink-3); font-size: 11px; margin-left: 6px; }
+
+  /* right rail */
+  .lead { display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px dashed var(--line); }
+  .lead:last-child { border-bottom: 0; }
+  .lead .av { width: 26px; height: 26px; border-radius: 50%; display: grid;
+    place-items: center; font-weight: 700; font-size: 10px; color: oklch(0.16 0.02 50); }
+  .lead .name { flex: 1; font-size: 13px; }
+  .lead .name b { font-weight: 700; }
+  .lead .name span { display: block; color: var(--ink-3); font-size: 11px; }
+  .lead .score { font-size: 12px; font-weight: 700; color: var(--ship); font-variant-numeric: tabular-nums; }
+
+  .composer { background: var(--panel); border: 1px dashed var(--yc); border-radius: var(--radius);
+    padding: 16px; }
+  .composer h3 { margin: 0 0 8px; font-size: 13px; }
+  .composer p { margin: 0 0 10px; color: var(--ink-2); font-size: 12px; }
+  .composer textarea { width: 100%; min-height: 70px; background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 9px; color: var(--ink); padding: 9px;
+    font: inherit; resize: vertical; }
+  .composer .actions { display: flex; gap: 8px; margin-top: 10px; }
+  .role { font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    background: oklch(0.32 0.06 55); color: var(--yc); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em; }
+  .role.mod { background: oklch(0.30 0.08 285); color: var(--me); }
+  .role.anon { background: var(--panel-2); color: var(--ink-3); }
+
+  @media (max-width: 1000px) {
+    .grid { grid-template-columns: 1fr; }
+    .pv-body { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- top bar -->
+  <header class="top">
+    <div class="brand">
+      <div class="logo">W</div>
+      <span>WhyC <small>/ The Roast Wall</small></span>
+    </div>
+    <span class="pill live">142 hackers online</span>
+    <span class="pill">cohort: W26</span>
+    <div class="grow"></div>
+    <div class="presence" title="Currently viewing this room">
+      <div class="av" style="background:oklch(0.78 0.16 85)">JR</div>
+      <div class="av" style="background:oklch(0.72 0.19 55)">mn</div>
+      <div class="av" style="background:oklch(0.72 0.16 285)">sk</div>
+      <div class="av" style="background:oklch(0.78 0.18 145)">ev</div>
+      <div class="av" style="background:var(--panel-2);color:var(--ink-2);border-color:var(--line)">+38</div>
+    </div>
+    <button class="btn ghost">Sign in</button>
+    <button class="btn">Paste a JD →</button>
+  </header>
+
+  <!-- hero -->
+  <section class="hero">
+    <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+      <rect x="2" y="2" width="60" height="60" rx="14" fill="oklch(0.72 0.19 55)"/>
+      <text x="32" y="42" text-anchor="middle" font-family="system-ui" font-weight="900"
+        font-size="32" fill="oklch(0.18 0.04 45)">W?</text>
+    </svg>
+    <div>
+      <h1>While they hire, <em>we ship — together.</em></h1>
+      <p>Public gallery of working previews built in 24h for every YC batch. Paste a JD. Vote. @mention. Rally.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>1,284</b><span>previews shipped</span></div>
+      <div class="stat"><b>91%</b><span>median spec-fit</span></div>
+      <div class="stat"><b>37</b><span>cohort rooms</span></div>
+    </div>
+  </section>
+
+  <!-- main grid -->
+  <div class="grid">
+
+    <!-- left rail: cohort rooms -->
+    <aside class="side">
+      <div class="card">
+        <h3>Cohort rooms</h3>
+        <div class="room active"><span class="dot"></span><span class="label">W26 — current</span><span class="count">218</span></div>
+        <div class="room"><span class="dot" style="background:var(--ship)"></span><span class="label">S25</span><span class="count">412</span></div>
+        <div class="room"><span class="dot" style="background:var(--warn)"></span><span class="label">W25</span><span class="count">389</span></div>
+        <div class="room"><span class="dot" style="background:var(--ink-3)"></span><span class="label">S24 — archived</span><span class="count">265</span></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>Your role</h3>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <div class="av" style="width:30px;height:30px;border-radius:50%;background:var(--me);color:oklch(0.16 0.02 50);display:grid;place-items:center;font-weight:700;font-size:11px">sk</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:13px">@sejun</div>
+            <span class="role">verified hacker</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--ink-3);line-height:1.5">
+          Can: vote · @mention · comment · submit JDs<br>
+          Cannot: pin · ban · close threads
+        </div>
+      </div>
+    </aside>
+
+    <!-- center feed -->
+    <main class="feed">
+      <div class="feed-head">
+        <div class="tabs">
+          <div class="tab on">Hot</div>
+          <div class="tab">New</div>
+          <div class="tab">Converged</div>
+          <div class="tab">Stalled</div>
+        </div>
+        <div class="grow"></div>
+        <span class="pill">sorted by ship-it reacts · 24h</span>
+      </div>
+
+      <!-- preview card 1 -->
+      <article class="preview">
+        <header class="pv-head">
+          <div class="av" style="background:oklch(0.78 0.16 85)">jr</div>
+          <div class="who"><b>@juno_r</b> <span>shipped a preview for</span> <b>"Hiring Founding Eng — AI ops"</b> <span>· 6h ago</span></div>
+          <div class="meta">
+            <span class="role">verified</span>
+            <span class="pill live">spec-fit live</span>
+          </div>
+        </header>
+        <div class="pv-body">
+          <div class="pv-shot">
+            <div class="frame">
+              <h4>FlowOps — observe every agent</h4>
+              <p>Drop-in OpenInference tracing for any LLM stack.</p>
+              <div class="row">
+                <span class="chip">Traces</span><span class="chip">Evals</span><span class="chip">Alerts</span>
+              </div>
+              <div class="cta">Start free →</div>
+            </div>
+            <div class="url">whyc-flowops-w26-7a3.run.app</div>
+          </div>
+          <div class="pv-side">
+            <div class="pv-title">Cohort W26 · synthetic JD #JD-7421</div>
+            <div class="pv-sub">generated in 18m · 3 self-improve iterations</div>
+            <div class="specfit">
+              <b>spec-fit 0.94</b>
+              <div class="bar"><i style="width:94%"></i></div>
+              <span class="delta">+0.08 since v1</span>
+            </div>
+            <div class="reacts">
+              <span class="react mine">🚢 ship-it <b>284</b></span>
+              <span class="react">😂 lol <b>61</b></span>
+              <span class="react">💀 oof <b>12</b></span>
+              <span class="react">🔥 <b>47</b></span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2)">
+              <span class="mention">@mod_team</span> pinned this — converged before YC company even posted v0.
+            </div>
+          </div>
+        </div>
+        <div class="threads">
+          <div class="thread">
+            <div class="av" style="background:oklch(0.72 0.16 285)">mn</div>
+            <div class="body"><b>@mina</b> <span class="when">2h</span><br>
+              <span class="mention">@juno_r</span> the trace viewer is unreal. did Phoenix MCP catch the empty-state regression on iter 2?
+            </div>
+          </div>
+          <div class="thread">
+            <div class="av" style="background:oklch(0.78 0.16 85)">jr</div>
+            <div class="body"><b>@juno_r</b> <span class="when">1h</span><br>
+              yep — judge flagged "empty dashboard = spec violation". loop regen'd just that flow. <span class="mention">@everyone</span> see iter diff in the trace tab.
+            </div>
+          </div>
+          <div class="thread">
+            <div class="av" style="background:oklch(0.66 0.21 25)">ev</div>
+            <div class="body"><b>@evan</b> <span class="when">42m</span><br>
+              meanwhile the actual JD company is still on "we're hiring engineer #4". <span class="mention">@juno_r</span> +1 ship-it.
+            </div>
+          </div>
+        </div>
+        <footer class="pv-foot">
+          <div class="commentbox">
+            <div class="me">sk</div>
+            <input placeholder="Reply… use @ to mention a hacker, # to tag a cohort" />
+          </div>
+          <button class="btn ghost">Fork preview</button>
+        </footer>
+      </article>
+
+      <!-- preview card 2 -->
+      <article class="preview">
+        <header class="pv-head">
+          <div class="av" style="background:oklch(0.78 0.18 145)">ev</div>
+          <div class="who"><b>@evan</b> <span>shipped a preview for</span> <b>"Looking for full-stack intern"</b> <span>· 11h ago</span></div>
+          <div class="meta">
+            <span class="role anon">anon-author</span>
+            <span class="pill">converged</span>
+          </div>
+        </header>
+        <div class="pv-body">
+          <div class="pv-shot">
+            <div class="frame" style="background:oklch(0.94 0.02 80)">
+              <h4>Inboxly — calm shared inboxes</h4>
+              <p>Triage email like Linear triages tickets.</p>
+              <div class="row">
+                <span class="chip">Rules</span><span class="chip">SLAs</span><span class="chip">Threads</span>
+              </div>
+              <div class="cta">Try with your team →</div>
+            </div>
+            <div class="url">whyc-inboxly-w26-2c1.run.app</div>
+          </div>
+          <div class="pv-side">
+            <div class="pv-title">Cohort W26 · synthetic JD #JD-7388</div>
+            <div class="pv-sub">generated in 22m · 5 iterations · converged</div>
+            <div class="specfit">
+              <b>spec-fit 0.97</b>
+              <div class="bar"><i style="width:97%"></i></div>
+              <span class="delta">final</span>
+            </div>
+            <div class="reacts">
+              <span class="react">🚢 ship-it <b>431</b></span>
+              <span class="react mine">😂 lol <b>198</b></span>
+              <span class="react">💀 oof <b>22</b></span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2)">
+              48 comments · <span class="mention">@vc_diligence</span> bookmarked this card.
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- preview card 3 — stalled -->
+      <article class="preview">
+        <header class="pv-head">
+          <div class="av" style="background:oklch(0.66 0.21 25)">a</div>
+          <div class="who"><b>anon</b> <span>submitted</span> <b>"Hiring forward-deployed eng"</b> <span>· 38m ago</span></div>
+          <div class="meta">
+            <span class="role anon">anon</span>
+            <span class="pill" style="color:var(--bad)">spec-fit low</span>
+          </div>
+        </header>
+        <div class="pv-body">
+          <div class="pv-shot">
+            <div class="frame" style="background:oklch(0.32 0.02 50);color:var(--ink-2)">
+              <h4 style="color:var(--ink)">building…</h4>
+              <p style="color:var(--ink-3)">iter 1/? · judge says spec ambiguous</p>
+              <div class="row"><span class="chip" style="background:var(--panel-2);color:var(--ink-2)">extracting…</span></div>
+            </div>
+            <div class="url">whyc-pending-w26-9f4.run.app</div>
+          </div>
+          <div class="pv-side">
+            <div class="pv-title">Cohort W26 · synthetic JD #JD-7440</div>
+            <div class="pv-sub">running · 3 hackers watching</div>
+            <div class="specfit">
+              <b>spec-fit 0.41</b>
+              <div class="bar"><i style="width:41%"></i></div>
+              <span class="delta" style="color:var(--warn)">improving</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2)">
+              <span class="mention">@sejun</span> wanna co-spec this one? add hints in the thread.
+            </div>
+            <div class="reacts">
+              <span class="react">👀 watching <b>14</b></span>
+              <span class="react">🛟 help <b>3</b></span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </main>
+
+    <!-- right rail -->
+    <aside class="side2">
+      <div class="composer">
+        <h3>Add a JD to the wall</h3>
+        <p>Paste any YC-style job posting URL. Loop runs in background; gallery updates live for everyone watching.</p>
+        <textarea placeholder="https://... or paste JD text"></textarea>
+        <div class="actions">
+          <button class="btn">Ship it →</button>
+          <button class="btn ghost">Anon</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Top hackers · this week</h3>
+        <div class="lead">
+          <div class="av" style="background:oklch(0.78 0.16 85)">jr</div>
+          <div class="name"><b>@juno_r</b><span>11 shipped · 0.93 avg</span></div>
+          <div class="score">+284</div>
+        </div>
+        <div class="lead">
+          <div class="av" style="background:oklch(0.78 0.18 145)">ev</div>
+          <div class="name"><b>@evan</b><span>9 shipped · 0.91 avg</span></div>
+          <div class="score">+221</div>
+        </div>
+        <div class="lead">
+          <div class="av" style="background:oklch(0.72 0.16 285)">mn</div>
+          <div class="name"><b>@mina</b> <span class="role mod" style="margin-left:4px">mod</span><span>7 shipped · 0.95 avg</span></div>
+          <div class="score">+188</div>
+        </div>
+        <div class="lead">
+          <div class="av" style="background:var(--me)">sk</div>
+          <div class="name"><b>@sejun</b> <span style="color:var(--yc)">(you)</span><span>2 shipped · 0.88 avg</span></div>
+          <div class="score">+34</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Mentions for you</h3>
+        <div style="font-size:12px;line-height:1.6;color:var(--ink-2)">
+          <div style="padding:6px 0;border-bottom:1px dashed var(--line)">
+            <b>@juno_r</b> tagged you in <i>JD-7421</i> · "wanna fork this for S25?"
+          </div>
+          <div style="padding:6px 0;border-bottom:1px dashed var(--line)">
+            <b>@anon</b> asked you to co-spec <i>JD-7440</i> · 38m ago
+          </div>
+          <div style="padding:6px 0">
+            <b>@mod_team</b> promoted your card to <i>Hot</i> · 2h ago
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+</body>
+</html>

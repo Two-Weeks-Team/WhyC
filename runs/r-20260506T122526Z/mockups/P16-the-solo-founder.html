@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — Solo Console</title>
+<style>
+  :root {
+    --bg: oklch(0.18 0.012 60);
+    --panel: oklch(0.22 0.014 60);
+    --panel-2: oklch(0.26 0.016 60);
+    --line: oklch(0.32 0.018 60);
+    --ink: oklch(0.96 0.008 80);
+    --ink-dim: oklch(0.72 0.012 80);
+    --ink-mute: oklch(0.55 0.012 80);
+    --orange: oklch(0.74 0.17 55);
+    --orange-soft: oklch(0.74 0.17 55 / 0.14);
+    --green: oklch(0.78 0.15 145);
+    --red: oklch(0.68 0.20 28);
+    --amber: oklch(0.82 0.14 80);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.5; }
+  a { color: var(--orange); text-decoration: none; }
+  .app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* ---- sidebar ---- */
+  .side { background: var(--panel); border-right: 1px solid var(--line); padding: 18px 14px; }
+  .brand { display: flex; align-items: center; gap: 9px; padding: 4px 6px 18px; }
+  .brand-mark { width: 26px; height: 26px; }
+  .brand-name { font-weight: 700; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 11px; color: var(--ink-mute); margin-left: 35px; margin-top: -14px; margin-bottom: 14px; }
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav a { display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 7px;
+    color: var(--ink-dim); font-size: 13px; }
+  .nav a.active { background: var(--orange-soft); color: var(--ink); }
+  .nav a:hover { color: var(--ink); }
+  .nav .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-mute); }
+  .nav a.active .dot { background: var(--orange); }
+  .side-foot { position: relative; margin-top: 24px; padding: 12px 9px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--ink-mute); }
+  .who { display: flex; align-items: center; gap: 9px; }
+  .who-av { width: 24px; height: 24px; border-radius: 50%; background: oklch(0.42 0.06 55);
+    display: grid; place-items: center; color: var(--ink); font-size: 11px; font-weight: 600; }
+  .who-meta { line-height: 1.25; }
+  .who-meta b { color: var(--ink); font-weight: 500; font-size: 12px; display: block; }
+  .solo-tag { margin-top: 9px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-mute); }
+
+  /* ---- main ---- */
+  .main { padding: 24px 32px 60px; }
+  .topbar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 24px; }
+  h1 { margin: 0 0 3px; font-size: 22px; letter-spacing: -0.015em; }
+  .crumb { color: var(--ink-mute); font-size: 12px; }
+  .top-stats { display: flex; gap: 22px; }
+  .stat { text-align: right; }
+  .stat-k { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-v { font-weight: 600; font-size: 15px; }
+  .stat-v.warn { color: var(--amber); }
+
+  /* ---- new run card ---- */
+  .ship { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px; margin-bottom: 22px; }
+  .ship-row { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: end; }
+  .field label { display: block; font-size: 11px; color: var(--ink-mute); text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 6px; }
+  .field input { width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--ink);
+    padding: 10px 12px; border-radius: 7px; font-family: inherit; font-size: 14px; }
+  .field input:focus { outline: none; border-color: var(--orange); }
+  .ship-btn { background: var(--orange); color: oklch(0.18 0.012 60); border: 0; padding: 10px 18px;
+    border-radius: 7px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .ship-hint { margin-top: 11px; display: flex; gap: 18px; color: var(--ink-mute); font-size: 12px; }
+  .ship-hint span b { color: var(--ink-dim); font-weight: 500; }
+
+  /* ---- queue table ---- */
+  .section-h { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 10px; }
+  .section-h h2 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+  .section-h em { font-style: normal; color: var(--ink-mute); font-size: 12px; }
+
+  .queue { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .qrow { display: grid; grid-template-columns: 1fr 110px 130px 90px 80px 70px;
+    gap: 14px; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .qrow:last-child { border-bottom: 0; }
+  .qrow.head { background: var(--panel-2); color: var(--ink-mute); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 9px 18px; }
+  .qrow .name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .qrow .name b { font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; }
+  .qrow .name span { color: var(--ink-mute); font-size: 11px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px;
+    font-weight: 500; border: 1px solid var(--line); }
+  .pill.run { background: oklch(0.74 0.17 55 / 0.16); color: var(--orange); border-color: transparent; }
+  .pill.bg { background: oklch(0.55 0.12 240 / 0.18); color: oklch(0.78 0.10 240); border-color: transparent; }
+  .pill.done { background: oklch(0.78 0.15 145 / 0.16); color: var(--green); border-color: transparent; }
+  .pill.kill { background: oklch(0.68 0.20 28 / 0.16); color: var(--red); border-color: transparent; }
+
+  .meter { width: 100%; height: 5px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+  .meter > i { display: block; height: 100%; background: var(--orange); border-radius: 99px; }
+  .meter.ok > i { background: var(--green); }
+  .fit-num { font-variant-numeric: tabular-nums; font-size: 11px; color: var(--ink-dim); margin-top: 3px; }
+  .cost { font-variant-numeric: tabular-nums; }
+  .cost.warn { color: var(--amber); }
+
+  .icon-btn { background: transparent; border: 1px solid var(--line); color: var(--ink-dim);
+    padding: 4px 9px; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: inherit; }
+  .icon-btn:hover { color: var(--ink); border-color: var(--ink-mute); }
+  .icon-btn.danger:hover { color: var(--red); border-color: var(--red); }
+
+  /* ---- two-column lower ---- */
+  .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 14px; font-size: 13px; font-weight: 600; }
+
+  /* automation toggles */
+  .toggle-row { display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-top: 1px solid var(--line); }
+  .toggle-row:first-of-type { border-top: 0; padding-top: 4px; }
+  .toggle-row .lbl b { display: block; font-weight: 500; font-size: 13px; }
+  .toggle-row .lbl span { color: var(--ink-mute); font-size: 11px; }
+  .tg { width: 36px; height: 20px; background: var(--line); border-radius: 99px; position: relative;
+    cursor: pointer; flex: none; }
+  .tg::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+    background: var(--ink-dim); border-radius: 50%; transition: 0.15s; }
+  .tg.on { background: var(--orange-soft); }
+  .tg.on::after { left: 18px; background: var(--orange); }
+
+  /* budget box */
+  .bud-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; }
+  .bud-row span { color: var(--ink-mute); }
+  .bud-row b { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .bud-bar { height: 6px; background: var(--bg); border-radius: 99px; margin: 12px 0 6px; overflow: hidden; }
+  .bud-bar > i { display: block; height: 100%; width: 38%; background: var(--green); }
+  .bud-bar > i.warn { background: var(--amber); }
+  .bud-foot { font-size: 11px; color: var(--ink-mute); }
+  .bud-foot b { color: var(--ink-dim); font-weight: 500; }
+
+  .hardstop { margin-top: 16px; padding: 10px 12px; background: oklch(0.68 0.20 28 / 0.10);
+    border: 1px solid oklch(0.68 0.20 28 / 0.30); border-radius: 7px; font-size: 12px;
+    display: flex; justify-content: space-between; align-items: center; }
+  .hardstop b { color: var(--red); font-weight: 600; }
+  .hardstop .icon-btn { color: var(--red); border-color: oklch(0.68 0.20 28 / 0.40); }
+
+  .footer { margin-top: 28px; color: var(--ink-mute); font-size: 11px; display: flex;
+    justify-content: space-between; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="6" fill="oklch(0.74 0.17 55)"/>
+        <text x="16" y="21" text-anchor="middle" font-family="system-ui,sans-serif"
+          font-weight="700" font-size="14" fill="oklch(0.18 0.012 60)">W?</text>
+      </svg>
+      <div>
+        <div class="brand-name">WhyC</div>
+      </div>
+    </div>
+    <div class="brand-sub">solo console</div>
+
+    <nav class="nav">
+      <a href="#" class="active"><span class="dot"></span>Queue</a>
+      <a href="#"><span class="dot"></span>Previews</a>
+      <a href="#"><span class="dot"></span>Spec drafts</a>
+      <a href="#"><span class="dot"></span>Traces</a>
+      <a href="#"><span class="dot"></span>Billing</a>
+      <a href="#"><span class="dot"></span>Settings</a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="who">
+        <div class="who-av">SK</div>
+        <div class="who-meta">
+          <b>Sejun</b>
+          <span>centisgood@gmail.com</span>
+        </div>
+      </div>
+      <div class="solo-tag">Solo plan · 1 seat</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="topbar">
+      <div>
+        <div class="crumb">Console / Queue</div>
+        <h1>Ship something before the standup</h1>
+      </div>
+      <div class="top-stats">
+        <div class="stat"><div class="stat-k">Active runs</div><div class="stat-v">2</div></div>
+        <div class="stat"><div class="stat-k">Spent today</div><div class="stat-v">$3.84</div></div>
+        <div class="stat"><div class="stat-k">Cap left</div><div class="stat-v warn">$6.16</div></div>
+      </div>
+    </div>
+
+    <!-- new run -->
+    <div class="ship">
+      <div class="ship-row">
+        <div class="field">
+          <label>Pitch URL or one-paragraph description</label>
+          <input type="text" value="https://workatastartup.com/jobs/82957" />
+        </div>
+        <button class="ship-btn">Ship overnight</button>
+      </div>
+      <div class="ship-hint">
+        <span><b>Budget cap:</b> $10 / run</span>
+        <span><b>Quiet hours:</b> 23:00 – 08:00 KST (push only on done / kill)</span>
+        <span><b>Region:</b> us-central1</span>
+        <span><b>Auto-converge:</b> on (stop at 95%)</span>
+      </div>
+    </div>
+
+    <!-- queue -->
+    <div class="section-h">
+      <h2>Runs</h2>
+      <em>last 7 days · auto-archives after 30</em>
+    </div>
+
+    <div class="queue">
+      <div class="qrow head">
+        <div>Run</div><div>Status</div><div>Spec-fit</div><div>Cost</div><div>ETA</div><div></div>
+      </div>
+
+      <div class="qrow">
+        <div class="name">
+          <b>jobs/82957 · "vertical-AI for vet clinics"</b>
+          <span>started 23:14 · iteration 4 of ~6</span>
+        </div>
+        <div><span class="pill bg">background</span></div>
+        <div>
+          <div class="meter"><i style="width:84%"></i></div>
+          <div class="fit-num">84% · climbing</div>
+        </div>
+        <div class="cost">$2.41</div>
+        <div>~2h 10m</div>
+        <div><button class="icon-btn danger">Kill</button></div>
+      </div>
+
+      <div class="qrow">
+        <div class="name">
+          <b>my-pitch-draft.md · "calendar agent for solo founders"</b>
+          <span>started 06:02 · iteration 1 of ~6 · live view</span>
+        </div>
+        <div><span class="pill run">running</span></div>
+        <div>
+          <div class="meter"><i style="width:71%"></i></div>
+          <div class="fit-num">71% · first deploy in ~3m</div>
+        </div>
+        <div class="cost">$1.43</div>
+        <div>~9m</div>
+        <div><button class="icon-btn danger">Kill</button></div>
+      </div>
+
+      <div class="qrow">
+        <div class="name">
+          <b>jobs/79221 · "AI sales coach for Series A"</b>
+          <span>finished 04:48 · 5 iterations</span>
+        </div>
+        <div><span class="pill done">deployed</span></div>
+        <div>
+          <div class="meter ok"><i style="width:96%"></i></div>
+          <div class="fit-num">96% · converged</div>
+        </div>
+        <div class="cost">$4.07</div>
+        <div>—</div>
+        <div><button class="icon-btn">Open</button></div>
+      </div>
+
+      <div class="qrow">
+        <div class="name">
+          <b>note-2026-05-04.txt · "voice memo to landing page"</b>
+          <span>finished yesterday · 6 iterations</span>
+        </div>
+        <div><span class="pill done">deployed</span></div>
+        <div>
+          <div class="meter ok"><i style="width:93%"></i></div>
+          <div class="fit-num">93% · converged</div>
+        </div>
+        <div class="cost">$3.88</div>
+        <div>—</div>
+        <div><button class="icon-btn">Open</button></div>
+      </div>
+
+      <div class="qrow">
+        <div class="name">
+          <b>jobs/81004 · "compliance copilot"</b>
+          <span>killed 02:11 · over budget</span>
+        </div>
+        <div><span class="pill kill">killed</span></div>
+        <div>
+          <div class="meter"><i style="width:62%"></i></div>
+          <div class="fit-num">62% · stopped</div>
+        </div>
+        <div class="cost warn">$10.02</div>
+        <div>—</div>
+        <div><button class="icon-btn">Retry</button></div>
+      </div>
+    </div>
+
+    <!-- lower row: automation + budget -->
+    <div class="lower">
+
+      <div class="card">
+        <h3>Automation</h3>
+
+        <div class="toggle-row">
+          <div class="lbl">
+            <b>Auto-converge in background</b>
+            <span>First Cloud Run URL in ~10m, then keep iterating until spec-fit ≥ 95%</span>
+          </div>
+          <div class="tg on" role="switch" aria-checked="true"></div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="lbl">
+            <b>Quiet hours notifications</b>
+            <span>23:00–08:00 KST — push only when done, killed, or budget hit</span>
+          </div>
+          <div class="tg on" role="switch" aria-checked="true"></div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="lbl">
+            <b>Auto-tear down after 7 days</b>
+            <span>Cloud Run revisions deleted unless pinned. Saves ~$8/mo per idle preview.</span>
+          </div>
+          <div class="tg on" role="switch" aria-checked="true"></div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="lbl">
+            <b>Slack / email weekly digest</b>
+            <span>One Sunday email: shipped, killed, $ spent. No daily noise.</span>
+          </div>
+          <div class="tg" role="switch" aria-checked="false"></div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="lbl">
+            <b>Public preview gallery</b>
+            <span>Off — keep your half-baked ideas to yourself until you decide.</span>
+          </div>
+          <div class="tg" role="switch" aria-checked="false"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Budget &amp; kill switch</h3>
+
+        <div class="bud-row"><span>Today (May 6)</span><b>$3.84 / $10.00</b></div>
+        <div class="bud-bar"><i style="width:38%"></i></div>
+        <div class="bud-foot"><b>Resets 00:00 KST.</b> Hard cap, no overage allowed.</div>
+
+        <div class="bud-row" style="margin-top:14px"><span>This month</span><b>$41.20 / $120.00</b></div>
+        <div class="bud-bar"><i class="warn" style="width:34%"></i></div>
+        <div class="bud-foot"><b>Pace:</b> on track. 6 deployed, 1 killed, 0 abandoned.</div>
+
+        <div class="hardstop">
+          <div><b>Panic button.</b> Kills every run, tears down every preview, freezes the queue.</div>
+          <button class="icon-btn danger">Stop everything</button>
+        </div>
+
+        <div class="bud-foot" style="margin-top:14px">
+          <b>Solo-mode default:</b> one project, one billing account, one human (you).
+          No team invites. No roles. If you forget the password, the runs still finish.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <span>v0.4 · solo build · region us-central1</span>
+      <span>Phoenix MCP healthy · 312ms p50</span>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

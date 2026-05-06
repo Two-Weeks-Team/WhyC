@@ -1,0 +1,12 @@
+{
+  "id": "P01",
+  "advocate": "The Contrarian",
+  "framing": "Everyone's building yet another sleek web dashboard for their YC-roast tool. The unfashionable truth: indie hackers who actually ship live in the terminal — so WhyC is a curl-able CLI that pipes a job-posting URL in and emails you back a Cloud Run link, with the full self-improvement loop streamed as plaintext to stdout. No SPA. No login. No Tailwind.",
+  "target_persona": "The 4am-curl indie hacker who already has tmux open — judges YC by github commit graphs, runs `npm` only because they have to, would absolutely paste a YC job URL into a terminal and forget about it until an email arrives.",
+  "primary_surface": "CLI",
+  "opus_4_7_capability": "Long-horizon agent reasoning across the Phoenix MCP self-improvement loop — Gemini ADK plans which flows are under-spec from trace data, regenerates only those, and narrates each iteration as terminal-grade structured logs (no JSON pretty-printing, no spinners, just timestamped lines a tail-follower can grep).",
+  "mvp_scope": "One-shot CLI: paste YC job URL → stream agent trace to stdout for ~10min → first deploy URL prints inline with spec-fit % → background loop continues, sends a final email when converged. Demo shows curl invocation on a synthetic JD and the email arriving with a working preview link. | surface: Terminal (CLI + curl) with email delivery — `curl whyc.sh -d url=...` returns a streaming SSE log of the agent loop; final Cloud Run URL is delivered by plaintext email when spec-fit converges. No web UI for WhyC itself.",
+  "one_liner_pitch": "While YC ships React dashboards, we ship a curl one-liner. WhyC: pipe a job URL in, get a working Cloud Run preview in your inbox.",
+  "spec_alignment_notes": "spec primary_surface=web/hybrid → I deliberately reframed to terminal+email per persona's unfashionable-choice bias (the WhyC product itself is CLI; the *generated preview* is still Next.js on Cloud Run as the spec mandates — stack constraint preserved). target_persona=indie hacker → kept verbatim but sharpened to the terminal-native subset. killer_feature self-improvement loop + hybrid cadence → preserved exactly: ~10min visible streaming, hours-long background convergence, email is the asyn...",
+  "mockup_path": "mockups/P01-the-contrarian.html"
+}

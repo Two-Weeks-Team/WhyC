@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — chat with the builder</title>
+<style>
+  :root{
+    --bg: oklch(16% 0.01 60);
+    --panel: oklch(20% 0.012 60);
+    --ink: oklch(96% 0.005 90);
+    --muted: oklch(68% 0.01 80);
+    --line: oklch(28% 0.012 70);
+    --orange: oklch(72% 0.19 55);
+    --orange-dim: oklch(55% 0.14 55);
+    --green: oklch(78% 0.16 145);
+    --violet: oklch(70% 0.16 295);
+    --red: oklch(68% 0.20 25);
+    --chip: oklch(24% 0.012 70);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .app{display:grid;grid-template-columns:240px 1fr;height:100vh;max-height:100vh}
+  /* sidebar */
+  .side{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;padding:14px}
+  .brand{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+  .brand-mark{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--orange),var(--orange-dim));display:grid;place-items:center;font-weight:800;color:oklch(15% 0 0);font-size:12px}
+  .brand-name{font-weight:700;letter-spacing:-0.01em}
+  .brand-sub{color:var(--muted);font-size:11px;margin-left:auto}
+  .nav-h{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin:14px 6px 6px}
+  .thread{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .thread.active{background:var(--chip)}
+  .thread .dot{width:6px;height:6px;border-radius:50%;background:var(--orange)}
+  .thread .meta{margin-left:auto;color:var(--muted);font-size:11px}
+  .thread.dim{color:var(--muted)}
+  .side-foot{margin-top:auto;font-size:11px;color:var(--muted);padding:10px 6px;border-top:1px solid var(--line)}
+  .kbd{display:inline-block;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:10px;font-family:ui-monospace,Menlo,monospace;color:var(--muted)}
+
+  /* main */
+  .main{display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .crumb{color:var(--muted);font-size:12px}
+  .crumb b{color:var(--ink);font-weight:600}
+  .pill{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:11px;color:var(--muted)}
+  .pill .gauge{display:flex;align-items:center;gap:6px;background:var(--chip);padding:4px 8px;border-radius:999px}
+  .gauge .num{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
+
+  .stream{flex:1;overflow-y:auto;padding:24px 18px 24px;display:flex;flex-direction:column;gap:18px}
+  .stream::-webkit-scrollbar{width:8px}
+  .stream::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+
+  .msg{display:flex;gap:12px;max-width:780px}
+  .av{width:26px;height:26px;border-radius:7px;flex:0 0 26px;display:grid;place-items:center;font-size:11px;font-weight:700}
+  .av.user{background:oklch(35% 0.06 260);color:var(--ink)}
+  .av.agent{background:linear-gradient(135deg,var(--orange),var(--orange-dim));color:oklch(15% 0 0)}
+  .av.judge{background:oklch(30% 0.08 295);color:var(--violet)}
+  .body{flex:1;min-width:0}
+  .who{font-size:11px;color:var(--muted);margin-bottom:4px;display:flex;gap:8px;align-items:center}
+  .who b{color:var(--ink);font-weight:600}
+  .who .tag{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:10px;color:var(--muted)}
+  .text{font-size:14px}
+  .text .mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--chip);padding:1px 5px;border-radius:4px;color:var(--orange)}
+
+  /* trace card */
+  .card{margin-top:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+  .card-h{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
+  .card-h .ico{width:14px;height:14px}
+  .card-h b{color:var(--ink);font-weight:600;font-size:12px}
+  .card-h .traceid{font-family:ui-monospace,Menlo,monospace;color:var(--violet);margin-left:auto}
+  .spans{padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+  .span{display:grid;grid-template-columns:130px 1fr 60px;gap:8px;align-items:center}
+  .span .name{color:var(--ink)}
+  .span .bar{height:6px;background:var(--chip);border-radius:3px;position:relative;overflow:hidden}
+  .span .bar i{position:absolute;top:0;bottom:0;background:var(--orange);border-radius:3px;display:block}
+  .span .bar i.ok{background:var(--green)}
+  .span .bar i.warn{background:var(--orange)}
+  .span .bar i.fail{background:var(--red)}
+  .span .ms{color:var(--muted);text-align:right}
+
+  /* deploy card */
+  .deploy{margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:14px;background:linear-gradient(180deg,oklch(22% 0.02 55),var(--panel))}
+  .deploy .url{display:flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--orange);font-weight:600}
+  .deploy .url .live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px oklch(78% 0.16 145 / 0.18)}
+  .deploy .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  .stat{background:var(--chip);border-radius:8px;padding:8px 10px}
+  .stat .k{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)}
+  .stat .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .stat .v.green{color:var(--green)}
+  .stat .v.orange{color:var(--orange)}
+
+  /* judge */
+  .judge{margin-top:8px;border-left:2px solid var(--violet);padding:6px 0 6px 12px;font-size:13px;color:var(--ink)}
+  .judge em{color:var(--muted);font-style:normal}
+  .judge .verdict{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:11px;background:oklch(30% 0.08 295);color:var(--violet);padding:1px 6px;border-radius:4px;margin-right:6px}
+
+  /* convergence */
+  .conv{margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel)}
+  .conv-h{font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .conv-h b{color:var(--ink);font-weight:600;font-size:12px}
+  .conv-h .clock{margin-left:auto;color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:11px}
+  .conv-rows{display:flex;flex-direction:column;gap:4px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+  .conv-row{display:grid;grid-template-columns:60px 1fr 50px;gap:8px;align-items:center}
+  .conv-row .lab{color:var(--muted)}
+  .conv-row .track{height:6px;background:var(--chip);border-radius:3px;position:relative}
+  .conv-row .track i{position:absolute;top:0;bottom:0;left:0;background:linear-gradient(90deg,var(--orange-dim),var(--orange));border-radius:3px}
+  .conv-row .pct{text-align:right;color:var(--green);font-weight:600}
+  .conv-row.cur .track i{background:linear-gradient(90deg,var(--orange-dim),var(--green))}
+
+  /* streaming cursor */
+  .typing{display:inline-block;width:7px;height:14px;background:var(--orange);vertical-align:-2px;margin-left:2px;animation:blink 1.05s infinite}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+  /* composer */
+  .composer-wrap{padding:14px 18px 18px;border-top:1px solid var(--line);background:var(--panel)}
+  .composer{max-width:780px;margin:0;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+  .composer:focus-within{border-color:var(--orange-dim);box-shadow:0 0 0 3px oklch(72% 0.19 55 / 0.12)}
+  .compose-row{display:flex;align-items:center;gap:8px}
+  .compose-row .input{flex:1;color:var(--ink);font-size:14px;outline:none}
+  .compose-row .input .mention{color:var(--orange);font-weight:600}
+  .compose-row .input .ph{color:var(--muted)}
+  .send{background:var(--orange);color:oklch(15% 0 0);border:none;border-radius:8px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer}
+  .compose-foot{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+  .compose-foot .chip{background:var(--chip);padding:2px 7px;border-radius:999px;color:var(--muted);display:inline-flex;align-items:center;gap:4px}
+  .compose-foot .chip b{color:var(--orange);font-family:ui-monospace,Menlo,monospace}
+  .compose-foot .right{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+  /* command palette */
+  .palette{margin-top:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+  .pal-row{display:grid;grid-template-columns:96px 1fr 110px;gap:10px;padding:8px 12px;font-size:12.5px;align-items:center;border-bottom:1px solid var(--line)}
+  .pal-row:last-child{border-bottom:none}
+  .pal-row.sel{background:oklch(24% 0.02 55)}
+  .pal-row .cmd{font-family:ui-monospace,Menlo,monospace;color:var(--orange);font-weight:600}
+  .pal-row .desc{color:var(--ink)}
+  .pal-row .hint{color:var(--muted);text-align:right;font-family:ui-monospace,Menlo,monospace;font-size:11px}
+
+  .small{font-size:12px;color:var(--muted)}
+  .pwarn{color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="brand">
+      <div class="brand-mark">W</div>
+      <div class="brand-name">WhyC</div>
+      <div class="brand-sub">v0.1</div>
+    </div>
+
+    <div class="nav-h">Threads</div>
+    <div class="thread active"><span class="dot"></span><span>job/82957 — preview</span><span class="meta">now</span></div>
+    <div class="thread dim"><span>anon-jd-fintech-02</span><span class="meta">2h</span></div>
+    <div class="thread dim"><span>devtools-batch-w26</span><span class="meta">yest</span></div>
+    <div class="thread dim"><span>scratch — spec test</span><span class="meta">2d</span></div>
+
+    <div class="nav-h">Agents</div>
+    <div class="thread dim"><span>@spec-extractor</span></div>
+    <div class="thread dim"><span>@codegen-next</span></div>
+    <div class="thread dim"><span>@deployer-cloudrun</span></div>
+    <div class="thread dim"><span>@phoenix-judge</span></div>
+
+    <div class="side-foot">
+      <div>Press <span class="kbd">/</span> for commands</div>
+      <div>Press <span class="kbd">@</span> to mention an agent</div>
+    </div>
+  </aside>
+
+  <section class="main">
+
+    <header class="topbar">
+      <div class="crumb">thread / <b>job/82957 — preview</b></div>
+      <div class="pill">
+        <span class="gauge">spec-fit <span class="num">96%</span></span>
+        <span class="gauge">elapsed <span style="color:var(--ink);font-weight:600">23h 41m</span></span>
+        <span class="gauge">iters <span style="color:var(--ink);font-weight:600">4</span></span>
+      </div>
+    </header>
+
+    <div class="stream">
+
+      <!-- user message 1 -->
+      <div class="msg">
+        <div class="av user">SK</div>
+        <div class="body">
+          <div class="who"><b>you</b><span class="tag">12:25</span></div>
+          <div class="text">build a working preview from this YC job URL — <span class="mono">workatastartup.com/jobs/82957</span>. we ship while they hire.</div>
+        </div>
+      </div>
+
+      <!-- agent: spec extraction -->
+      <div class="msg">
+        <div class="av agent">G</div>
+        <div class="body">
+          <div class="who"><b>builder</b><span class="tag">gemini-adk</span><span class="tag">@spec-extractor</span></div>
+          <div class="text">
+            ok. fetching the JD. reading between the lines — they keep saying "AI-native CRM for ops teams" and "we have 3 design partners" but the JD wants a Rails monolith engineer, so the spec is actually mid. extracting:
+          </div>
+          <div class="card">
+            <div class="card-h">
+              <svg class="ico" viewBox="0 0 14 14" fill="none"><path d="M3 3h8M3 7h8M3 11h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <b>spec.json</b>
+              <span class="traceid">trace 4f2a..b91c</span>
+            </div>
+            <div class="spans">
+              <div class="span"><span class="name">jd.fetch</span><span class="bar"><i class="ok" style="left:0;width:8%"></i></span><span class="ms">412ms</span></div>
+              <div class="span"><span class="name">gemini.extract</span><span class="bar"><i class="ok" style="left:8%;width:34%"></i></span><span class="ms">1.7s</span></div>
+              <div class="span"><span class="name">design.tokens</span><span class="bar"><i class="ok" style="left:42%;width:18%"></i></span><span class="ms">0.9s</span></div>
+              <div class="span"><span class="name">routes.plan</span><span class="bar"><i class="ok" style="left:60%;width:22%"></i></span><span class="ms">1.1s</span></div>
+              <div class="span"><span class="name">api.contracts</span><span class="bar"><i class="warn" style="left:82%;width:18%"></i></span><span class="ms">0.9s</span></div>
+            </div>
+          </div>
+          <div class="text" style="margin-top:8px">3 routes (<span class="mono">/</span>, <span class="mono">/pipeline</span>, <span class="mono">/contacts</span>), 2 APIs (<span class="mono">POST /enrich</span>, <span class="mono">GET /pipeline</span>). orange-on-cream design tokens — they're cosplaying YC. shipping codegen now<span class="typing"></span></div>
+        </div>
+      </div>
+
+      <!-- agent: deploy card -->
+      <div class="msg">
+        <div class="av agent">G</div>
+        <div class="body">
+          <div class="who"><b>builder</b><span class="tag">@deployer-cloudrun</span><span class="tag">+9m41s</span></div>
+          <div class="text">first deploy is live. iter 1 — not converged yet, judge is already complaining.</div>
+          <div class="deploy">
+            <div class="url"><span class="live"></span>https://whyc-preview-82957-iter1-uc.a.run.app</div>
+            <div class="grid">
+              <div class="stat"><div class="k">spec-fit</div><div class="v orange">71%</div></div>
+              <div class="stat"><div class="k">cold start</div><div class="v">820ms</div></div>
+              <div class="stat"><div class="k">routes ok</div><div class="v green">3 / 3</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- judge -->
+      <div class="msg">
+        <div class="av judge">J</div>
+        <div class="body">
+          <div class="who"><b>phoenix-judge</b><span class="tag">llm-as-judge</span><span class="tag">trace 7c11..ae40</span></div>
+          <div class="judge">
+            <span class="verdict">PARTIAL</span>
+            <em>route <span class="mono" style="color:var(--orange)">/pipeline</span> renders an empty state instead of the 3 sample deals declared in spec. <span class="mono" style="color:var(--orange)">POST /enrich</span> returns 200 but body shape doesn't match contract (<span class="mono" style="color:var(--orange)">company_name</span> vs <span class="mono" style="color:var(--orange)">companyName</span>). regenerating only those two flows.</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- convergence card -->
+      <div class="msg">
+        <div class="av agent">G</div>
+        <div class="body">
+          <div class="who"><b>builder</b><span class="tag">self-improvement loop</span></div>
+          <div class="text">running background convergence. you can close this tab — i'll ping you when spec-fit ≥ 95%.</div>
+          <div class="conv">
+            <div class="conv-h">
+              <svg class="ico" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11c0-3 2-6 5-6s5 3 5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="12" cy="11" r="1.5" fill="currentColor"/></svg>
+              <b>convergence — spec-fit over iterations</b>
+              <span class="clock">23h 41m elapsed</span>
+            </div>
+            <div class="conv-rows">
+              <div class="conv-row"><span class="lab">iter 1</span><span class="track"><i style="width:71%"></i></span><span class="pct">71%</span></div>
+              <div class="conv-row"><span class="lab">iter 2</span><span class="track"><i style="width:84%"></i></span><span class="pct">84%</span></div>
+              <div class="conv-row"><span class="lab">iter 3</span><span class="track"><i style="width:92%"></i></span><span class="pct">92%</span></div>
+              <div class="conv-row cur"><span class="lab">iter 4</span><span class="track"><i style="width:96%"></i></span><span class="pct">96%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- final agent message -->
+      <div class="msg">
+        <div class="av agent">G</div>
+        <div class="body">
+          <div class="who"><b>builder</b><span class="tag">converged</span><span class="tag">+23h 41m</span></div>
+          <div class="text">done. <span class="mono">whyc-preview-82957-final.a.run.app</span> is the canonical URL. spec-fit 96%, judge says ship it. while they were drafting the rejection email for the rails engineer, we shipped their product. say <span class="mono">@trace</span> if you want the full Phoenix timeline, or <span class="mono">@rerun --temperature 0.9</span> for a sassier variant.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="composer-wrap">
+      <div class="composer">
+        <div class="compose-row">
+          <div class="input"><span class="mention">@phoenix-judge</span> <span class="ph">why did /pipeline regress between iter 2 and iter 3? show me the spans where the score dropped</span></div>
+        </div>
+
+        <div class="palette">
+          <div class="pal-row sel"><span class="cmd">@phoenix-judge</span><span class="desc">query OpenInference traces, score deployed preview vs spec</span><span class="hint">↵ to mention</span></div>
+          <div class="pal-row"><span class="cmd">@spec-extractor</span><span class="desc">re-extract spec from JD/URL, override fields</span><span class="hint">tab</span></div>
+          <div class="pal-row"><span class="cmd">@codegen-next</span><span class="desc">regenerate Next.js route or component</span><span class="hint">tab</span></div>
+          <div class="pal-row"><span class="cmd">/deploy</span><span class="desc">push current build to Cloud Run, get fresh URL</span><span class="hint">⌘↵</span></div>
+          <div class="pal-row"><span class="cmd">/converge</span><span class="desc">run loop until spec-fit ≥ N (default 95)</span><span class="hint">⌘↵</span></div>
+        </div>
+
+        <div class="compose-foot">
+          <span class="chip"><b>@</b> agents</span>
+          <span class="chip"><b>/</b> commands</span>
+          <span class="chip pwarn">no forms · no wizards · just chat</span>
+          <span class="right">
+            <span>gemini-adk · phoenix-mcp · cloud-run</span>
+            <button class="send">send ↵</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC NOC — Spec-Fit Operations Console</title>
+<style>
+  :root {
+    --bg:        oklch(18% 0.02 60);
+    --panel:     oklch(22% 0.025 60);
+    --panel-2:   oklch(26% 0.03 60);
+    --line:      oklch(32% 0.02 60);
+    --text:      oklch(94% 0.02 90);
+    --muted:     oklch(68% 0.02 80);
+    --ok:        oklch(76% 0.18 145);
+    --warn:      oklch(82% 0.17 85);
+    --crit:      oklch(68% 0.22 25);
+    --info:      oklch(72% 0.13 230);
+    --yc:        oklch(72% 0.20 55);
+    --yc-soft:   oklch(72% 0.20 55 / 0.14);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, system-ui, -apple-system, sans-serif;
+    font-size: 13px; line-height: 1.45; }
+  .shell { max-width: 1320px; margin: 0 auto; padding: 16px 20px 40px; }
+
+  /* Top bar */
+  .top { display:flex; align-items:center; gap:14px; padding:10px 14px;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand .mark { width:26px; height:26px; }
+  .brand b { font-size:14px; letter-spacing:0.5px; }
+  .brand .sub { color:var(--muted); font-size:11px; }
+  .top .spacer { flex:1; }
+  .pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
+    border-radius:999px; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--muted); font-size:11px; }
+  .pill .dot { width:7px; height:7px; border-radius:50%; background:var(--ok);
+    box-shadow: 0 0 8px var(--ok); }
+  .pill.warn .dot { background:var(--warn); box-shadow:0 0 8px var(--warn); }
+  .pill.crit .dot { background:var(--crit); box-shadow:0 0 8px var(--crit); }
+  .clock { font-variant-numeric: tabular-nums; color:var(--text); }
+
+  h1 { font-size: 16px; margin: 18px 0 6px; letter-spacing:0.4px; }
+  .subhead { color:var(--muted); margin-bottom:14px; max-width: 880px; }
+  .subhead em { color:var(--yc); font-style: normal; }
+
+  /* KPI grid */
+  .grid { display:grid; gap:12px; }
+  .kpis { grid-template-columns: repeat(6, 1fr); }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; position:relative; }
+  .card .label { color:var(--muted); font-size:10.5px; text-transform:uppercase;
+    letter-spacing:0.8px; }
+  .card .value { font-size:22px; font-weight:600; margin-top:4px;
+    font-variant-numeric: tabular-nums; }
+  .card .delta { font-size:11px; margin-top:2px; color:var(--muted); }
+  .card .delta.up { color: var(--ok); }
+  .card .delta.down { color: var(--crit); }
+  .card .delta.flat { color: var(--warn); }
+  .card .corner { position:absolute; top:10px; right:12px; font-size:10px;
+    color:var(--muted); }
+
+  .row-2 { grid-template-columns: 2fr 1fr; margin-top:14px; }
+  .row-3 { grid-template-columns: 1fr 1fr 1fr; margin-top:14px; }
+
+  /* Section heads */
+  .section-head { display:flex; align-items:baseline; gap:10px; margin: 0 0 8px; }
+  .section-head h2 { font-size:12px; text-transform:uppercase; letter-spacing:1px;
+    color:var(--muted); margin:0; }
+  .section-head .meta { color:var(--muted); font-size:11px; }
+
+  /* Spec-fit chart */
+  .chart { height:160px; width:100%; }
+  .legend { display:flex; gap:14px; margin-top:8px; color:var(--muted); font-size:11px; }
+  .swatch { display:inline-block; width:10px; height:10px; border-radius:2px;
+    margin-right:6px; vertical-align:middle; }
+
+  /* Alert feed */
+  .alerts { max-height: 260px; overflow:auto; }
+  .alert { display:grid; grid-template-columns: 10px 70px 1fr 90px;
+    gap:10px; align-items:start; padding:9px 10px; border-bottom:1px solid var(--line); }
+  .alert:last-child { border-bottom:none; }
+  .alert .sev { width:8px; height:8px; border-radius:50%; margin-top:6px; }
+  .alert.crit .sev { background:var(--crit); box-shadow:0 0 6px var(--crit); }
+  .alert.warn .sev { background:var(--warn); box-shadow:0 0 6px var(--warn); }
+  .alert.info .sev { background:var(--info); }
+  .alert .t { color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums; }
+  .alert .msg { font-size:12px; }
+  .alert .msg .anno { display:block; color:var(--muted); margin-top:3px;
+    border-left:2px solid var(--info); padding:3px 0 3px 8px; font-size:11px; }
+  .alert .ack { font-size:10.5px; color:var(--muted); text-align:right;
+    font-variant-numeric:tabular-nums; }
+
+  /* Pipeline stages */
+  .stages { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;
+    margin-top:8px; }
+  .stage { background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+    padding:10px; }
+  .stage .s-name { font-size:11px; color:var(--muted); text-transform:uppercase;
+    letter-spacing:0.6px; }
+  .stage .s-state { display:flex; align-items:center; gap:6px; margin-top:4px;
+    font-size:13px; }
+  .stage .s-state .d { width:6px; height:6px; border-radius:50%; }
+  .stage .s-state.ok .d { background:var(--ok); }
+  .stage .s-state.run .d { background:var(--info); animation: blink 1.2s infinite; }
+  .stage .s-state.warn .d { background:var(--warn); }
+  .stage .s-state.crit .d { background:var(--crit); }
+  .stage .s-meta { color:var(--muted); font-size:11px; margin-top:6px;
+    font-variant-numeric:tabular-nums; }
+  @keyframes blink { 50% { opacity: 0.35; } }
+
+  /* Audit log */
+  .log { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; }
+  .log table { width:100%; border-collapse: collapse; }
+  .log th, .log td { padding:7px 12px; text-align:left; border-bottom:1px solid var(--line);
+    font-size:11.5px; vertical-align: top; }
+  .log th { color:var(--muted); font-weight:500; text-transform:uppercase;
+    letter-spacing:0.7px; font-size:10.5px; background:var(--panel-2); }
+  .log tr:last-child td { border-bottom:none; }
+  .log td.mono { font-variant-numeric: tabular-nums; color:var(--muted); }
+  .tag { display:inline-block; padding:1px 7px; border-radius:4px; font-size:10.5px;
+    border:1px solid var(--line); color:var(--muted); }
+  .tag.ok { color:var(--ok); border-color: oklch(76% 0.18 145 / 0.5); }
+  .tag.regen { color:var(--warn); border-color: oklch(82% 0.17 85 / 0.5); }
+  .tag.skip { color:var(--info); border-color: oklch(72% 0.13 230 / 0.5); }
+
+  /* Runbook */
+  .runbook { background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .runbook h3 { margin:0 0 8px; font-size:12px; letter-spacing:0.8px;
+    text-transform:uppercase; color:var(--yc); }
+  .runbook ol { margin:0; padding-left:18px; }
+  .runbook li { margin:4px 0; color:var(--text); }
+  .runbook .src { color:var(--muted); font-size:11px; margin-top:8px;
+    border-top:1px dashed var(--line); padding-top:8px; }
+
+  /* Burn meter */
+  .meter { height:8px; background:var(--panel-2); border-radius:4px; overflow:hidden;
+    margin-top:6px; border:1px solid var(--line); }
+  .meter > span { display:block; height:100%; background:linear-gradient(90deg,
+    var(--ok), var(--warn) 70%, var(--crit)); }
+
+  footer { margin-top:18px; color:var(--muted); font-size:11px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="6" fill="oklch(72% 0.20 55 / 0.18)" stroke="oklch(72% 0.20 55)" stroke-width="1.5"/>
+        <path d="M8 12 L12 22 L16 14 L20 22 L24 12" fill="none" stroke="oklch(72% 0.20 55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="26" cy="6" r="2.5" fill="oklch(76% 0.18 145)"/>
+      </svg>
+      <div>
+        <b>WhyC // NOC</b>
+        <div class="sub">spec-fit operations console · arize track</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <span class="pill"><span class="dot"></span> pipeline: nominal</span>
+    <span class="pill warn"><span class="dot"></span> 1 active alert</span>
+    <span class="pill"><span class="dot"></span> phoenix mcp: connected</span>
+    <span class="pill clock">2026-05-06 14:32:07 PT</span>
+  </div>
+
+  <h1>While YC pages on-call about <em>hiring</em>, we page on-call about <em>spec-fit drift</em>.</h1>
+  <p class="subhead">
+    This is not a demo screen — it is the dashboard the WhyC operator stares at all day. Every preview shipped to Cloud Run lives here until convergence. Cost, latency, regen budget, and Phoenix-derived root-cause annotations on one wall. Boring on purpose.
+  </p>
+
+  <!-- KPI ROW -->
+  <div class="grid kpis">
+    <div class="card">
+      <div class="label">pipeline uptime · 30d</div>
+      <div class="value">99.71%</div>
+      <div class="delta up">+0.04 vs prev window</div>
+      <div class="corner">SLO 99.5</div>
+    </div>
+    <div class="card">
+      <div class="label">previews shipped · 24h</div>
+      <div class="value">47</div>
+      <div class="delta up">+12 vs yesterday</div>
+      <div class="corner">target 24/d</div>
+    </div>
+    <div class="card">
+      <div class="label">median spec-fit @ converge</div>
+      <div class="value">94.2%</div>
+      <div class="delta up">+1.8 wow</div>
+      <div class="corner">judge: gemini</div>
+    </div>
+    <div class="card">
+      <div class="label">p95 first-url latency</div>
+      <div class="value">9m 41s</div>
+      <div class="delta flat">flat</div>
+      <div class="corner">SLO &lt; 10m</div>
+    </div>
+    <div class="card">
+      <div class="label">$ / converged preview</div>
+      <div class="value">$0.83</div>
+      <div class="delta down">+$0.07 (regen ↑)</div>
+      <div class="corner">budget $1.20</div>
+    </div>
+    <div class="card">
+      <div class="label">regen budget burn</div>
+      <div class="value">62%</div>
+      <div class="meter"><span style="width:62%"></span></div>
+      <div class="delta">resets 00:00 PT</div>
+    </div>
+  </div>
+
+  <!-- ROW: chart + alerts -->
+  <div class="grid row-2">
+    <div class="card">
+      <div class="section-head">
+        <h2>spec-fit convergence · live job WHYC-2026-0512</h2>
+        <span class="meta">input: synthetic JD · started 14:21 PT · iter 4 of N</span>
+      </div>
+      <svg class="chart" viewBox="0 0 600 160" preserveAspectRatio="none" aria-label="spec-fit over time">
+        <defs>
+          <linearGradient id="fillg" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="oklch(72% 0.20 55)" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="oklch(72% 0.20 55)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- gridlines -->
+        <g stroke="oklch(32% 0.02 60)" stroke-dasharray="2 4">
+          <line x1="0" y1="32"  x2="600" y2="32"/>
+          <line x1="0" y1="64"  x2="600" y2="64"/>
+          <line x1="0" y1="96"  x2="600" y2="96"/>
+          <line x1="0" y1="128" x2="600" y2="128"/>
+        </g>
+        <!-- y labels -->
+        <g fill="oklch(68% 0.02 80)" font-size="9" font-family="ui-monospace,monospace">
+          <text x="4" y="30">100%</text>
+          <text x="4" y="62">85%</text>
+          <text x="4" y="94">70%</text>
+          <text x="4" y="126">55%</text>
+        </g>
+        <!-- SLO band (target >= 90) -->
+        <rect x="0" y="22" width="600" height="20" fill="oklch(76% 0.18 145 / 0.10)"/>
+        <text x="540" y="36" fill="oklch(76% 0.18 145)" font-size="9">SLO 90%</text>
+        <!-- spec-fit area: 71 -> 84 -> 92 -> 96 across iters; project x positions -->
+        <path d="M 30,90 C 110,90 130,68 200,68 C 260,68 290,46 360,46 C 420,46 450,30 530,30 L 530,150 L 30,150 Z"
+              fill="url(#fillg)"/>
+        <path d="M 30,90 C 110,90 130,68 200,68 C 260,68 290,46 360,46 C 420,46 450,30 530,30"
+              fill="none" stroke="oklch(72% 0.20 55)" stroke-width="2"/>
+        <!-- iteration markers -->
+        <g fill="oklch(94% 0.02 90)">
+          <circle cx="30"  cy="90" r="3.5"/>
+          <circle cx="200" cy="68" r="3.5"/>
+          <circle cx="360" cy="46" r="3.5"/>
+          <circle cx="530" cy="30" r="3.5"/>
+        </g>
+        <g fill="oklch(68% 0.02 80)" font-size="9" font-family="ui-monospace,monospace">
+          <text x="22"  y="106">iter 1 · 71%</text>
+          <text x="186" y="58">iter 2 · 84%</text>
+          <text x="346" y="36">iter 3 · 92%</text>
+          <text x="496" y="20">iter 4 · 96%</text>
+        </g>
+      </svg>
+      <div class="legend">
+        <span><span class="swatch" style="background:oklch(72% 0.20 55)"></span>spec-fit %</span>
+        <span><span class="swatch" style="background:oklch(76% 0.18 145 / 0.4)"></span>SLO band ≥ 90%</span>
+        <span><span class="swatch" style="background:oklch(72% 0.13 230)"></span>regen trigger</span>
+        <span style="margin-left:auto;color:var(--muted)">trace source: Phoenix MCP</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div style="padding:12px 14px 6px;">
+        <div class="section-head"><h2>active alerts</h2><span class="meta">opus-4.7 root-cause on critical</span></div>
+      </div>
+      <div class="alerts">
+        <div class="alert crit">
+          <span class="sev"></span>
+          <span class="t">14:31:54</span>
+          <div class="msg">
+            <b>spec-fit stalled</b> · job WHYC-2026-0497 · 3 iters @ 88.1%
+            <span class="anno">opus-4.7 (1M ctx, 12.4k trace tokens): "judge penalises empty pricing page; codegen agent skips routes/pricing because spec extractor returned null. patch extractor regex for /pricing|plans|tiers/."</span>
+          </div>
+          <span class="ack">unack · 00:43</span>
+        </div>
+        <div class="alert warn">
+          <span class="sev"></span>
+          <span class="t">14:18:02</span>
+          <div class="msg">
+            regen budget burn rate +18% above 7d baseline · projecting exhaustion at 21:40 PT
+          </div>
+          <span class="ack">snoozed · sjk</span>
+        </div>
+        <div class="alert info">
+          <span class="sev"></span>
+          <span class="t">14:09:47</span>
+          <div class="msg">cloud run cold-start spike on us-central1 · 3 deploys retried, all green</div>
+          <span class="ack">auto-resolved</span>
+        </div>
+        <div class="alert info">
+          <span class="sev"></span>
+          <span class="t">13:51:11</span>
+          <div class="msg">phoenix mcp reconnect · trace lag 4.2s → 0.6s</div>
+          <span class="ack">auto-resolved</span>
+        </div>
+        <div class="alert warn">
+          <span class="sev"></span>
+          <span class="t">13:22:30</span>
+          <div class="msg">gemini quota at 78% of hourly window · throttle armed</div>
+          <span class="ack">ack · co-founder</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW: pipeline + runbook + audit summary -->
+  <div class="grid row-3">
+    <div class="card">
+      <div class="section-head"><h2>pipeline stages · live job</h2><span class="meta">WHYC-2026-0512</span></div>
+      <div class="stages">
+        <div class="stage"><div class="s-name">1 · spec extract</div>
+          <div class="s-state ok"><span class="d"></span>complete</div>
+          <div class="s-meta">gemini · 41s · 1.2k tok</div></div>
+        <div class="stage"><div class="s-name">2 · codegen + tokens</div>
+          <div class="s-state ok"><span class="d"></span>complete</div>
+          <div class="s-meta">adk · 3m 12s · 18 files</div></div>
+        <div class="stage"><div class="s-name">3 · cloud run deploy</div>
+          <div class="s-state ok"><span class="d"></span>live</div>
+          <div class="s-meta">rev-007 · 9m 41s ttl</div></div>
+        <div class="stage"><div class="s-name">4 · judge + regen</div>
+          <div class="s-state run"><span class="d"></span>iter 4 running</div>
+          <div class="s-meta">phoenix · spec-fit 96%</div></div>
+      </div>
+      <div style="margin-top:10px; color:var(--muted); font-size:11px;">
+        deployed url · <span style="color:var(--info)">whyc-0512-rev7.run.app</span> · auto-promote at ≥97%
+      </div>
+    </div>
+
+    <div class="runbook">
+      <h3>on-call runbook · RB-014</h3>
+      <div style="color:var(--muted); font-size:11px; margin-bottom:6px;">trigger: spec-fit stalled ≥3 iters below 90%</div>
+      <ol>
+        <li>open Phoenix trace for failing job → check judge rubric breakdown</li>
+        <li>if same flow fails 2× → mark route as <span class="tag skip">skip-regen</span> (don't burn budget on impossible specs)</li>
+        <li>if extractor null on key route → push regex hotfix to <code>spec_extractor.py</code></li>
+        <li>if Gemini quota &gt; 80% → flip throttle to <span class="tag regen">conservative</span></li>
+        <li>page co-founder only if convergence projection &gt; 4h</li>
+      </ol>
+      <div class="src">authored 2026-05-06 · last drill: green · owner: sjk</div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><h2>cost &amp; quota · today</h2><span class="meta">budget pacing</span></div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px 14px; font-size:12px;">
+        <span style="color:var(--muted)">gemini tokens</span><span>4.18M / 6.0M</span>
+        <span style="color:var(--muted)">cloud run cpu-h</span><span>2.34 / 5.00</span>
+        <span style="color:var(--muted)">cloud run egress</span><span>0.61 GB / 5 GB</span>
+        <span style="color:var(--muted)">phoenix trace ingest</span><span>112k / unlimited</span>
+        <span style="color:var(--muted)">opus-4.7 annotation calls</span><span>23 / 200</span>
+        <span style="color:var(--muted)">spend (proj. EOD)</span><span style="color:var(--warn)">$38.40 / $50.00</span>
+      </div>
+      <div class="meter" style="margin-top:10px"><span style="width:77%"></span></div>
+      <div style="color:var(--muted); font-size:11px; margin-top:6px;">
+        77% of daily ceiling · throttle arms at 90%
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG -->
+  <div style="margin-top:14px;">
+    <div class="section-head"><h2>regen audit log</h2><span class="meta">last 8 decisions · every regen has a reason</span></div>
+    <div class="log">
+      <table>
+        <thead><tr>
+          <th style="width:120px">timestamp</th>
+          <th style="width:140px">job</th>
+          <th style="width:90px">decision</th>
+          <th>reason (judge rubric → action)</th>
+          <th style="width:80px">Δ spec-fit</th>
+          <th style="width:70px">cost</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="mono">14:31:42</td><td class="mono">WHYC-0497</td><td><span class="tag regen">regen</span></td><td>pricing route empty · extractor null · scoped regen on /pricing only</td><td class="mono">+0.0</td><td class="mono">$0.04</td></tr>
+          <tr><td class="mono">14:28:11</td><td class="mono">WHYC-0512</td><td><span class="tag regen">regen</span></td><td>hero copy off-brand vs spec voice · iter 3 → 4</td><td class="mono">+4.1</td><td class="mono">$0.06</td></tr>
+          <tr><td class="mono">14:19:55</td><td class="mono">WHYC-0511</td><td><span class="tag ok">converged</span></td><td>spec-fit 97.3% · auto-promote · revision pinned</td><td class="mono">—</td><td class="mono">$0.81</td></tr>
+          <tr><td class="mono">14:11:08</td><td class="mono">WHYC-0510</td><td><span class="tag skip">skip</span></td><td>same flow failed 2× · marked impossible-spec · won't burn budget</td><td class="mono">—</td><td class="mono">$0.00</td></tr>
+          <tr><td class="mono">14:02:33</td><td class="mono">WHYC-0509</td><td><span class="tag regen">regen</span></td><td>auth flow missing CTA · partial regen /signup</td><td class="mono">+2.7</td><td class="mono">$0.05</td></tr>
+          <tr><td class="mono">13:54:19</td><td class="mono">WHYC-0508</td><td><span class="tag ok">converged</span></td><td>spec-fit 94.0% · within SLO · promoted</td><td class="mono">—</td><td class="mono">$0.77</td></tr>
+          <tr><td class="mono">13:41:02</td><td class="mono">WHYC-0507</td><td><span class="tag regen">regen</span></td><td>token palette drift · regen design tokens only (no codegen)</td><td class="mono">+1.4</td><td class="mono">$0.02</td></tr>
+          <tr><td class="mono">13:28:47</td><td class="mono">WHYC-0506</td><td><span class="tag ok">converged</span></td><td>spec-fit 96.8% · promoted · 4 iters total</td><td class="mono">—</td><td class="mono">$0.91</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    WhyC NOC v0.1 · while they hire, we ship · while they ship, we observe · phoenix mcp + opus-4.7 root-cause on critical · no real YC names rendered, all jobs synthetic
+  </footer>
+</div>
+</body>
+</html>

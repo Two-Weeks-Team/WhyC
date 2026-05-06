@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC · Portfolio Build-Velocity Terminal</title>
+<style>
+  :root {
+    --bg:        oklch(0.16 0.012 250);
+    --panel:     oklch(0.20 0.014 250);
+    --panel-2:   oklch(0.23 0.016 250);
+    --row:       oklch(0.19 0.013 250);
+    --row-alt:   oklch(0.21 0.014 250);
+    --row-hover: oklch(0.27 0.030 60);
+    --row-sel:   oklch(0.31 0.060 60);
+    --line:      oklch(0.32 0.014 250);
+    --txt:       oklch(0.94 0.010 250);
+    --dim:       oklch(0.66 0.010 250);
+    --mute:      oklch(0.50 0.010 250);
+    --orange:    oklch(0.74 0.18 55);
+    --orange-2:  oklch(0.62 0.16 50);
+    --green:     oklch(0.78 0.16 145);
+    --red:       oklch(0.66 0.20 25);
+    --yellow:    oklch(0.84 0.16 90);
+    --blue:      oklch(0.72 0.13 240);
+    --kbd:       oklch(0.28 0.014 250);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 12px/1.35 system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--txt);
+    font-feature-settings: "tnum" 1, "ss01" 1;
+  }
+  .app { display: grid; grid-template-rows: 32px 44px 36px 1fr 24px; height: 100vh; }
+
+  /* --- menu bar --- */
+  .menubar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 0 12px; background: var(--panel-2);
+    border-bottom: 1px solid var(--line); font-size: 11px;
+  }
+  .brand { display: flex; align-items: center; gap: 6px; font-weight: 600; letter-spacing: 0.02em; }
+  .brand-mark { width: 14px; height: 14px; }
+  .menubar .item { color: var(--dim); cursor: default; padding: 2px 6px; border-radius: 3px; }
+  .menubar .item:hover { background: var(--panel); color: var(--txt); }
+  .menubar .spacer { flex: 1; }
+  .menubar .meta { color: var(--mute); font-variant-numeric: tabular-nums; }
+  .pill { padding: 1px 6px; border: 1px solid var(--line); border-radius: 10px; color: var(--dim); }
+  .pill.live { color: var(--green); border-color: oklch(0.45 0.12 145); }
+  .pill.live::before { content: "●"; margin-right: 4px; }
+
+  /* --- toolbar --- */
+  .toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px; background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .search {
+    flex: 0 0 280px; display: flex; align-items: center; gap: 6px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 4px;
+    padding: 4px 8px;
+  }
+  .search input {
+    flex: 1; background: transparent; border: 0; outline: 0;
+    color: var(--txt); font: inherit;
+  }
+  .kbd { font: 10px/1 ui-monospace, Menlo, monospace; background: var(--kbd);
+         color: var(--dim); padding: 2px 5px; border-radius: 3px; border: 1px solid var(--line); }
+  .btn {
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--txt);
+    padding: 4px 10px; border-radius: 4px; cursor: default; font-size: 11px;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn:hover { background: var(--row-hover); border-color: var(--orange); }
+  .btn.primary { background: var(--orange); color: oklch(0.18 0.02 50); border-color: var(--orange); font-weight: 600; }
+  .chip {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    border: 1px solid var(--line); color: var(--dim); background: var(--panel-2);
+  }
+  .chip.on { color: var(--orange); border-color: var(--orange); background: oklch(0.24 0.05 55); }
+  .toolbar .spacer { flex: 1; }
+
+  /* --- filter bar (group/sort/filter chips) --- */
+  .filterbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px; background: var(--panel-2);
+    border-bottom: 1px solid var(--line); color: var(--dim); font-size: 11px;
+  }
+  .filterbar .label { color: var(--mute); text-transform: uppercase; font-size: 10px; letter-spacing: 0.06em; }
+
+  /* --- grid --- */
+  .grid-wrap { overflow: auto; background: var(--bg); position: relative; }
+  table.grid { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1480px; font-size: 11.5px; }
+  table.grid thead th {
+    position: sticky; top: 0; z-index: 3;
+    background: var(--panel-2); color: var(--dim);
+    text-align: left; font-weight: 600; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 6px 8px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line);
+    white-space: nowrap; user-select: none;
+  }
+  table.grid thead th .resizer {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 3px;
+    background: transparent; cursor: col-resize;
+  }
+  table.grid thead th:hover .resizer { background: var(--orange-2); }
+  table.grid thead th.sorted { color: var(--orange); }
+  table.grid thead th.sorted::after { content: " ▼"; }
+  table.grid th.sticky-col, table.grid td.sticky-col {
+    position: sticky; left: 0; z-index: 2; background: var(--panel-2);
+    border-right: 1px solid var(--line);
+  }
+  table.grid thead th.sticky-col { z-index: 4; }
+  table.grid tbody tr:nth-child(odd) td { background: var(--row); }
+  table.grid tbody tr:nth-child(even) td { background: var(--row-alt); }
+  table.grid tbody tr:nth-child(odd) td.sticky-col { background: var(--row); }
+  table.grid tbody tr:nth-child(even) td.sticky-col { background: var(--row-alt); }
+  table.grid tbody tr:hover td,
+  table.grid tbody tr:hover td.sticky-col { background: var(--row-hover); }
+  table.grid tbody tr.selected td,
+  table.grid tbody tr.selected td.sticky-col { background: var(--row-sel); }
+  table.grid td {
+    padding: 5px 8px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line);
+    white-space: nowrap; vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+  }
+  td.num { text-align: right; }
+  td.code { font-family: ui-monospace, Menlo, monospace; color: var(--dim); }
+  .tag { font-size: 10px; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); color: var(--dim); }
+  .tag.batch { background: oklch(0.27 0.05 55); color: var(--orange); border-color: var(--orange-2); }
+  .tag.fintech { color: var(--blue); border-color: oklch(0.45 0.10 240); }
+  .tag.devtools { color: var(--green); border-color: oklch(0.45 0.10 145); }
+  .tag.consumer { color: var(--yellow); border-color: oklch(0.55 0.10 90); }
+  .tag.b2b { color: oklch(0.78 0.10 320); border-color: oklch(0.45 0.10 320); }
+
+  .bar { display: inline-block; width: 84px; height: 6px; background: var(--kbd); border-radius: 3px; overflow: hidden; vertical-align: middle; margin-right: 6px; }
+  .bar > span { display: block; height: 100%; background: var(--orange); }
+  .bar.green > span { background: var(--green); }
+  .bar.red > span { background: var(--red); }
+
+  .delta-pos { color: var(--green); }
+  .delta-neg { color: var(--red); }
+  .delta-zero { color: var(--mute); }
+
+  .status-conv { color: var(--green); }
+  .status-loop { color: var(--orange); }
+  .status-fail { color: var(--red); }
+  .status-queue { color: var(--mute); }
+
+  .url { color: var(--blue); text-decoration: none; }
+  .url:hover { text-decoration: underline; }
+
+  /* --- footer status bar --- */
+  .statusbar {
+    display: flex; align-items: center; gap: 18px;
+    padding: 0 12px; background: var(--panel-2);
+    border-top: 1px solid var(--line);
+    font-size: 10.5px; color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .statusbar .grow { flex: 1; }
+  .statusbar b { color: var(--txt); font-weight: 600; }
+
+  /* tiny inline sparkline */
+  svg.spark { vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- menubar -->
+  <div class="menubar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="15" height="15" rx="2.5" fill="oklch(0.74 0.18 55)"/>
+        <text x="8" y="11.5" font-family="system-ui" font-size="9" font-weight="700"
+              text-anchor="middle" fill="oklch(0.16 0.02 50)">W</text>
+      </svg>
+      WhyC<span style="color:var(--mute);font-weight:400;">/portfolio.terminal</span>
+    </div>
+    <span class="item">File</span>
+    <span class="item">View</span>
+    <span class="item">Pivot</span>
+    <span class="item">Loop</span>
+    <span class="item">Export</span>
+    <span class="item">Help</span>
+    <span class="spacer"></span>
+    <span class="pill live">phoenix.mcp 14ms</span>
+    <span class="pill">adk.runtime · gemini-2.5</span>
+    <span class="meta">workspace: <b style="color:var(--txt)">acme-vc/winter-watchlist</b></span>
+    <span class="meta">2026-05-06 12:25 UTC</span>
+  </div>
+
+  <!-- toolbar -->
+  <div class="toolbar">
+    <div class="search">
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+        <circle cx="5" cy="5" r="3.5" fill="none" stroke="oklch(0.66 0.01 250)" stroke-width="1.2"/>
+        <line x1="7.5" y1="7.5" x2="10.5" y2="10.5" stroke="oklch(0.66 0.01 250)" stroke-width="1.2"/>
+      </svg>
+      <input placeholder="Filter rows · regex ok · e.g.  fit:&lt;80 batch:W25 hiring:&gt;3" />
+      <span class="kbd">/</span>
+    </div>
+    <span class="btn">＋ Add company</span>
+    <span class="btn">⤓ Import CSV</span>
+    <span class="btn">⇅ Group by <span style="color:var(--orange)">batch</span></span>
+    <span class="btn">⌗ Pivot</span>
+    <span class="btn primary">▶ Re-run loop on selection (3)</span>
+    <span class="spacer"></span>
+    <span class="chip on">spec-fit ≥ 0</span>
+    <span class="chip on">batch: W24·S24·W25</span>
+    <span class="chip">status: any</span>
+    <span class="chip">⊕ filter</span>
+  </div>
+
+  <!-- filterbar -->
+  <div class="filterbar">
+    <span class="label">Sort</span>
+    <span>spec_fit_24h <span style="color:var(--orange)">▼</span></span>
+    <span class="label">·</span>
+    <span class="label">Group</span><span>batch</span>
+    <span class="label">·</span>
+    <span class="label">Rows</span><span>12 / 64</span>
+    <span style="flex:1"></span>
+    <span class="label">Shortcuts</span>
+    <span class="kbd">J</span><span>/</span><span class="kbd">K</span> row
+    <span class="kbd">S</span> sort
+    <span class="kbd">F</span> filter
+    <span class="kbd">G</span> group
+    <span class="kbd">R</span> re-run
+    <span class="kbd">⌘E</span> export
+    <span class="kbd">⌘.</span> palette
+  </div>
+
+  <!-- grid -->
+  <div class="grid-wrap">
+    <table class="grid">
+      <colgroup>
+        <col style="width:36px"><col style="width:96px"><col style="width:200px">
+        <col style="width:64px"><col style="width:88px"><col style="width:78px">
+        <col style="width:70px"><col style="width:170px"><col style="width:120px">
+        <col style="width:78px"><col style="width:90px"><col style="width:78px">
+        <col style="width:140px"><col style="width:96px"><col style="width:200px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="sticky-col" style="left:0"><input type="checkbox" /></th>
+          <th class="sticky-col" style="left:36px">Code<span class="resizer"></span></th>
+          <th class="sticky-col sorted" style="left:132px">Spec-fit % @24h<span class="resizer"></span></th>
+          <th class="num">Batch<span class="resizer"></span></th>
+          <th>Sector<span class="resizer"></span></th>
+          <th class="num">DD+days<span class="resizer"></span></th>
+          <th class="num">Hiring<span class="resizer"></span></th>
+          <th>Convergence (4 iters)<span class="resizer"></span></th>
+          <th>Weakest flow<span class="resizer"></span></th>
+          <th class="num">Iter Δ<span class="resizer"></span></th>
+          <th class="num">Judge<span class="resizer"></span></th>
+          <th class="num">Cost $<span class="resizer"></span></th>
+          <th>Loop status<span class="resizer"></span></th>
+          <th>Trace<span class="resizer"></span></th>
+          <th>Deployed preview<span class="resizer"></span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 12 rows; mockup data; codenames anonymized per trademark constraint -->
+        <tr class="selected">
+          <td class="sticky-col" style="left:0"><input type="checkbox" checked></td>
+          <td class="sticky-col code" style="left:36px">YC-A1F2</td>
+          <td class="sticky-col"><span class="bar green"><span style="width:96%"></span></span><b>96.2</b></td>
+          <td class="num"><span class="tag batch">W24</span></td>
+          <td><span class="tag devtools">devtools</span></td>
+          <td class="num">186</td>
+          <td class="num">7</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22" aria-hidden="true">
+              <polyline fill="none" stroke="oklch(0.78 0.16 145)" stroke-width="1.5"
+                        points="2,18 42,12 82,6 118,3"/>
+              <circle cx="118" cy="3" r="2" fill="oklch(0.78 0.16 145)"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">71→84→92→96</text>
+            </svg>
+          </td>
+          <td>auth.callback</td>
+          <td class="num delta-pos">+4.1</td>
+          <td class="num">0.93</td>
+          <td class="num">$2.41</td>
+          <td><span class="status-conv">● converged</span></td>
+          <td class="code">ph://t/9af2…e1</td>
+          <td><a class="url" href="#">a1f2.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-B7K9</td>
+          <td class="sticky-col"><span class="bar green"><span style="width:92%"></span></span><b>92.4</b></td>
+          <td class="num"><span class="tag batch">W24</span></td>
+          <td><span class="tag fintech">fintech</span></td>
+          <td class="num">186</td>
+          <td class="num">12</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.78 0.16 145)" stroke-width="1.5"
+                        points="2,17 42,13 82,9 118,6"/>
+              <circle cx="118" cy="6" r="2" fill="oklch(0.78 0.16 145)"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">68→79→87→92</text>
+            </svg>
+          </td>
+          <td>kyc.upload</td>
+          <td class="num delta-pos">+4.8</td>
+          <td class="num">0.88</td>
+          <td class="num">$3.02</td>
+          <td><span class="status-conv">● converged</span></td>
+          <td class="code">ph://t/3c11…77</td>
+          <td><a class="url" href="#">b7k9.preview.run</a></td>
+        </tr>
+        <tr class="selected">
+          <td class="sticky-col" style="left:0"><input type="checkbox" checked></td>
+          <td class="sticky-col code" style="left:36px">YC-C2M4</td>
+          <td class="sticky-col"><span class="bar"><span style="width:84%"></span></span><b>84.0</b></td>
+          <td class="num"><span class="tag batch">S24</span></td>
+          <td><span class="tag consumer">consumer</span></td>
+          <td class="num">122</td>
+          <td class="num">4</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.74 0.18 55)" stroke-width="1.5"
+                        points="2,18 42,14 82,10 118,9"/>
+              <circle cx="118" cy="9" r="2" fill="oklch(0.74 0.18 55)"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">62→72→81→84</text>
+            </svg>
+          </td>
+          <td>onboarding.step3</td>
+          <td class="num delta-pos">+3.1</td>
+          <td class="num">0.79</td>
+          <td class="num">$1.88</td>
+          <td><span class="status-loop">⟳ iter 5/8</span></td>
+          <td class="code">ph://t/8d22…04</td>
+          <td><a class="url" href="#">c2m4.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-D5N8</td>
+          <td class="sticky-col"><span class="bar"><span style="width:81%"></span></span><b>81.7</b></td>
+          <td class="num"><span class="tag batch">S24</span></td>
+          <td><span class="tag b2b">b2b-saas</span></td>
+          <td class="num">122</td>
+          <td class="num">9</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.74 0.18 55)" stroke-width="1.5"
+                        points="2,18 42,15 82,12 118,10"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">60→70→77→82</text>
+            </svg>
+          </td>
+          <td>billing.checkout</td>
+          <td class="num delta-pos">+4.4</td>
+          <td class="num">0.76</td>
+          <td class="num">$2.10</td>
+          <td><span class="status-loop">⟳ iter 4/8</span></td>
+          <td class="code">ph://t/2bf0…aa</td>
+          <td><a class="url" href="#">d5n8.preview.run</a></td>
+        </tr>
+        <tr class="selected">
+          <td class="sticky-col" style="left:0"><input type="checkbox" checked></td>
+          <td class="sticky-col code" style="left:36px">YC-E9P3</td>
+          <td class="sticky-col"><span class="bar"><span style="width:78%"></span></span><b>78.3</b></td>
+          <td class="num"><span class="tag batch">W25</span></td>
+          <td><span class="tag devtools">devtools</span></td>
+          <td class="num">62</td>
+          <td class="num">2</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.74 0.18 55)" stroke-width="1.5"
+                        points="2,17 42,14 82,12 118,11"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">64→71→75→78</text>
+            </svg>
+          </td>
+          <td>cli.install</td>
+          <td class="num delta-pos">+2.9</td>
+          <td class="num">0.74</td>
+          <td class="num">$1.62</td>
+          <td><span class="status-loop">⟳ iter 3/8</span></td>
+          <td class="code">ph://t/6e44…c2</td>
+          <td><a class="url" href="#">e9p3.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-F4Q7</td>
+          <td class="sticky-col"><span class="bar"><span style="width:74%"></span></span><b>74.1</b></td>
+          <td class="num"><span class="tag batch">W25</span></td>
+          <td><span class="tag fintech">fintech</span></td>
+          <td class="num">62</td>
+          <td class="num">15</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.74 0.18 55)" stroke-width="1.5"
+                        points="2,18 42,16 82,14 118,12"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">58→66→71→74</text>
+            </svg>
+          </td>
+          <td>txn.history</td>
+          <td class="num delta-pos">+3.2</td>
+          <td class="num">0.69</td>
+          <td class="num">$2.77</td>
+          <td><span class="status-loop">⟳ iter 4/8</span></td>
+          <td class="code">ph://t/aa90…1f</td>
+          <td><a class="url" href="#">f4q7.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-G6R2</td>
+          <td class="sticky-col"><span class="bar"><span style="width:71%"></span></span><b>71.0</b></td>
+          <td class="num"><span class="tag batch">W25</span></td>
+          <td><span class="tag consumer">consumer</span></td>
+          <td class="num">62</td>
+          <td class="num">6</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.74 0.18 55)" stroke-width="1.5"
+                        points="2,18 42,15 82,14 118,14"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">71 (first deploy)</text>
+            </svg>
+          </td>
+          <td>feed.scroll</td>
+          <td class="num delta-zero">—</td>
+          <td class="num">0.66</td>
+          <td class="num">$0.91</td>
+          <td><span class="status-loop">⟳ iter 1/8</span></td>
+          <td class="code">ph://t/4f31…99</td>
+          <td><a class="url" href="#">g6r2.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-H1S5</td>
+          <td class="sticky-col"><span class="bar red"><span style="width:64%; background:oklch(0.66 0.20 25)"></span></span><b>64.4</b></td>
+          <td class="num"><span class="tag batch">W24</span></td>
+          <td><span class="tag b2b">b2b-saas</span></td>
+          <td class="num">186</td>
+          <td class="num">21</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.66 0.20 25)" stroke-width="1.5"
+                        points="2,15 42,15 82,16 118,16"/>
+              <text x="2" y="20" fill="oklch(0.66 0.20 25)" font-size="8">stalled · 21 jobs open</text>
+            </svg>
+          </td>
+          <td>dashboard.charts</td>
+          <td class="num delta-neg">-0.4</td>
+          <td class="num">0.58</td>
+          <td class="num">$3.40</td>
+          <td><span class="status-fail">✕ judge regress</span></td>
+          <td class="code">ph://t/77c1…83</td>
+          <td><a class="url" href="#">h1s5.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-J3T1</td>
+          <td class="sticky-col"><span class="bar"><span style="width:60%"></span></span><b>60.8</b></td>
+          <td class="num"><span class="tag batch">S24</span></td>
+          <td><span class="tag devtools">devtools</span></td>
+          <td class="num">122</td>
+          <td class="num">11</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.74 0.18 55)" stroke-width="1.5"
+                        points="2,18 42,17 82,16 118,15"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">52→55→58→61</text>
+            </svg>
+          </td>
+          <td>sdk.handshake</td>
+          <td class="num delta-pos">+2.6</td>
+          <td class="num">0.55</td>
+          <td class="num">$2.05</td>
+          <td><span class="status-loop">⟳ iter 6/8</span></td>
+          <td class="code">ph://t/0b09…dd</td>
+          <td><a class="url" href="#">j3t1.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-K8U6</td>
+          <td class="sticky-col"><span class="bar"><span style="width:55%"></span></span><b>55.2</b></td>
+          <td class="num"><span class="tag batch">W25</span></td>
+          <td><span class="tag fintech">fintech</span></td>
+          <td class="num">62</td>
+          <td class="num">8</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.74 0.18 55)" stroke-width="1.5"
+                        points="2,18 42,17 82,17 118,16"/>
+              <text x="2" y="20" fill="oklch(0.66 0.01 250)" font-size="8">48→51→53→55</text>
+            </svg>
+          </td>
+          <td>compliance.flag</td>
+          <td class="num delta-pos">+1.8</td>
+          <td class="num">0.51</td>
+          <td class="num">$3.91</td>
+          <td><span class="status-loop">⟳ iter 5/8</span></td>
+          <td class="code">ph://t/ee47…12</td>
+          <td><a class="url" href="#">k8u6.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-L2V9</td>
+          <td class="sticky-col"><span class="bar red"><span style="width:42%; background:oklch(0.66 0.20 25)"></span></span><b>42.7</b></td>
+          <td class="num"><span class="tag batch">W24</span></td>
+          <td><span class="tag consumer">consumer</span></td>
+          <td class="num">186</td>
+          <td class="num">17</td>
+          <td>
+            <svg class="spark" width="120" height="22" viewBox="0 0 120 22">
+              <polyline fill="none" stroke="oklch(0.66 0.20 25)" stroke-width="1.5"
+                        points="2,18 42,18 82,18 118,17"/>
+              <text x="2" y="20" fill="oklch(0.66 0.20 25)" font-size="8">spec ambiguous · low signal</text>
+            </svg>
+          </td>
+          <td>core.unclear</td>
+          <td class="num delta-zero">+0.3</td>
+          <td class="num">0.40</td>
+          <td class="num">$4.18</td>
+          <td><span class="status-fail">✕ spec under-defined</span></td>
+          <td class="code">ph://t/c819…66</td>
+          <td><a class="url" href="#">l2v9.preview.run</a></td>
+        </tr>
+        <tr>
+          <td class="sticky-col" style="left:0"><input type="checkbox"></td>
+          <td class="sticky-col code" style="left:36px">YC-M7W4</td>
+          <td class="sticky-col"><span style="color:var(--mute)">queued</span></td>
+          <td class="num"><span class="tag batch">W25</span></td>
+          <td><span class="tag b2b">b2b-saas</span></td>
+          <td class="num">62</td>
+          <td class="num">3</td>
+          <td><span style="color:var(--mute);font-size:10px">— awaiting URL parse —</span></td>
+          <td><span style="color:var(--mute)">—</span></td>
+          <td class="num delta-zero">—</td>
+          <td class="num"><span style="color:var(--mute)">—</span></td>
+          <td class="num"><span style="color:var(--mute)">$0.00</span></td>
+          <td><span class="status-queue">○ queued · slot 4</span></td>
+          <td class="code"><span style="color:var(--mute)">—</span></td>
+          <td><span style="color:var(--mute)">pending</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- statusbar -->
+  <div class="statusbar">
+    <span><b>12</b> rows · <b>3</b> selected · <b>64</b> total in workspace</span>
+    <span>Σ spec-fit avg <b>71.0%</b> · sel avg <b>86.2%</b></span>
+    <span>Σ judge avg <b>0.66</b></span>
+    <span>Σ cost <b>$30.25</b> / day · proj <b>$214</b> / wk</span>
+    <span>active loops <b style="color:var(--orange)">7</b> · queued <b>1</b> · converged <b style="color:var(--green)">2</b> · failed <b style="color:var(--red)">2</b></span>
+    <span class="grow"></span>
+    <span>phoenix trace lag <b>14ms</b></span>
+    <span>adk runtime <b>healthy</b></span>
+    <span class="kbd">⌘E</span> CSV <span class="kbd">⌘P</span> pivot <span class="kbd">⌘K</span> palette
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "id": "P26",
+  "advocate": "The Anti-AI",
+  "framing": "WhyC is not an AI demo — it is a deployment tool. Hide every trace of the LLM stack from the surface so the satire lands as a normal serious product that simply ships faster than YC companies do.",
+  "target_persona": "Skeptical senior engineer / indie hacker who distrusts ✨-laden AI products and only respects deterministic tooling — they read the YC headline as a productivity claim, not a generative-AI parlor trick.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Opus 4.7 (server-side, invisible) handles spec extraction, codegen, and the Phoenix-fed self-improvement judging — but the surface only exposes a job queue and a URL. Capability shows up as outcome (deployed preview, spec-fit %), never as personality.",
+  "mvp_scope": "One screen. Paste workatastartup.com URL → Deploy. Status pill cycles through 6 deterministic stages (Queued → Extracting Spec → Generating → Deploying → Judging → Converged). Result row shows deployed Cloud Run URL + spec-fit score + elapsed time. That is the entire app. | surface: rule-based, deterministic, 사용자가 기대한 것만 정확히. Single text field for the YC posting URL, one Deploy button, one persistent status line, one resulting URL. No chat, no sparkles, no model names, no sparkle emojis, no streaming token flicker on the surface.",
+  "one_liner_pitch": "WhyC: paste a YC job posting, get a deployed product. No chatbot, no prompts, no AI theater — just a URL in, a URL out.",
+  "spec_alignment_notes": "all fields populated, followed spec verbatim — primary_surface=web/hybrid honored (status updates poll, not stream-tokens); JTBD-functional (URL→deployed preview in 24h with self-improvement loop) rendered literally as a job queue UI; killer_feature spec-fit % surfaced as a plain numeric column; brand tone 'pixel-perfect sleek, finished' interpreted as anti-AI minimalism rather than aggro headline (the satire is sharper when the artifact looks like a real serious tool); YC-orange parody allow...",
+  "mockup_path": "mockups/P26-the-anti-ai.html"
+}

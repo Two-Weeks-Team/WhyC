@@ -1,0 +1,12 @@
+{
+  "id": "P15",
+  "advocate": "The Community Builder",
+  "framing": "WhyC isn't a 1-person tool — it's a public gallery where indie hackers collectively roast every YC batch by shipping the previews YC companies couldn't. Multi-user from day one: anyone can paste a JD, vote, comment, and rally.",
+  "target_persona": "Indie hacker collectives & ship-or-die Discord communities — people who lurk Hacker News threads, screenshot 'still hiring 8 months later' tweets, and want a shared trophy wall to point at. Secondary: a roast-room for VC analysts diligencing portfolio velocity.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context aggregation across hundreds of generated previews + comment threads to surface 'this batch's most-shipped vs most-stalled' meta-takes; multi-agent orchestration where each member's submission becomes a tracked artifact in Phoenix MCP with shared spec-fit scores visible to all.",
+  "mvp_scope": "4-day demo: public gallery seeded with 12 synthetic-JD previews across 3 cohort rooms. Anyone (no login required for browse) can paste a JD to add a card; verified hackers (magic link) can vote, @mention, and comment. Live spec-fit score badge updates as the self-improvement loop runs in background. | surface: Public gallery web app — single workspace where every visitor is a member. Role-based access (anon viewer / verified hacker / mod), @mentions on preview cards, reactions (ship-it, lol, oof), threaded comments, shared 'cohort rooms' per YC batch. Real-time presence dots on hot cards.",
+  "one_liner_pitch": "A public roast wall where indie hackers collectively out-ship every YC batch — paste a JD, watch the gallery vote, comment, and rally.",
+  "spec_alignment_notes": "spec target_persona=indie hacker/serial founder → reframed as collective community (not lone wolf) to match Community Builder bias; primary_surface=web hybrid preserved verbatim; killer_feature spec-fit loop kept and surfaced as a live shared score; monetization_model='unknown' so left absent. Interpreted 'episodic' usage as community drop-in pattern (lurk-then-rally), justifying multi-user shared workspace over solo dashboard.",
+  "mockup_path": "mockups/P15-the-community-builder.html"
+}

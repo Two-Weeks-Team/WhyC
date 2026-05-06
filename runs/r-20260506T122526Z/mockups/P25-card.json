@@ -1,0 +1,12 @@
+{
+  "id": "P25",
+  "advocate": "The AI-Native",
+  "framing": "WhyC is not a form-with-a-progress-bar — it IS the agent. You converse with the builder; it narrates spec extraction, codegen, deployment, and Phoenix-judged self-improvement in stream-of-consciousness Gemini tokens, with traces inline in the chat.",
+  "target_persona": "Indie hacker who lives in Cursor/Claude/Aider and treats chat as the universal IDE — wants to drop a YC job URL into a prompt and watch the multi-agent pipeline think out loud, not fill out a wizard.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context streaming narration of a multi-agent pipeline — Opus 4.7 (proxy for Gemini ADK in the actual build) maintains coherent stream-of-consciousness across 10+ min of agent steps, weaves Phoenix MCP trace IDs and judge verdicts into prose, and lets the user @mention to inject mid-flight corrections without losing pipeline state.",
+  "mvp_scope": "Single chat thread: user pastes YC job URL → Builder agent streams 'extracting spec... deploying... judging...' with inline trace cards and a live spec-fit gauge that updates as the background self-improvement loop iterates (71% → 84% → 96%). | surface: Conversational chat surface with @mention command palette (@spec, @deploy, @judge, @rerun, @trace) as primary. The Cloud Run URL, spec-fit score, and Phoenix trace timeline render as inline chat artifacts. No structured form anywhere.",
+  "one_liner_pitch": "Chat with the builder. Paste a YC job URL, watch Gemini narrate the 24-hour ship in real-time tokens, with Phoenix traces and judge verdicts inline.",
+  "spec_alignment_notes": "target_persona=indie hacker per spec → reframed as chat-native indie hacker (LLM-centric workflow bias). primary_surface=web/hybrid → chat UI on web with hybrid cadence: streaming for first 10min then background convergence shown as async chat updates. killer_feature self-improvement loop rendered as agent self-replies in the same thread. All other fields followed spec verbatim.",
+  "mockup_path": "mockups/P25-the-ai-native.html"
+}

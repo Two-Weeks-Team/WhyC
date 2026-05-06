@@ -1,0 +1,12 @@
+{
+  "id": "P20",
+  "advocate": "The OSS Maintainer",
+  "framing": "WhyC is not a product, it is a public repository. The whole satire only lands if every layer (Gemini ADK examples, Phoenix, Next.js, our judge prompts) is forkable on day one — because YC's real moat is closed batches, and ours is `git clone`.",
+  "target_persona": "The indie hacker who lands on the GitHub repo from Hacker News, scans the README for 30 seconds, and decides whether to star, fork, or close the tab — same person who'll later read trace logs in `/loop`.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context reasoning over the agent's own OpenInference traces — the README shows a real trace excerpt plus the judge's diff so anyone reading the repo can audit *why* a flow was regenerated, turning the self-improvement loop into reproducible OSS, not magic.",
+  "mvp_scope": "A single landing page that reads as a polished GitHub README: hero with one clone command, OSI-license + Apache-2.0 + Arize-track badges, 4-step pipeline as a Mermaid-style SVG, contributors row, a real-looking issue + PR snippet that reveals the self-improvement loop convergence (71 -> 96). | surface: GitHub README rendered as the landing page. Hosted Cloud Run instance is the reference impl, linked under a `// try it` badge. Stars, forks, contributors, OSI badge, clone command above the fold.",
+  "one_liner_pitch": "While YC hires, we ship — and we ship the source. `git clone whyc` and out-build a batch before their next standup.",
+  "spec_alignment_notes": "All idea.spec.json fields populated; followed verbatim. Persona-specific interpretation: target_persona narrowed from 'indie hacker / serial founder' to the GitHub-README-scanning subset because primary_surface for this advocate is GitHub itself. OSI-license constraint promoted from Stage-1 gate to hero-level brag (community-owned bias). YC-trademark hygiene respected: only categorical 'a certain orange accelerator' wording, no logos.",
+  "mockup_path": "mockups/P20-the-oss-maintainer.html"
+}

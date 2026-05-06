@@ -1,0 +1,48 @@
+{
+  "chair": "BP_LEAD",
+  "scoring_axis": "business_impact",
+  "scoring_dimensions": [
+    "market_story_strength",
+    "press_demo_virality",
+    "post_hackathon_tam_sam",
+    "pricing_optionality",
+    "gtm_clarity",
+    "competitive_moat_1day_clone_resistance"
+  ],
+  "scoreboard": [
+    {"id": "P21", "story": 9, "viral": 8, "tam": 8, "price": 10, "gtm": 9, "moat": 6, "total": 50, "gtm_channel": "ProductHunt + IndieHackers launch with $29/$99 Stripe checkout live"},
+    {"id": "P03", "story": 9, "viral": 10, "tam": 7, "price": 7, "gtm": 10, "moat": 5, "total": 48, "gtm_channel": "Twitter/X viral clip — paste-URL hero with 10-min countdown"},
+    {"id": "P08", "story": 8, "viral": 7, "tam": 9, "price": 9, "gtm": 8, "moat": 7, "total": 48, "gtm_channel": "Slack App Directory + 5 design-partner VC workspaces"},
+    {"id": "P23", "story": 9, "viral": 10, "tam": 7, "price": 6, "gtm": 9, "moat": 7, "total": 48, "gtm_channel": "Leaderboard screenshots auto-shareable to X — earned virality flywheel"},
+    {"id": "P01", "story": 9, "viral": 9, "tam": 6, "price": 6, "gtm": 9, "moat": 7, "total": 46, "gtm_channel": "HN Show HN with curl one-liner — terminal-native crowd"}
+  ],
+  "top_5": ["P21", "P03", "P08", "P23", "P01"],
+  "favorite": "P21",
+  "rationale": "P21 is the only card that resolves monetization_model='unknown' into a defensible price ladder ($29 Hacker / $99 Founder) that the 1M-context Opus 4.7 capability can actually underwrite via per-preview unit economics. It preserves every downstream pricing surface (free tier as satirical lead-gen, $29 conversion floor, $99 Founder ceiling, future enterprise upsell to P17). The satire becomes a CAC engine, not a dead-end joke. Stripe Checkout + usage meter on Day 1 means hackathon judges see real billing logic — Arize-track 'serious agent engineers' signal, not a screenshot demo. Composite 50/60 with the highest pricing optionality score across all 26 cards.",
+  "honorable_mentions": {
+    "P03": "Highest virality + clearest GTM (single-CTA paste-URL). Best 3-min judging clip candidate. Loses on moat (1-day cloneable surface).",
+    "P08": "Best B2B distribution into VC partner Slacks — secondary persona TAM is larger than primary indie hacker TAM at enterprise pricing.",
+    "P23": "Leaderboard creates UGC flywheel; every spec-fit ≥95% screenshot is free marketing. Pricing optionality weakest of top 5.",
+    "P01": "Strongest aggro-tone fit ('curl > React'). HN crown candidate. TAM ceiling is the bottleneck."
+  },
+  "runner_up_pool": ["P04", "P06", "P15", "P16", "P12", "P17"],
+  "dissent_items": [
+    "P21 risks looking mercenary in a satire product — pricing chrome could undercut the 'while they hire we ship' moral high ground.",
+    "P03 has no moat: any YC team clones the paste-URL hero in 4 hours. Story without defensibility = press cycle, not company.",
+    "P23 leaderboard requires real submissions to feel alive — chicken/egg problem for hackathon demo with no users yet.",
+    "P08 Slack Bot may fail hackathon's web-platform requirement on a strict reading; auxiliary web dashboard mitigates but is risk.",
+    "P01 CLI-first cuts off the VC secondary persona entirely — leaves 40-50% of TAM on the table.",
+    "P11 (Pragmatist) is too boring for a satire product — scored lowest on story strength; correct to exclude despite engineering virtue.",
+    "P17 Enterprise has the highest TAM/price but zero hackathon-day virality — wrong stage of company for this run.",
+    "P10 Dreamer's 200-company swarm is unfalsifiable in a 3-min demo — judges will smell vaporware.",
+    "P26 Anti-AI hides the Arize-track signal — strategically wrong for THIS hackathon track even if commercially defensible.",
+    "Top 5 is heavily indie-hacker-skewed; only P08 covers the VC secondary persona — meta-tally should weight that gap."
+  ],
+  "axis_observations": {
+    "tam_ceiling": "Indie-hacker SaaS at $29/$99 = realistic $50K-200K MRR ceiling year 1. Enterprise (P17) or VC-Slack (P08) unlock 5-10x but slower sales cycle.",
+    "pricing_traps": "Free-forever framings (P04, P15, P20) feel honest but kill MRR. Cost-receipt ($0.043) is great marketing but bad as anchor.",
+    "moat_reality": "The satire IS the moat. Phoenix self-improvement loop is technical moat. Brand voice (aggressive YC mockery) is hardest to clone — P01/P21/P23 best at internalizing it.",
+    "gtm_consensus": "Single-CTA + paste-URL (P03) wins for hackathon demo; recurring-revenue (P21) wins for post-hackathon survival. Both must coexist.",
+    "channel_diversity": "Top 5 covers: web (P03, P21), CLI/HN (P01), Slack (P08), gamified social (P23). Healthy spread."
+  }
+}

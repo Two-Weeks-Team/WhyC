@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WhyC — Pricing. Ship while they hire.</title>
+<style>
+  :root {
+    --bg: oklch(0.16 0.02 60);
+    --bg-2: oklch(0.20 0.025 65);
+    --ink: oklch(0.97 0.01 80);
+    --ink-dim: oklch(0.74 0.02 80);
+    --line: oklch(0.30 0.02 70);
+    --yc: oklch(0.74 0.19 55);
+    --yc-soft: oklch(0.74 0.19 55 / 0.14);
+    --good: oklch(0.78 0.16 155);
+    --warn: oklch(0.78 0.17 85);
+    --bad: oklch(0.66 0.22 25);
+    --card: oklch(0.21 0.02 65);
+    --card-hi: oklch(0.24 0.025 65);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { background:
+    radial-gradient(1200px 600px at 80% -10%, oklch(0.74 0.19 55 / 0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, oklch(0.74 0.19 55 / 0.06), transparent 60%),
+    var(--bg);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-mark { width: 28px; height: 28px; }
+  .nav { display: flex; gap: 18px; color: var(--ink-dim); font-size: 14px; }
+  .nav span { cursor: default; }
+  .nav .active { color: var(--ink); }
+  .acct { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-dim); }
+  .avatar { width: 26px; height: 26px; border-radius: 999px; background: var(--yc-soft);
+    display: grid; place-items: center; color: var(--yc); font-weight: 700; font-size: 12px; }
+
+  .hero { margin: 36px 0 24px; }
+  .kicker { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px;
+    border: 1px solid var(--line); border-radius: 999px; font-size: 12px; color: var(--ink-dim); }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--good); }
+  h1 { font-size: 44px; line-height: 1.05; letter-spacing: -0.025em; margin: 14px 0 10px; }
+  h1 .strike { color: var(--ink-dim); text-decoration: line-through; text-decoration-thickness: 2px; }
+  h1 .yc { color: var(--yc); }
+  .sub { color: var(--ink-dim); font-size: 16px; max-width: 720px; }
+
+  .meter { margin: 22px 0 30px; padding: 14px 16px; border: 1px solid var(--line);
+    border-radius: 12px; background: var(--card); display: grid;
+    grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; }
+  .meter .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--ink-dim); }
+  .meter .row b { color: var(--ink); font-weight: 600; }
+  .bar { grid-column: 1 / -1; height: 8px; border-radius: 999px; background: var(--bg-2); overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 70%; background: linear-gradient(90deg, var(--yc), oklch(0.82 0.16 70)); }
+  .meter .cta { grid-column: 2; grid-row: 1; }
+  .btn { appearance: none; border: 0; cursor: pointer; font: inherit; }
+  .btn-primary { background: var(--yc); color: oklch(0.16 0.02 60); padding: 10px 14px;
+    border-radius: 10px; font-weight: 700; font-size: 13px; }
+  .btn-ghost { background: transparent; color: var(--ink); padding: 10px 14px;
+    border-radius: 10px; font-weight: 600; font-size: 13px; border: 1px solid var(--line); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+  .tier { position: relative; border: 1px solid var(--line); border-radius: 16px;
+    background: var(--card); padding: 22px 22px 24px; display: flex; flex-direction: column; }
+  .tier h3 { margin: 0 0 4px; font-size: 18px; letter-spacing: -0.01em; }
+  .tier .tag-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .tier .desc { color: var(--ink-dim); font-size: 13px; min-height: 36px; }
+  .price { display: flex; align-items: baseline; gap: 6px; margin: 14px 0 6px; }
+  .price .amt { font-size: 38px; font-weight: 800; letter-spacing: -0.02em; }
+  .price .per { color: var(--ink-dim); font-size: 13px; }
+  .ul { list-style: none; padding: 0; margin: 14px 0 18px; display: grid; gap: 8px; }
+  .ul li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--ink); }
+  .ul li svg { flex: 0 0 16px; margin-top: 3px; }
+  .ul li.dim { color: var(--ink-dim); }
+  .tier .foot { margin-top: auto; display: flex; gap: 8px; }
+  .tier .foot .btn { flex: 1; }
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-dim); }
+  .badge.current { color: var(--good); border-color: oklch(0.55 0.12 155); background: oklch(0.78 0.16 155 / 0.10); }
+  .badge.popular { color: var(--yc); border-color: oklch(0.55 0.15 55); background: var(--yc-soft); }
+
+  .tier.hl { background: linear-gradient(180deg, var(--card-hi), var(--card));
+    border-color: oklch(0.45 0.12 55); box-shadow: 0 0 0 1px oklch(0.74 0.19 55 / 0.20) inset; }
+  .tier.current-tier { border-color: oklch(0.55 0.12 155); box-shadow: 0 0 0 1px oklch(0.78 0.16 155 / 0.20) inset; }
+
+  .billing { margin-top: 28px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+  .panel { border: 1px solid var(--line); border-radius: 14px; background: var(--card); padding: 18px 20px; }
+  .panel h4 { margin: 0 0 12px; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-dim); }
+  .invoices { display: grid; gap: 8px; }
+  .inv { display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: center;
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; background: var(--bg-2); }
+  .inv .when { color: var(--ink-dim); font-size: 12px; }
+  .inv .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
+  .inv .status.paid { color: var(--good); border-color: oklch(0.55 0.12 155); }
+  .inv .status.refund { color: var(--warn); border-color: oklch(0.55 0.13 85); }
+  .inv .status.failed { color: var(--bad); border-color: oklch(0.55 0.18 25); }
+  .inv a { color: var(--ink); text-decoration: none; font-size: 12px; border: 1px solid var(--line);
+    padding: 4px 8px; border-radius: 8px; }
+  .dunning { padding: 12px 14px; border-radius: 10px; background: oklch(0.66 0.22 25 / 0.10);
+    border: 1px solid oklch(0.55 0.18 25); color: oklch(0.92 0.07 30); font-size: 13px;
+    display: flex; gap: 10px; align-items: flex-start; }
+  .dunning b { color: oklch(0.96 0.04 30); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }
+  .kv dt { color: var(--ink-dim); }
+  .kv dd { margin: 0; }
+
+  .foot-note { margin-top: 26px; color: var(--ink-dim); font-size: 12px; line-height: 1.5; }
+  .foot-note code { background: var(--bg-2); padding: 1px 6px; border-radius: 6px; color: var(--ink); }
+
+  @media (max-width: 880px) {
+    .grid { grid-template-columns: 1fr; }
+    .billing { grid-template-columns: 1fr; }
+    h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="7" fill="oklch(0.74 0.19 55)"/>
+        <path d="M9 10 L16 19 L23 10" stroke="oklch(0.16 0.02 60)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 19 L16 24" stroke="oklch(0.16 0.02 60)" stroke-width="2.6" stroke-linecap="round"/>
+      </svg>
+      <span>WhyC</span>
+    </div>
+    <nav class="nav">
+      <span>Generate</span>
+      <span>Previews</span>
+      <span class="active">Billing</span>
+      <span>Docs</span>
+    </nav>
+    <div class="acct">
+      <span>sejun@indie.dev</span>
+      <div class="avatar">SK</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <span class="kicker"><span class="dot"></span> Stripe live · webhooks healthy · 0 dunning events</span>
+    <h1>While <span class="strike">they hire</span>, <span class="yc">you ship</span>. Pick a plan.</h1>
+    <p class="sub">
+      Self-serve. Cancel anytime in two clicks. Failed Cloud Run builds auto-refund the credit.
+      No sales call. No "let's hop on a quick call." Stripe handles the boring parts.
+    </p>
+  </section>
+
+  <div class="meter" role="status" aria-label="Current usage">
+    <div class="row">
+      <span>Plan: <b>Hacker</b> · renews <b>Jun 06, 2026</b></span>
+      <span><b>7</b> / 10 previews used this month</span>
+    </div>
+    <div class="bar"><i></i></div>
+    <button class="btn btn-primary cta">Upgrade to Founder</button>
+  </div>
+
+  <div class="grid">
+
+    <!-- FREE -->
+    <article class="tier" aria-label="Free tier">
+      <div class="tag-row">
+        <h3>Free</h3>
+        <span class="badge">Tire-kicker</span>
+      </div>
+      <p class="desc">One preview a month. Watermarked. Just enough to mock a YC batch on Twitter.</p>
+      <div class="price"><span class="amt">$0</span><span class="per">/ forever</span></div>
+      <ul class="ul">
+        <li>{check} 1 preview / month</li>
+        <li>{check} Cloud Run subdomain (whyc.app/p/&hellip;)</li>
+        <li>{check} Spec-fit score visible</li>
+        <li class="dim">{x} Self-improvement loop capped at 1 pass</li>
+        <li class="dim">{x} "Built with WhyC" footer</li>
+      </ul>
+      <div class="foot">
+        <button class="btn btn-ghost" disabled style="opacity:.7;cursor:default">Current-ish</button>
+      </div>
+    </article>
+
+    <!-- HACKER (current) -->
+    <article class="tier hl current-tier" aria-label="Hacker tier — current plan">
+      <div class="tag-row">
+        <h3>Hacker</h3>
+        <span class="badge popular">Most picked</span>
+        <span class="badge current">Current plan</span>
+      </div>
+      <p class="desc">Ship a prototype every weekend. Convergent spec-fit. Real custom domain.</p>
+      <div class="price"><span class="amt">$29</span><span class="per">/ month</span></div>
+      <ul class="ul">
+        <li>{check} 10 previews / month</li>
+        <li>{check} Self-improvement loop until 90%+ spec-fit</li>
+        <li>{check} Custom domain (CNAME)</li>
+        <li>{check} Phoenix trace export</li>
+        <li>{check} Auto-refund on failed builds</li>
+      </ul>
+      <div class="foot">
+        <button class="btn btn-ghost">Manage</button>
+        <button class="btn btn-ghost">Cancel</button>
+      </div>
+    </article>
+
+    <!-- FOUNDER -->
+    <article class="tier" aria-label="Founder tier">
+      <div class="tag-row">
+        <h3>Founder</h3>
+        <span class="badge">$10k MRR fuel</span>
+      </div>
+      <p class="desc">Unlimited previews. Convergence to 96%+. For the serial founder doing 5 ideas a week.</p>
+      <div class="price"><span class="amt">$99</span><span class="per">/ month</span></div>
+      <ul class="ul">
+        <li>{check} Unlimited previews (fair-use 100/mo)</li>
+        <li>{check} Loop converges to 96%+ spec-fit</li>
+        <li>{check} Priority Cloud Run region pinning</li>
+        <li>{check} Invoice PDF + VAT fields</li>
+        <li>{check} Email support &lt; 24h (no Slack Connect, sorry)</li>
+      </ul>
+      <div class="foot">
+        <button class="btn btn-primary" style="flex:1">Upgrade — $99/mo</button>
+      </div>
+    </article>
+
+  </div>
+
+  <section class="billing">
+
+    <div class="panel">
+      <h4>Recent invoices</h4>
+      <div class="invoices">
+        <div class="inv">
+          <span>Hacker plan · May 2026</span>
+          <span class="when">May 06</span>
+          <span class="status paid">Paid</span>
+          <a href="#">PDF</a>
+        </div>
+        <div class="inv">
+          <span>Hacker plan · Apr 2026</span>
+          <span class="when">Apr 06</span>
+          <span class="status paid">Paid</span>
+          <a href="#">PDF</a>
+        </div>
+        <div class="inv">
+          <span>Credit · failed build (job-82957)</span>
+          <span class="when">Apr 19</span>
+          <span class="status refund">Refunded</span>
+          <a href="#">PDF</a>
+        </div>
+        <div class="inv">
+          <span>Hacker plan · Mar 2026</span>
+          <span class="when">Mar 06</span>
+          <span class="status failed">Retried</span>
+          <a href="#">PDF</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h4>Payment method</h4>
+      <dl class="kv">
+        <dt>Card</dt><dd>Visa &middot;&middot;&middot;&middot; 4242 &mdash; exp 09/29</dd>
+        <dt>Billing</dt><dd>Sejun Kim &mdash; Seoul, KR</dd>
+        <dt>Tax</dt><dd>VAT collected via Stripe Tax</dd>
+        <dt>Next charge</dt><dd>$29.00 on Jun 06, 2026</dd>
+      </dl>
+      <div style="height:12px"></div>
+      <div class="dunning">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="oklch(0.78 0.18 30)" stroke-width="1.8"/>
+          <path d="M12 7v6" stroke="oklch(0.78 0.18 30)" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="16.5" r="1.1" fill="oklch(0.78 0.18 30)"/>
+        </svg>
+        <div>
+          <b>Dunning is on.</b> If a charge fails, we retry 3x over 7 days, email you,
+          and pause new previews — never silently cancel. (Last triggered: never.)
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <p class="foot-note">
+    Powered by <code>Stripe Checkout</code> · webhook <code>invoice.payment_succeeded</code> decrements
+    your preview counter in Firestore · all amounts in USD · cancel anytime, prorated refund on annual.
+    Built in 4 days. While they were hiring.
+  </p>
+
+</div>
+
+<!-- inline check icon template, swapped via simple unicode-free path -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ck" viewBox="0 0 16 16">
+      <path d="M3 8.5 L6.5 12 L13 4.5" fill="none" stroke="oklch(0.78 0.16 155)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="xx" viewBox="0 0 16 16">
+      <path d="M4 4 L12 12 M12 4 L4 12" fill="none" stroke="oklch(0.66 0.05 70)" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+  // Replace {check} / {x} placeholders with inline SVG <use>. Self-contained, no network.
+  (function(){
+    document.querySelectorAll('.ul li').forEach(function(li){
+      var html = li.innerHTML;
+      if (html.indexOf('{check}') === 0 || html.indexOf('{check}') > -1) {
+        li.innerHTML = html.replace('{check}', '<svg width="16" height="16"><use href="#ck"/></svg>');
+      } else if (html.indexOf('{x}') > -1) {
+        li.innerHTML = html.replace('{x}', '<svg width="16" height="16"><use href="#xx"/></svg>');
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — Run #0042 · spec-fit live</title>
+<style>
+  :root{
+    --bg: oklch(98% 0.01 95);
+    --panel: oklch(100% 0 0);
+    --ink: oklch(22% 0.02 260);
+    --mute: oklch(52% 0.02 260);
+    --line: oklch(90% 0.01 260);
+    --accent: oklch(68% 0.19 55);
+    --good: oklch(64% 0.16 145);
+    --warn: oklch(72% 0.15 75);
+    --bad: oklch(60% 0.18 25);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family: system-ui, -apple-system, sans-serif; font-size:14px; line-height:1.45}
+  a{color:inherit}
+  .app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+  /* sidebar */
+  aside{background:var(--panel);border-right:1px solid var(--line);padding:16px 14px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin-bottom:18px}
+  .brand .dot{width:10px;height:10px;background:var(--accent);border-radius:2px}
+  .brand small{font-weight:500;color:var(--mute);margin-left:auto;font-size:11px}
+  .nav{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+  .nav a{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;
+    text-decoration:none;color:var(--ink);font-size:13px}
+  .nav a.active{background:oklch(95% 0.02 55);color:oklch(40% 0.12 55);font-weight:600}
+  .nav a:hover:not(.active){background:oklch(96% 0.005 260)}
+  .nav svg{width:14px;height:14px;color:var(--mute)}
+  .nav a.active svg{color:oklch(50% 0.15 55)}
+  .navlabel{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);
+    margin:14px 6px 6px}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel)}
+  .panel.tiny{font-size:12px;color:var(--mute)}
+  .panel.tiny b{color:var(--ink)}
+  /* header */
+  header{display:flex;align-items:center;gap:12px;padding:12px 22px;
+    background:var(--panel);border-bottom:1px solid var(--line)}
+  header .crumbs{font-size:12px;color:var(--mute)}
+  header .crumbs b{color:var(--ink)}
+  header .grow{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;
+    border:1px solid var(--line);font-size:11px;background:var(--panel)}
+  .pill.live{border-color:oklch(85% 0.12 145);background:oklch(96% 0.04 145);color:oklch(38% 0.13 145)}
+  .pill.live .dot{width:6px;height:6px;border-radius:50%;background:var(--good);
+    box-shadow:0 0 0 0 oklch(64% 0.16 145 / .7);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 oklch(64% 0.16 145 / .6)}
+    70%{box-shadow:0 0 0 6px oklch(64% 0.16 145 / 0)}100%{box-shadow:0 0 0 0 oklch(64% 0.16 145 / 0)}}
+  .btn{padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);
+    font:inherit;font-size:12px;cursor:pointer}
+  .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  /* main */
+  main{padding:22px;display:grid;grid-template-columns:1fr 360px;gap:18px;align-content:start}
+  h1{font-size:20px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--mute);font-size:12px;margin-bottom:14px}
+  .sub code{font-family: ui-monospace, "SF Mono", Menlo, monospace;font-size:11px;
+    background:oklch(96% 0.005 260);padding:1px 5px;border-radius:3px}
+  .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+  .stat{padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+  .stat .k{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+  .stat .v{font-size:22px;font-weight:700;margin-top:2px;letter-spacing:-.01em}
+  .stat .v.delta{color:var(--good);font-size:12px;font-weight:500;margin-left:6px;letter-spacing:0}
+  .stat .meta{font-size:11px;color:var(--mute);margin-top:2px}
+  /* scoreboard card (the hero) */
+  .score-card{padding:18px;border:1px solid var(--line);border-radius:10px;background:var(--panel);
+    margin-bottom:16px}
+  .score-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+  .score-head h2{margin:0;font-size:14px;font-weight:600}
+  .score-head .iter{font-size:11px;color:var(--mute);font-family:ui-monospace,Menlo,monospace}
+  .score-now{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+  .score-now .big{font-size:54px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .score-now .arrow{color:var(--mute);font-size:22px}
+  .score-now .from{font-size:22px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .score-now .target{font-size:12px;color:var(--mute);margin-left:auto}
+  .progress{height:8px;background:oklch(94% 0.01 260);border-radius:4px;overflow:hidden;margin-top:8px}
+  .progress > span{display:block;height:100%;background:linear-gradient(90deg,
+    oklch(72% 0.15 75), oklch(68% 0.18 55));width:96%}
+  .iter-strip{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+  .iter-strip .it{flex:1;min-width:90px;padding:8px 10px;border:1px solid var(--line);
+    border-radius:6px;font-size:11px;color:var(--mute);background:oklch(99% 0 0)}
+  .iter-strip .it b{display:block;font-size:14px;color:var(--ink);font-weight:600;
+    font-variant-numeric:tabular-nums;margin-bottom:1px}
+  .iter-strip .it.now{border-color:oklch(75% 0.14 55);background:oklch(98% 0.02 55)}
+  .iter-strip .it.now b{color:oklch(45% 0.16 55)}
+  /* flows table */
+  .flows{padding:0;border:1px solid var(--line);border-radius:8px;background:var(--panel);
+    overflow:hidden}
+  .flows .th{display:grid;grid-template-columns:1.6fr 80px 100px 1.4fr 90px;
+    padding:10px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--mute);border-bottom:1px solid var(--line);background:oklch(99% 0.005 260)}
+  .flows .tr{display:grid;grid-template-columns:1.6fr 80px 100px 1.4fr 90px;
+    padding:11px 14px;border-bottom:1px solid var(--line);align-items:center;font-size:13px}
+  .flows .tr:last-child{border-bottom:0}
+  .flows .name{font-weight:500}
+  .flows .name small{display:block;color:var(--mute);font-size:11px;font-weight:400;margin-top:1px}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;
+    font-size:11px;font-weight:500;font-variant-numeric:tabular-nums}
+  .badge.good{background:oklch(95% 0.05 145);color:oklch(38% 0.13 145)}
+  .badge.warn{background:oklch(95% 0.06 75);color:oklch(42% 0.14 75)}
+  .badge.bad{background:oklch(95% 0.06 25);color:oklch(45% 0.16 25)}
+  .status{font-size:11px;color:var(--mute);display:flex;align-items:center;gap:5px}
+  .status .d{width:6px;height:6px;border-radius:50%}
+  .status.run .d{background:var(--accent);animation:pulse2 1.4s infinite}
+  .status.done .d{background:var(--good)}
+  .status.queue .d{background:oklch(80% 0 0)}
+  @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}
+  .judge{font-size:12px;color:var(--mute);font-style:italic}
+  .judge b{color:var(--ink);font-weight:500;font-style:normal}
+  /* right column */
+  .side{display:flex;flex-direction:column;gap:14px}
+  .side h3{font-size:12px;font-weight:600;margin:0 0 8px;color:var(--mute);
+    text-transform:uppercase;letter-spacing:.06em}
+  .preview-frame{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+  .preview-frame .bar{display:flex;align-items:center;gap:6px;padding:7px 10px;
+    border-bottom:1px solid var(--line);background:oklch(98% 0.005 260)}
+  .preview-frame .bar i{display:block;width:9px;height:9px;border-radius:50%;background:oklch(88% 0.01 260)}
+  .preview-frame .bar .url{flex:1;margin-left:6px;font-family:ui-monospace,Menlo,monospace;
+    font-size:10.5px;color:var(--mute);background:var(--panel);padding:3px 8px;border-radius:4px;
+    border:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .preview-frame svg{display:block;width:100%;height:auto}
+  .trace{padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel);
+    font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--mute);line-height:1.7}
+  .trace .ln{display:flex;gap:8px}
+  .trace .t{color:oklch(60% 0.02 260);flex-shrink:0}
+  .trace .l-ok{color:oklch(38% 0.13 145)}
+  .trace .l-warn{color:oklch(42% 0.14 75)}
+  .trace .l-info{color:var(--ink)}
+  footer{padding:10px 22px;border-top:1px solid var(--line);background:var(--panel);
+    color:var(--mute);font-size:11px;display:flex;gap:18px}
+  footer span b{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <span class="dot"></span> WhyC
+      <small>v0.4</small>
+    </div>
+    <div class="nav">
+      <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8L8 3l6 5v5H2V8z"/></svg> Dashboard</a>
+      <a href="#" class="active"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M8 4v4l2.5 2.5"/></svg> Active runs</a>
+      <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10v10H3z"/><path d="M3 7h10M7 3v10"/></svg> Past runs</a>
+      <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11l4-4 3 3 5-5"/><path d="M11 5h3v3"/></svg> Spec-fit trends</a>
+    </div>
+    <div class="navlabel">System</div>
+    <div class="nav">
+      <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg> Agents</a>
+      <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12v8H2z"/><path d="M2 7h12"/></svg> Phoenix traces</a>
+      <a href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h6l4 4v8H4z"/><path d="M10 2v4h4"/></svg> Logs</a>
+    </div>
+    <div class="navlabel">Account</div>
+    <div class="panel tiny">
+      Signed in as <b>sejun@</b><br/>
+      Plan: <b>Hackathon</b> · 12/50 runs
+    </div>
+  </aside>
+
+  <div>
+    <header>
+      <div class="crumbs">Runs / <b>#0042 — synthetic-jd-orange</b></div>
+      <span class="pill live"><span class="dot"></span> live · iter 3 of ~5</span>
+      <span class="pill">Cloud Run · us-central1</span>
+      <div class="grow"></div>
+      <button class="btn">View traces</button>
+      <button class="btn primary">Open preview ↗</button>
+    </header>
+
+    <main>
+      <div>
+        <h1>Spec-fit climbing on run #0042</h1>
+        <div class="sub">Input: <code>workatastartup.com/jobs/_synthetic_82957</code> · started 11 min ago · first deploy at <b>09:42</b> · self-improvement loop running in background</div>
+
+        <!-- HERO scoreboard -->
+        <div class="score-card">
+          <div class="score-head">
+            <h2>Spec-fit score · LLM-as-judge over Phoenix traces</h2>
+            <span class="iter">iter_03 / target 0.95</span>
+          </div>
+          <div class="score-now">
+            <span class="big">0.92</span>
+            <span class="arrow">←</span>
+            <span class="from">0.71</span>
+            <span class="target">target ≥ 0.95 · ETA ~6 min</span>
+          </div>
+          <div class="progress"><span style="width:92%"></span></div>
+          <div class="iter-strip">
+            <div class="it"><b>0.71</b>iter_01 · first deploy</div>
+            <div class="it"><b>0.84</b>iter_02 · regen 4 flows</div>
+            <div class="it now"><b>0.92</b>iter_03 · running</div>
+            <div class="it"><b>—</b>iter_04 · queued</div>
+            <div class="it"><b>—</b>iter_05 · queued</div>
+          </div>
+        </div>
+
+        <!-- flow table -->
+        <div class="flows">
+          <div class="th">
+            <div>Flow</div><div>Score</div><div>Status</div><div>Judge note</div><div>Action</div>
+          </div>
+          <div class="tr">
+            <div class="name">landing_hero <small>extracted from JD H1 + subhead</small></div>
+            <div><span class="badge good">0.98</span></div>
+            <div><span class="status done"><span class="d"></span>converged</span></div>
+            <div class="judge">"matches headline tone, CTA correct"</div>
+            <div><button class="btn">view</button></div>
+          </div>
+          <div class="tr">
+            <div class="name">pricing_table <small>3 tiers, MRR proxy</small></div>
+            <div><span class="badge good">0.94</span></div>
+            <div><span class="status done"><span class="d"></span>converged</span></div>
+            <div class="judge">"prices align, FAQ minor gap"</div>
+            <div><button class="btn">view</button></div>
+          </div>
+          <div class="tr">
+            <div class="name">api_signup <small>POST /api/signup, magic-link</small></div>
+            <div><span class="badge warn">0.88</span></div>
+            <div><span class="status run"><span class="d"></span>regenerating</span></div>
+            <div class="judge">"missing email validation per spec"</div>
+            <div><button class="btn">trace ↗</button></div>
+          </div>
+          <div class="tr">
+            <div class="name">dashboard_shell <small>auth-gated, 3 widgets</small></div>
+            <div><span class="badge bad">0.62</span></div>
+            <div><span class="status run"><span class="d"></span>regenerating</span></div>
+            <div class="judge">"empty state copy off-spec; widget 2 not rendered"</div>
+            <div><button class="btn">trace ↗</button></div>
+          </div>
+          <div class="tr">
+            <div class="name">footer_links <small>legal + social</small></div>
+            <div><span class="badge good">0.96</span></div>
+            <div><span class="status done"><span class="d"></span>converged</span></div>
+            <div class="judge">"all required links present"</div>
+            <div><button class="btn">view</button></div>
+          </div>
+          <div class="tr">
+            <div class="name">og_meta <small>open graph + twitter</small></div>
+            <div><span class="badge warn">0.81</span></div>
+            <div><span class="status queue"><span class="d"></span>queued</span></div>
+            <div class="judge">"og:image dimensions off"</div>
+            <div><button class="btn">trace ↗</button></div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div class="stat"><div class="k">Time elapsed</div><div class="v">11:24</div><div class="meta">first deploy at 9:42</div></div>
+          <div class="stat"><div class="k">Phoenix spans</div><div class="v">1,284</div><div class="meta">+312 since iter_02</div></div>
+          <div class="stat"><div class="k">Flows regen'd</div><div class="v">2 / 6 <span class="v delta">+1</span></div><div class="meta">api_signup, dashboard_shell</div></div>
+        </div>
+      </div>
+
+      <!-- right column -->
+      <div class="side">
+        <div>
+          <h3>Live preview · iter_03</h3>
+          <div class="preview-frame">
+            <div class="bar"><i></i><i></i><i></i><span class="url">whyc-run-0042-iter3.a.run.app</span></div>
+            <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="360" height="240" fill="oklch(99% 0 0)"/>
+              <rect x="0" y="0" width="360" height="32" fill="oklch(97% 0.01 55)"/>
+              <rect x="14" y="11" width="60" height="10" rx="2" fill="oklch(68% 0.19 55)"/>
+              <rect x="240" y="11" width="36" height="10" rx="2" fill="oklch(85% 0.01 260)"/>
+              <rect x="282" y="11" width="36" height="10" rx="2" fill="oklch(85% 0.01 260)"/>
+              <rect x="324" y="9" width="22" height="14" rx="3" fill="oklch(22% 0.02 260)"/>
+              <rect x="20" y="58" width="220" height="16" rx="2" fill="oklch(22% 0.02 260)"/>
+              <rect x="20" y="80" width="180" height="10" rx="2" fill="oklch(60% 0.02 260)"/>
+              <rect x="20" y="96" width="160" height="10" rx="2" fill="oklch(60% 0.02 260)"/>
+              <rect x="20" y="120" width="80" height="22" rx="4" fill="oklch(68% 0.19 55)"/>
+              <rect x="108" y="120" width="80" height="22" rx="4" fill="none" stroke="oklch(85% 0.01 260)"/>
+              <rect x="20" y="160" width="100" height="60" rx="4" fill="oklch(96% 0.005 260)"/>
+              <rect x="130" y="160" width="100" height="60" rx="4" fill="oklch(96% 0.005 260)"/>
+              <rect x="240" y="160" width="100" height="60" rx="4" fill="oklch(96% 0.005 260)"/>
+              <rect x="28" y="172" width="40" height="6" rx="1" fill="oklch(68% 0.19 55)"/>
+              <rect x="28" y="184" width="80" height="8" rx="1" fill="oklch(40% 0.02 260)"/>
+              <rect x="138" y="172" width="40" height="6" rx="1" fill="oklch(68% 0.19 55)"/>
+              <rect x="138" y="184" width="80" height="8" rx="1" fill="oklch(40% 0.02 260)"/>
+              <rect x="248" y="172" width="40" height="6" rx="1" fill="oklch(68% 0.19 55)"/>
+              <rect x="248" y="184" width="80" height="8" rx="1" fill="oklch(40% 0.02 260)"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h3>Trace tail · phoenix-mcp</h3>
+          <div class="trace">
+            <div class="ln"><span class="t">11:23:48</span><span class="l-info">judge.score(dashboard_shell)</span></div>
+            <div class="ln"><span class="t">11:23:49</span><span class="l-warn">→ 0.62 below threshold</span></div>
+            <div class="ln"><span class="t">11:23:51</span><span class="l-info">codegen.regen(dashboard_shell)</span></div>
+            <div class="ln"><span class="t">11:23:53</span><span class="l-ok">deploy.queued iter_04</span></div>
+            <div class="ln"><span class="t">11:24:01</span><span class="l-info">judge.score(api_signup)</span></div>
+            <div class="ln"><span class="t">11:24:02</span><span class="l-warn">→ 0.88 missing val()</span></div>
+            <div class="ln"><span class="t">11:24:04</span><span class="l-ok">spec-fit aggregate 0.92</span></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <span>Pipeline: <b>Gemini ADK → Agent Builder → Cloud Run → Phoenix MCP</b></span>
+      <span>Region: <b>us-central1</b></span>
+      <span>Build: <b>0.4.2-hack</b></span>
+      <span style="margin-left:auto">while they hire, we ship.</span>
+    </footer>
+  </div>
+</div>
+</body>
+</html>

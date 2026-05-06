@@ -1,0 +1,12 @@
+{
+  "id": "P02",
+  "advocate": "The Operations Veteran",
+  "framing": "WhyC is not a one-shot codegen toy — it is a 24/7 agent factory. The real product is the NOC dashboard that keeps the self-improvement loop alive: spec-fit SLOs, regen budget burn, Phoenix trace alerts, and pager-grade runbooks for when convergence stalls.",
+  "target_persona": "On-call operator / platform engineer running the WhyC pipeline (Sejun + co-founder during hackathon, future SRE-minded indie hackers post-launch) who must keep the convergence loop healthy without burning Cloud Run budget or exhausting Gemini quota",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context Phoenix trace summarization (1M ctx) — Opus 4.7 reads the entire OpenInference trace tree for a stalled preview and emits a 3-line root-cause + suggested runbook step, surfaced as alert annotations on the ops board",
+  "mvp_scope": "Single live status board page wired to one synthetic preview job: shows real-time spec-fit score climbing, regen counter, $-per-preview burn, and one fired alert with Opus-generated root-cause annotation — proves observability is shippable in 4 days | surface: Live operations dashboard: status board grid (uptime, p95 latency, spec-fit %, regen-cost-per-preview), Phoenix trace alert feed, audit log of every regen decision, and on-call runbook cards — what every operator stares at all day",
+  "one_liner_pitch": "While YC startups page their on-call about hiring, WhyC's NOC pages itself about spec-fit drift — observability is the moat.",
+  "spec_alignment_notes": "target_persona reframed: spec lists indie-hacker/VC end-users, but ops lens chose the operator running the pipeline (legitimate adjacent persona — every hybrid 10min+hours cadence product needs an operator). primary_surface=web (spec) honored as dashboard. sync_model=hybrid (spec) directly drives the dashboard's 'live now / background converging' split. killer_feature self-improvement loop reinterpreted as the thing being monitored, not the thing being demoed. mvp_scope keeps 4-day demo const...",
+  "mockup_path": "mockups/P02-the-ops-veteran.html"
+}

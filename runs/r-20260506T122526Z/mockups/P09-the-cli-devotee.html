@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WhyC — npx whyc &lt;url&gt;</title>
+<style>
+  :root{
+    --bg: oklch(16% 0.012 260);
+    --pane: oklch(20% 0.014 260);
+    --chrome: oklch(26% 0.016 260);
+    --line: oklch(32% 0.018 260);
+    --fg: oklch(92% 0.018 95);
+    --dim: oklch(62% 0.012 260);
+    --muted: oklch(48% 0.010 260);
+    --accent: oklch(74% 0.184 55);    /* YC-orange parody */
+    --accent-2: oklch(80% 0.150 75);
+    --ok: oklch(78% 0.158 152);
+    --warn: oklch(82% 0.165 92);
+    --bad: oklch(70% 0.190 27);
+    --info: oklch(76% 0.120 230);
+    --violet: oklch(72% 0.150 305);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:radial-gradient(ellipse at 18% 10%, oklch(22% 0.020 55 / 0.55), transparent 55%) , var(--bg);color:var(--fg);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+  .mono{font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;}
+  .wrap{max-width:1080px;margin:0 auto;padding:36px 22px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg, var(--accent), oklch(60% 0.22 35));display:grid;place-items:center;box-shadow:0 0 0 1px oklch(40% 0.04 55) inset, 0 6px 22px oklch(50% 0.20 55 / 0.35)}
+  .brand-name{font-weight:700;letter-spacing:0.02em;font-size:18px}
+  .brand-name span{color:var(--accent)}
+  .tagline{color:var(--dim);font-size:13px}
+  .pill{font-family: ui-monospace, monospace;font-size:11px;color:var(--dim);border:1px solid var(--line);padding:5px 9px;border-radius:999px;background:oklch(20% 0.014 260 / 0.6)}
+  .pill b{color:var(--accent-2)}
+
+  /* Terminal window */
+  .term{background:var(--pane);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 28px 80px oklch(0% 0 0 / 0.45), 0 0 0 1px oklch(0% 0 0 / 0.2)}
+  .chrome{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--chrome);border-bottom:1px solid var(--line);font-size:12px;color:var(--dim)}
+  .dots{display:flex;gap:6px}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:oklch(68% 0.20 27)}
+  .dot.y{background:oklch(80% 0.18 92)}
+  .dot.g{background:oklch(74% 0.16 152)}
+  .tab{padding:3px 10px;border-radius:6px;background:oklch(24% 0.014 260);border:1px solid var(--line);color:var(--fg)}
+  .chrome .right{margin-left:auto;color:var(--muted);font-size:11px}
+  .body{padding:18px 20px 22px;font-size:13.2px;line-height:1.55}
+  .body pre{margin:0;white-space:pre;overflow-x:auto;font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;}
+
+  .prompt{color:var(--dim)}
+  .user{color:var(--ok)}
+  .host{color:var(--info)}
+  .cmd{color:var(--fg)}
+  .flag{color:var(--accent-2)}
+  .arg{color:var(--violet)}
+  .ok{color:var(--ok)}
+  .warn{color:var(--warn)}
+  .bad{color:var(--bad)}
+  .info{color:var(--info)}
+  .accent{color:var(--accent)}
+  .dim{color:var(--dim)}
+  .muted{color:var(--muted)}
+  .vio{color:var(--violet)}
+  .hl{background:oklch(28% 0.10 55 / 0.40);color:var(--accent-2);padding:0 4px;border-radius:3px}
+  .cursor{display:inline-block;width:8px;height:14px;background:var(--accent);vertical-align:-2px;animation:blink 1s steps(1) infinite;margin-left:2px}
+  @keyframes blink{50%{opacity:0}}
+
+  /* Side grid: usage + install + notification */
+  .grid{display:grid;grid-template-columns: 1.45fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width: 880px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--pane);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h3{margin:0 0 10px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);font-weight:600}
+  .card pre{margin:0;font-size:12.5px;line-height:1.55;color:var(--fg);white-space:pre;overflow-x:auto}
+  .row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .kbd{font-family: ui-monospace, monospace;font-size:11px;border:1px solid var(--line);padding:2px 6px;border-radius:4px;color:var(--dim);background:oklch(22% 0.014 260)}
+
+  /* Notification */
+  .notify{display:flex;gap:12px;padding:12px;border:1px solid var(--line);background:linear-gradient(180deg, oklch(22% 0.020 55 / 0.45), oklch(20% 0.014 260));border-radius:10px;margin-top:10px}
+  .notify .ico{width:34px;height:34px;border-radius:8px;background:oklch(28% 0.020 55);display:grid;place-items:center;flex:none;border:1px solid oklch(40% 0.06 55)}
+  .notify .t{font-size:12.5px}
+  .notify .t b{color:var(--accent-2)}
+  .notify .t small{color:var(--muted);display:block;margin-top:2px}
+
+  footer{margin-top:22px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11.5px;flex-wrap:wrap;gap:8px}
+  footer code{font-family:ui-monospace,monospace;color:var(--dim)}
+  .ascii{color:var(--accent);text-shadow:0 0 22px oklch(70% 0.20 55 / 0.35)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M9 12l3 3 3-3"/><path d="M4 18h16"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">why<span>C</span> · cli</div>
+          <div class="tagline">while they hire, you <span class="accent">npx</span>.</div>
+        </div>
+      </div>
+      <div class="pill mono">v0.4.1 · node ≥ 20 · macOS / linux · <b>terminal-first</b></div>
+    </header>
+
+    <!-- Terminal session -->
+    <section class="term" aria-label="Terminal session">
+      <div class="chrome mono">
+        <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <div class="tab">sejun@vega · ~/work</div>
+        <div class="tab">whyc</div>
+        <div class="right">tmux 0:zsh*</div>
+      </div>
+      <div class="body mono">
+<pre>
+<span class="ascii">  __        ___           ____
+  \ \      / / |__  _   _ / ___|
+   \ \ /\ / /| '_ \| | | | |
+    \ V  V / | | | | |_| | |___
+     \_/\_/  |_| |_|\__, |\____|
+                    |___/   <span class="dim">— ship before they hire.</span></span>
+
+<span class="prompt">$</span> <span class="cmd">npx</span> <span class="arg">whyc</span> <span class="hl">https://workatastartup.com/jobs/82957</span> <span class="flag">--watch</span>
+
+<span class="dim">▸</span> <span class="info">whyc</span> <span class="dim">v0.4.1</span>  <span class="muted">·</span>  agent backbone: <span class="accent">gemini-adk</span>  <span class="muted">·</span>  trace: <span class="vio">phoenix-mcp</span>
+<span class="dim">▸</span> input resolved <span class="ok">✓</span>   <span class="muted">job-posting (anonymized) → spec extractor</span>
+
+<span class="dim">[1/4]</span> <span class="info">spec.extract</span>          <span class="ok">████████████████████████</span> 100%   <span class="dim">3.2s</span>  <span class="ok">✓</span>
+        <span class="muted">↳ jtbd, target user, 2 core APIs, 1 hero flow</span>
+<span class="dim">[2/4]</span> <span class="info">design.tokens</span>         <span class="ok">████████████████████████</span> 100%   <span class="dim">5.8s</span>  <span class="ok">✓</span>
+        <span class="muted">↳ palette: oklch · radius: 12 · typography: inter-tight</span>
+<span class="dim">[3/4]</span> <span class="info">codegen.next</span>          <span class="ok">████████████████████████</span> 100%   <span class="dim">82.4s</span> <span class="ok">✓</span>
+        <span class="muted">↳ 14 routes · 2 server actions · 1 edge api · 0 errors</span>
+<span class="dim">[4/4]</span> <span class="info">deploy.cloudrun</span>       <span class="ok">████████████████████████</span> 100%   <span class="dim">47.1s</span> <span class="ok">✓</span>
+
+<span class="ok">✔</span> <span class="cmd">deployed</span>   <span class="hl">https://whyc-preview-x7q2.a.run.app</span>
+<span class="dim">⏱</span>  <span class="dim">first-paint window: 9m 38s  ·  the headline claim is intact.</span>
+
+<span class="dim">────────────────────────────  self-improvement loop  ────────────────────────────</span>
+
+<span class="dim">▸</span> phoenix mcp attached <span class="ok">✓</span>   <span class="muted">openinference traces streaming…</span>
+<span class="dim">▸</span> llm-as-judge: <span class="vio">spec-fit</span> rubric loaded  <span class="muted">(8 axes, weight=1.0)</span>
+
+  iter 0   spec-fit  <span class="warn">71%</span>   <span class="warn">██████████████░░░░░░</span>   <span class="muted">(initial deploy)</span>
+  iter 1   spec-fit  <span class="warn">84%</span>   <span class="warn">████████████████░░░░</span>   <span class="muted">regen: pricing flow, empty-state</span>
+  iter 2   spec-fit  <span class="ok">92%</span>   <span class="ok">██████████████████░░</span>   <span class="muted">regen: onboarding copy</span>
+  iter 3   spec-fit  <span class="ok">96%</span>   <span class="ok">███████████████████░</span>   <span class="ok">CONVERGED · Δ &lt; 1.5%</span>
+
+<span class="ok">✔</span> <span class="cmd">converged</span> in 3 iterations  <span class="muted">·</span>  <span class="dim">elapsed</span> 3h 12m  <span class="muted">·</span>  <span class="dim">cost</span> $0.41
+<span class="dim">▸</span> while they hire,  <span class="accent">you shipped</span>.
+<span class="dim">▸</span> result: <span class="hl">whyc-preview-x7q2.a.run.app</span>  <span class="muted">→ click. it works.</span>
+
+<span class="prompt">$</span> <span class="cursor"></span>
+</pre>
+      </div>
+    </section>
+
+    <!-- Bottom grid -->
+    <section class="grid">
+      <div class="card">
+        <h3>Usage · the only three commands you need</h3>
+        <pre class="mono"><span class="prompt"># 1 · ship a preview from a YC job posting</span>
+<span class="prompt">$</span> <span class="cmd">npx</span> <span class="arg">whyc</span> <span class="hl">&lt;url&gt;</span>                       <span class="dim"># foreground stream, ~10m</span>
+
+<span class="prompt"># 2 · keep the self-improvement loop alive in tmux</span>
+<span class="prompt">$</span> <span class="cmd">whyc</span> <span class="hl">&lt;url&gt;</span> <span class="flag">--watch</span> <span class="flag">--notify</span>           <span class="dim"># desktop toast on Δ spec-fit</span>
+
+<span class="prompt"># 3 · inspect any past run via Phoenix trace</span>
+<span class="prompt">$</span> <span class="cmd">whyc</span> <span class="arg">trace</span> <span class="vio">x7q2</span> <span class="flag">--open</span>               <span class="dim"># pops the MCP trace pane</span>
+
+<span class="prompt"># also useful</span>
+<span class="prompt">$</span> <span class="cmd">whyc</span> <span class="arg">login</span>                            <span class="dim"># short-lived browser callback only</span>
+<span class="prompt">$</span> <span class="cmd">whyc</span> <span class="arg">ls</span>     <span class="muted">·</span>  <span class="cmd">whyc</span> <span class="arg">rm</span> <span class="vio">x7q2</span>      <span class="dim"># manage previews</span>
+<span class="prompt">$</span> <span class="cmd">whyc</span> <span class="arg">tail</span> <span class="vio">x7q2</span> <span class="flag">--judge</span>              <span class="dim"># live LLM-as-judge verdicts</span></pre>
+      </div>
+
+      <div class="card">
+        <h3>Install · pick your weapon</h3>
+        <pre class="mono"><span class="prompt"># macOS</span>
+<span class="prompt">$</span> <span class="cmd">brew</span> install <span class="arg">whyc</span>
+
+<span class="prompt"># everywhere else</span>
+<span class="prompt">$</span> <span class="cmd">npm</span> i -g <span class="arg">whyc</span>
+
+<span class="prompt"># or just don't install at all</span>
+<span class="prompt">$</span> <span class="cmd">npx</span> <span class="arg">whyc</span> <span class="hl">&lt;url&gt;</span></pre>
+        <div class="notify" role="status" aria-live="polite">
+          <div class="ico" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(82% 0.16 75)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9z"/><path d="M10 21h4"/></svg>
+          </div>
+          <div class="t mono">
+            <b>whyc</b> · spec-fit <span class="ok">92% → 96%</span> · <span class="ok">CONVERGED</span>
+            <small>https://whyc-preview-x7q2.a.run.app · cmd-click to open</small>
+          </div>
+        </div>
+        <div class="row mono" style="margin-top:10px">
+          <span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">L</span>
+          <span class="dim">copy URL</span>
+          <span class="kbd" style="margin-left:auto">^C</span>
+          <span class="dim">detach (loop keeps running)</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mono">
+      <div>stack: <span class="accent">gemini-adk</span> · <span class="info">agent-builder</span> · <span class="vio">phoenix-mcp</span> · <span class="ok">cloud-run</span> · next.js</div>
+      <div>man <code>whyc(1)</code> · <code>~/.config/whyc/config.toml</code> · OSI-licensed · no YC names harmed</div>
+    </footer>
+  </div>
+</body>
+</html>

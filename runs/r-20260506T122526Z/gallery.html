@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>WhyC — Gate H1 Gallery (all 26 advocates)</title>
+<style>
+  :root {
+    --bg: oklch(98% 0.005 60);
+    --ink: oklch(20% 0.02 60);
+    --ink-soft: oklch(40% 0.012 60);
+    --accent: oklch(72% 0.19 50);
+    --rule: oklch(90% 0.005 60);
+    --good: oklch(55% 0.15 145);
+    --warn: oklch(65% 0.18 35);
+    --veto: oklch(58% 0.22 22);
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, sans-serif; }
+  header.top { padding: 28px 36px; border-bottom: 1px solid var(--rule); }
+  header.top h1 { font-size: 30px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  header.top p { margin: 0; color: var(--ink-soft); max-width: 70ch; line-height: 1.5; }
+  nav.quick { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 12px 36px; z-index: 10; }
+  nav.quick { display: flex; flex-wrap: wrap; gap: 4px; }
+  nav.quick a { flex: 0 0 auto; font-size: 11px; padding: 4px 8px; border-radius: 4px; color: var(--ink-soft); text-decoration: none; border: 1px solid var(--rule); display: flex; flex-direction: column; align-items: center; min-width: 56px; }
+  nav.quick a small { font-size: 9px; opacity: 0.7; margin-top: 1px; }
+  nav.quick a:hover { background: white; color: var(--ink); border-color: var(--accent); }
+  .stack-wide { padding: 20px 36px; border-bottom: 1px solid var(--rule); background: oklch(96% 0.008 60); }
+  .stack-wide h2 { font-size: 13px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+  .stack-wide ul { columns: 3; gap: 24px; padding: 0; margin: 0; list-style: none; font-size: 12px; }
+  .stack-wide li { padding: 4px 0; break-inside: avoid; }
+  .stack-wide .src { color: var(--ink-soft); font-size: 10px; }
+  main { display: flex; flex-direction: column; gap: 32px; padding: 28px 36px; }
+  .card { border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; background: white; scroll-margin-top: 64px; }
+  .card-h { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--rule); background: oklch(97% 0.005 60); flex-wrap: wrap; }
+  .pid { font-family: monospace; font-weight: 700; color: var(--accent); font-size: 14px; }
+  .adv { font-weight: 600; }
+  .surface { font-size: 12px; padding: 2px 8px; background: oklch(94% 0.01 60); border-radius: 4px; color: var(--ink-soft); }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 4px; margin-left: auto; font-weight: 500; }
+  .badge-top5 { background: oklch(94% 0.05 145); color: var(--good); }
+  .badge-veto { background: oklch(95% 0.04 22); color: var(--veto); }
+  .card-body { display: grid; grid-template-columns: 1.5fr 1fr; gap: 0; min-height: 520px; }
+  iframe { width: 100%; height: 520px; border: 0; border-right: 1px solid var(--rule); background: white; }
+  .meta { padding: 18px 22px; overflow-y: auto; max-height: 520px; }
+  .meta h3 { font-size: 15px; margin: 0 0 10px; line-height: 1.35; }
+  .framing { font-size: 12px; color: var(--ink-soft); margin: 0 0 10px; line-height: 1.5; }
+  .persona { font-size: 12px; margin: 0 0 12px; line-height: 1.5; }
+  .persona b { color: var(--ink-soft); }
+  details { margin: 6px 0; padding: 6px 0; border-top: 1px solid var(--rule); font-size: 12px; }
+  details summary { cursor: pointer; font-weight: 500; padding: 3px 0; }
+  details ul { padding-left: 18px; margin: 6px 0 0; }
+  details li { padding: 2px 0; line-height: 1.4; }
+  .m.must_fix { color: var(--warn); }
+  .m.should_fix { color: var(--ink-soft); }
+  @media (max-width: 1100px) {
+    .card-body { grid-template-columns: 1fr; }
+    iframe { height: 460px; border-right: 0; border-bottom: 1px solid var(--rule); }
+    .stack-wide ul { columns: 1; }
+  }
+  footer { padding: 24px 36px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>WhyC — Gate H1: pick from all 26 advocates</h1>
+  <p>26 advocates each shipped a distinct preview from their persona angle. Panel-top5 (★) and RP veto-armed (⚠) are <em>advisory overlays only</em> — pick whichever resonates. The mitigations.json's stack-wide must-fix items apply regardless of your choice.</p>
+</header>
+<nav class="quick"><a href="#card-P01" class="nav-pid">P01<small>Contrarian</small></a><a href="#card-P02" class="nav-pid">P02<small>Operations Vet</small></a><a href="#card-P03" class="nav-pid">P03<small>Speed-Obsessed</small></a><a href="#card-P04" class="nav-pid">P04<small>Cost-Conscious</small></a><a href="#card-P05" class="nav-pid">P05<small>Design-Forward</small></a><a href="#card-P06" class="nav-pid">P06<small>Spreadsheet Jo</small></a><a href="#card-P07" class="nav-pid">P07<small>Mobile-First</small></a><a href="#card-P08" class="nav-pid">P08<small>Slack-Native</small></a><a href="#card-P09" class="nav-pid">P09<small>CLI Devotee</small></a><a href="#card-P10" class="nav-pid">P10<small>Dreamer</small></a><a href="#card-P11" class="nav-pid">P11<small>Pragmatist</small></a><a href="#card-P12" class="nav-pid">P12<small>Privacy Hawk</small></a><a href="#card-P13" class="nav-pid">P13<small>Data Nerd</small></a><a href="#card-P14" class="nav-pid">P14<small>Educator</small></a><a href="#card-P15" class="nav-pid">P15<small>Community Buil</small></a><a href="#card-P16" class="nav-pid">P16<small>Solo Founder</small></a><a href="#card-P17" class="nav-pid">P17<small>Enterprise Buy</small></a><a href="#card-P18" class="nav-pid">P18<small>Designer</small></a><a href="#card-P19" class="nav-pid">P19<small>Embedded (SDK </small></a><a href="#card-P20" class="nav-pid">P20<small>OSS Maintainer</small></a><a href="#card-P21" class="nav-pid">P21<small>Indie Hacker</small></a><a href="#card-P22" class="nav-pid">P22<small>Researcher</small></a><a href="#card-P23" class="nav-pid">P23<small>Game Designer</small></a><a href="#card-P24" class="nav-pid">P24<small>Reluctant Adop</small></a><a href="#card-P25" class="nav-pid">P25<small>AI-Native</small></a><a href="#card-P26" class="nav-pid">P26<small>Anti-AI</small></a></nav>
+<section class="stack-wide">
+  <h2>Stack-wide must-fix items (apply to whichever you pick)</h2>
+  <ul><li>OSI LICENSE file in repo root Week 1 (not Week 5). <span class="src">[TP,RP]</span></li><li>Banned-vendor CI lint: no AWS/OpenAI/Anthropic in agent backbone imports. <span class="src">[RP]</span></li><li>Originality enforcement: all files first-commit >= 2026-05-05; no pf-plugin code reuse. <span class="src">[RP]</span></li><li>Trademark hygiene: no YC names/logos/workatastartup IDs in video/README; substitute generic phrasing if naming risk surfaces. <span class="src">[BP,RP]</span></li><li>Prompt-injection sanitizer with delimiter isolation on all JD URL inputs. NON-NEGOTIABLE highest-blast-radius runtime risk. <span class="src">[RP]</span></li><li>24h signed-URL TTL + noindex meta + robots.txt deny on every generated preview. <span class="src">[RP]</span></li><li>Self-improvement loop hard ceiling: max 7 iter OR $5/run budget. <span class="src">[TP,RP]</span></li><li>Kill switch: takedown within 1h of complaint, documented in RUNBOOK. <span class="src">[RP]</span></li><li>Rate limit: per-IP/per-email throttle, max 3 concurrent Cloud Run deploys. <span class="src">[RP]</span></li><li>LLM-as-judge prompt versioned at /eval/judge_prompt.v1.md, shown verbatim in UI. Arize-track scoring criterion. <span class="src">[TP]</span></li><li>Spec-fit score formula deterministic + auditable in SPEC.md. <span class="src">[TP]</span></li><li>Stable run_id + iteration_id + parent_iter_id schema in Postgres Day 1. <span class="src">[TP]</span></li><li>OpenInference auto-instrumentation across ADK + Agent Builder + Gemini -- gap-free span tree. <span class="src">[TP]</span></li><li>Phoenix free-tier quota guardrail + sampling policy (50k traces/mo cap). <span class="src">[TP]</span></li><li>Convergence chart animates LIVE during demo, not canned replay. Rehearse on submission hardware T-7/T-3/T-1. <span class="src">[TP]</span></li><li>Cloud Run cold-start mitigation: pre-warmed image / buildpack cache. <span class="src">[TP]</span></li><li>Public failure log (P24 pattern) regardless of winner. <span class="src">[TP]</span></li><li>Phoenix MCP queries from agent itself (not sidecar). Integration depth judges check. <span class="src">[TP]</span></li><li>Named on-call rotation + abuse@ alias + 24h SLA. <span class="src">[RP]</span></li><li>2-person scope guard: web only -- no SDK/Slack/CLI surfaces in MVP. <span class="src">[TP]</span></li></ul>
+</section>
+<main>
+  
+<article class="card" id="card-P01">
+  <header class="card-h">
+    <span class="pid">P01</span>
+    <span class="adv">The Contrarian</span>
+    <span class="surface">CLI</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P01-the-contrarian.html" loading="lazy" title="P01 preview"></iframe>
+    <div class="meta">
+      <h3>While YC ships React dashboards, we ship a curl one-liner. WhyC: pipe a job URL in, get a working Cloud Run preview in your inbox.</h3>
+      <p class="framing">Everyone's building yet another sleek web dashboard for their YC-roast tool. The unfashionable truth: indie hackers who actually ship live in the terminal — so WhyC is a curl-able CLI that pipes a job-posting URL in and emails you back a Cloud Run link, with the full self-improvement loop streamed as plaintext to stdout. No SPA. No login. No Tailwind.</p>
+      <p class="persona"><b>persona:</b> The 4am-curl indie hacker who already has tmux open — judges YC by github commit graphs, runs `npm` only because they have to, would absolutely paste a YC job URL into a terminal and forget about it until an email arrives.</p>
+      <details><summary>Framing → MVP scope</summary><p>One-shot CLI: paste YC job URL → stream agent trace to stdout for ~10min → first deploy URL prints inline with spec-fit % → background loop continues, sends a final email when converged. Demo shows curl invocation on a synthetic JD and the email arriving with a working preview link. | surface: Terminal (CLI + curl) with email delivery — `curl whyc.sh -d url=...` returns a streaming SSE log of the agent loop; final Cloud Run URL is delivered by plaintext email when spec-fit converges. No web UI for WhyC itself.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-horizon agent reasoning across the Phoenix MCP self-improvement loop — Gemini ADK plans which flows are under-spec from trace data, regenerates only those, and narrates each iteration as terminal-grade structured logs (no JSON pretty-printing, no spinners, just timestamped lines a tail-follower can grep).</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P02">
+  <header class="card-h">
+    <span class="pid">P02</span>
+    <span class="adv">The Operations Veteran</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P02-the-ops-veteran.html" loading="lazy" title="P02 preview"></iframe>
+    <div class="meta">
+      <h3>While YC startups page their on-call about hiring, WhyC's NOC pages itself about spec-fit drift — observability is the moat.</h3>
+      <p class="framing">WhyC is not a one-shot codegen toy — it is a 24/7 agent factory. The real product is the NOC dashboard that keeps the self-improvement loop alive: spec-fit SLOs, regen budget burn, Phoenix trace alerts, and pager-grade runbooks for when convergence stalls.</p>
+      <p class="persona"><b>persona:</b> On-call operator / platform engineer running the WhyC pipeline (Sejun + co-founder during hackathon, future SRE-minded indie hackers post-launch) who must keep the convergence loop healthy without burning Cloud Run budget or exhausting Gemini quota</p>
+      <details><summary>Framing → MVP scope</summary><p>Single live status board page wired to one synthetic preview job: shows real-time spec-fit score climbing, regen counter, $-per-preview burn, and one fired alert with Opus-generated root-cause annotation — proves observability is shippable in 4 days | surface: Live operations dashboard: status board grid (uptime, p95 latency, spec-fit %, regen-cost-per-preview), Phoenix trace alert feed, audit log of every regen decision, and on-call runbook cards — what every operator stares at all day</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context Phoenix trace summarization (1M ctx) — Opus 4.7 reads the entire OpenInference trace tree for a stalled preview and emits a 3-line root-cause + suggested runbook step, surfaced as alert annotations on the ops board</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P03">
+  <header class="card-h">
+    <span class="pid">P03</span>
+    <span class="adv">The Speed-Obsessed</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P03-the-speed-obsessed.html" loading="lazy" title="P03 preview"></iframe>
+    <div class="meta">
+      <h3>Paste a YC job URL. Get a deployed working preview in 10 minutes. Wake up to 96% spec-fit. While they hire, you ship.</h3>
+      <p class="framing">WhyC is a one-input speed weapon: paste a YC job URL, get a deployed Cloud Run preview in ~10 minutes and a self-converged version by morning. The pitch is timestamps, not features.</p>
+      <p class="persona"><b>persona:</b> Indie hacker scrolling workatastartup.com at midnight who wants to prove a hosted Next.js preview can ship before the YC company finishes its third hiring round — needs zero setup and a single visible CTA.</p>
+      <details><summary>Framing → MVP scope</summary><p>4-day demo: working URL input → Gemini spec extraction → Next.js scaffold → Cloud Run deploy → first spec-fit score visible. Self-improvement loop wired but limited to 2 iterations for demo timing. | surface: Single-page web landing: one URL input, one 'Ship it' button, prefilled example, 3-step onboarding (paste → watch → wake up converged), live agent log strip. No signup for first preview.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context spec extraction from a job posting plus rapid full-stack codegen — exactly the path that turns a one-line input into a deployable Next.js artifact in under 10 minutes of pipeline time.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P04">
+  <header class="card-h">
+    <span class="pid">P04</span>
+    <span class="adv">The Cost-Conscious</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P04-the-cost-conscious.html" loading="lazy" title="P04 preview"></iframe>
+    <div class="meta">
+      <h3>그들이 6개월간 클라우드비 무서워 못 출시한 걸, 우리는 4센트로 끝낸다 — 영수증 첨부.</h3>
+      <p class="framing">YC 회사들이 6개월간 못 출시하는 진짜 이유는 '클라우드 비용이 무서워서 launch 미루는 것'이라는 가설로 재정의 — WhyC는 생성된 프리뷰를 $0/월 (scale-to-zero + 무료 tier만)로 호스팅해서 '돈도 안 들었는데 너네 6개월?' 이라는 도발을 비용 영수증으로 증명한다.</p>
+      <p class="persona"><b>persona:</b> 한 달 클라우드 청구서 $5도 아까운 bootstrapped 인디 해커. 신용카드 한도가 R&D 예산. '내 사이드프로젝트는 cold start 좀 느려도 무료여야 한다'가 종교.</p>
+      <details><summary>Framing → MVP scope</summary><p>단일 화면: URL 입력 → 실시간으로 누적 비용 카운터가 0.00달러부터 올라가는 게 보이고, 24h 후 deployed URL과 함께 '총 지출: $0.043' 영수증을 PDF로 발급. self-improvement loop의 각 iteration이 비용을 얼마나 더 썼는지 라인으로 표시. | surface: Next.js static export → Cloud Run min-instances=0, Phoenix free-tier (50k traces/mo), Gemini free quota first, Secret Manager 무료 6 secrets 한도 내. 모든 컴포넌트 옆에 '$/월' 스티커.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Opus 4.7의 cost-aware planning 능력 — agent가 각 노드에서 'Gemini Flash로 충분한가 vs Pro 필요한가' 판단해서 토큰 예산을 절감. 1M context로 Phoenix trace 전체를 한 번에 읽어 redundant LLM 호출 제거.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P05">
+  <header class="card-h">
+    <span class="pid">P05</span>
+    <span class="adv">The Design-Forward</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-top5">★ panel-top5 · #3 (3pt) · UP · chair: UP_LEAD</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P05-the-design-forward.html" loading="lazy" title="P05 preview"></iframe>
+    <div class="meta">
+      <h3>A landing page so finished that the joke writes itself: while they post job openings, we ship the product they were going to build.</h3>
+      <p class="framing">WhyC's first impression must already feel like a finished, shipped product — the satire is only credible if the surface itself out-classes the YC companies it mocks. The hero is the proof.</p>
+      <p class="persona"><b>persona:</b> Indie hacker scrolling past 'we're hiring' posts who lands on WhyC.run and within two seconds feels the cohort-shaming is earned because the page they're looking at is sleeker than 80% of YC portfolio sites — and the live preview window is updating its spec-fit score in front of them.</p>
+      <details><summary>Framing → MVP scope</summary><p>One pixel-perfect hero screen for the 4-day demo: headline + lede + dual CTA, four trust metrics, and the animated preview-window component showing the spec-fit climb and 4-step loop strip. No second viewport, no scroll narrative — the hero alone closes the pitch. | surface: Editorial-grade landing hero: oversized display headline 'While they hire, we ship.' with strike-through animation, paired with a tilted living preview window that shows a generated Cloud Run URL, a 71→84→92→96 spec-fit climb on the Phoenix self-improvement loop, and a quiet float-quote dagger. Polish-rich, animated entrance, abstract inline-SVG product imagery (no real logos), warm-paper background with OKLCH YC-orange parody as the only accent.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context aesthetic synthesis — Opus 4.7 reads the entire idea spec (constraints, tone, hybrid UX cadence, trademark hygiene) and resolves it into a single coherent visual system: typography weights, OKLCH gradients, motion timing, copy rhythm, and the hero-as-pitch composition all aligned without needing per-element prompts.</p></details>
+      <details><summary>Per-card must-fix (3)</summary><ul><li class="m must_fix">Contrast: oklch(38% 0.012 60) on warm paper borderline 4.5:1 -> tighten to >=4.6:1.</li><li class="m must_fix">Add :focus-visible outlines on .nav-cta/.btn-primary/.btn-ghost.</li><li class="m must_fix">Mobile float-card overlap with metrics row at <960px -> reposition static below preview.</li></ul></details>
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P06">
+  <header class="card-h">
+    <span class="pid">P06</span>
+    <span class="adv">The Spreadsheet Jockey (B2B power user)</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-veto">⚠ RP veto-armed (legal/abuse risk)</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P06-the-spreadsheet-jockey.html" loading="lazy" title="P06 preview"></iframe>
+    <div class="meta">
+      <h3>The VC terminal that ranks YC portfolio companies by what they could ship in 24h — sortable, filterable, brutally factual.</h3>
+      <p class="framing">WhyC isn't a satire site — it's a portfolio diagnostic terminal. VC analysts track 60+ YC companies in one sortable grid where 'spec-fit % achievable in 24h' becomes the ground-truth signal for actual build velocity vs. hiring theater.</p>
+      <p class="persona"><b>persona:</b> Seed/Series-A VC associate or platform analyst tracking a 40–100 company YC portfolio watchlist; lives in Airtable/Notion/Excel; needs to triage which portfolio companies are actually shipping vs. perpetually hiring; wants pivot-table-grade filtering, not a marketing landing page</p>
+      <details><summary>Framing → MVP scope</summary><p>4-day demo: one populated leaderboard page rendering 12 anonymized portfolio rows with live spec-fit % from real Phoenix traces, sortable by 3 columns, one-click 'Re-run loop' per row triggering ADK pipeline; CSV export stub. | surface: Dense leaderboard table — sticky header row, sticky first column (company), sortable by every column (spec-fit %, days-since-DemoDay, jobs-posted, last-deploy-Δ, judge score), multi-select filter chips, column resizers, keyboard shortcuts (J/K row nav, /-search, S-sort, F-filter, R-rerun), per-row inline sparkline of spec-fit convergence (71→84→92→96), pivot/group-by batch, footer status bar with row count + selection aggregates</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context multi-row reasoning — Opus 4.7 ingests Phoenix trace dumps for dozens of generated previews simultaneously, computes per-flow LLM-as-judge deltas across iterations, and emits structured row-level diagnostics (spec_fit, weakest_flow, regen_eta) that populate the grid without per-cell round-trips</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P07">
+  <header class="card-h">
+    <span class="pid">P07</span>
+    <span class="adv">The Mobile-First</span>
+    <span class="surface">Mobile Web</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P07-the-mobile-first.html" loading="lazy" title="P07 preview"></iframe>
+    <div class="meta">
+      <h3>Saw a YC hire-tweet on your phone? Paste, pocket, push notif — your satirical preview ships from the thumb zone before the elevator hits your floor.</h3>
+      <p class="framing">Founders see YC fundraise/hire tweets on their phone, not their desktop — WhyC must live in the thumb zone so the satirical impulse converts before they re-lock the screen.</p>
+      <p class="persona"><b>persona:</b> Indie hacker scrolling Twitter on iPhone who spots a 'still hiring 6mo post-Demo Day' tweet and wants to weaponize it in under 60 seconds without switching to laptop.</p>
+      <details><summary>Framing → MVP scope</summary><p>Paste-URL hero → live run card with 4-step pipeline + animated spec-fit gauge (71% → background) → bottom 'Ship it in 10 min' CTA. One screen, no signup, push notif on convergence. | surface: Mobile PWA, single-column 375px, sticky 56px bottom CTA in thumb zone, 4-tab bottom nav, paste-from-clipboard hero, push notif when 10-min Cloud Run URL is ready.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context spec extraction from a single pasted JD URL plus continuous LLM-as-judge scoring against the deployed preview during the background self-improvement loop — both phases stream status payloads small enough for mobile data.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P08">
+  <header class="card-h">
+    <span class="pid">P08</span>
+    <span class="adv">The Slack-Native</span>
+    <span class="surface">Slack Bot</span>
+    <span class="badge badge-veto">⚠ RP veto-armed (legal/abuse risk)</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P08-the-slack-native.html" loading="lazy" title="P08 preview"></iframe>
+    <div class="meta">
+      <h3>Paste a YC URL in Slack. Get a deployed working preview back in the same thread before standup tomorrow. While they hire, your bot ships.</h3>
+      <p class="framing">WhyC lives where VC due-diligence chatter already happens: Slack. A partner drops a YC company URL into #portfolio, a bot quietly ships a working preview, and the channel watches a deploy URL appear like magic 24 hours later — receipts in-thread, no new tab required.</p>
+      <p class="persona"><b>persona:</b> Secondary persona from spec promoted to primary: VC associate or partner who pastes portfolio/competitor YC URLs into a partner Slack workspace and wants build-capability diagnostics without leaving the conversation</p>
+      <details><summary>Framing → MVP scope</summary><p>One Slack slash command (/whyc <yc-url>) that triggers the full pipeline, posts an in-channel ephemeral 'analyzing...' message that updates with live spec-fit %, DMs the requester progress milestones, and finally edits the original message to include the deployed Cloud Run URL preview unfurl. | surface: primary_surface = Slack bot (slash command /whyc + URL unfurl + DM progress + channel post). Web dashboard at whyc.app/r/<id> is auxiliary — only for the converged spec-fit report and the live preview iframe.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-running async agent orchestration with conversational checkpoints — Gemini ADK pipeline streams structured progress events that map cleanly to Slack Block Kit message updates, while the self-improvement loop runs for hours and posts delta notifications when spec-fit crosses thresholds.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P09">
+  <header class="card-h">
+    <span class="pid">P09</span>
+    <span class="adv">The CLI Devotee</span>
+    <span class="surface">CLI</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P09-the-cli-devotee.html" loading="lazy" title="P09 preview"></iframe>
+    <div class="meta">
+      <h3>npx whyc <yc-job-url> — your terminal ships a working Cloud Run preview while their founders are still typing the JD.</h3>
+      <p class="framing">WhyC belongs in a terminal: indie hackers don't open dashboards — they pipe URLs into `npx whyc` and walk away. The web preview is the artifact; the CLI is the cockpit.</p>
+      <p class="persona"><b>persona:</b> Serial indie hacker who lives in tmux, has 47 unfinished side-projects, and treats `npx` as a verb — wants to scoff-and-ship a YC mock-up between coffee refills.</p>
+      <details><summary>Framing → MVP scope</summary><p>Single command `whyc <url>` that streams ASCII spec-extraction → codegen → Cloud Run deploy → returns URL in ~10min, then tails Phoenix self-improvement loop in background (notify-send on each spec-fit jump). | surface: CLI (npx + brew install whyc) drives the pipeline; the deployed Cloud Run URL is the web artifact (hackathon platform requirement satisfied). Web auth handshake handled via short-lived browser callback only.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-running streamed agent telemetry — Opus 4.7 emits structured ADK + Phoenix MCP events as ANSI-friendly progress frames, then surfaces LLM-as-judge spec-fit deltas as the background self-improvement loop converges.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P10">
+  <header class="card-h">
+    <span class="pid">P10</span>
+    <span class="adv">The Dreamer</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-veto">⚠ RP veto-armed (legal/abuse risk)</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P10-the-dreamer.html" loading="lazy" title="P10 preview"></iframe>
+    <div class="meta">
+      <h3>By 2031, accelerators don't run Demo Day — WhyC does. You speak the batch into existence; the swarm ships before the pitch ends.</h3>
+      <p class="framing">By 2031, WhyC isn't a YC mocker — it's the substrate every accelerator silently runs Demo Day on. The headline 'while they hire, we ship' becomes 'while you sleep, your batch shipped.' One ambient agent shepherds 200 startups from URL to converged Cloud Run in parallel, and the human founder approves diffs from a watch.</p>
+      <p class="persona"><b>persona:</b> The 2031 accelerator partner (or solo VC) who runs a 200-company batch from a single dashboard — they speak intent, the swarm ships. Secondary: the 2031 indie founder whose 'idea' is just a Loom rant the agent already turned into a deployed converged prototype before they finished talking.</p>
+      <details><summary>Framing → MVP scope</summary><p>4-day demo: one ambient command bar + live aurora visualization of 3 parallel pipelines converging in real time (10min foreground → background loop), with a 'Demo Day mode' toggle that fast-forwards a synthetic 200-company batch as a speculative preview overlay. Real demo uses the locked stack (Gemini ADK + Phoenix + Cloud Run + Next.js); the 200-company swarm is rendered as believable simulated state on top of 3 real pipelines. | surface: Ambient natural-language command surface — no forms, no dropdowns. A single conversational seam where the user narrates intent and a live swarm-state aurora visualizes ~200 parallel ship-loops. Predictive: the agent pre-deploys variants before you ask, surfaces the one that fits your taste. Surprise UX: the build is already done by the time the modal opens.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Opus 4.7's million-token context + agentic horizon: a single planning agent holds the entire accelerator portfolio (200 specs, traces, judge verdicts, founder taste profiles) in working memory and orchestrates thousands of sub-agents (ADK runtimes) without losing coherence. Edge-of-capability: cross-portfolio meta-learning — the loop learns from every batch's failure modes and pre-corrects the next one's spec extraction before regeneration is needed.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P11">
+  <header class="card-h">
+    <span class="pid">P11</span>
+    <span class="adv">The Pragmatist</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-top5">★ panel-top5 · #1 (5pt) · TP · UP · RP · chair: TP_LEAD</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P11-the-pragmatist.html" loading="lazy" title="P11 preview"></iframe>
+    <div class="meta">
+      <h3>A boring SaaS dashboard that does one thing: show spec-fit climb from 0.71 to 0.96 in real time. That number is the entire product.</h3>
+      <p class="framing">Stop redesigning the wrapper. The only thing that matters is showing a real spec-fit number climbing iteration over iteration — that one scoreboard is the whole pitch, ship it on Day 1 in a boring SaaS shell and stop.</p>
+      <p class="persona"><b>persona:</b> Indie hacker who already opened the repo at 11pm on Day 1 and just wants to see whether the self-improvement loop actually moves a number — not someone watching a marketing video</p>
+      <details><summary>Framing → MVP scope</summary><p>One run-detail page that shows: current spec-fit score (big number), iteration strip (0.71 → 0.84 → 0.92), per-flow score table with judge notes, live trace tail, and a static preview thumbnail. That is the entire demo. URL submission and deploy can be a hardcoded fixture for the 4-day cut. | surface: Plain Next.js app (pages router is fine), Postgres for run history, server-sent events for the live score updates, deployed on Cloud Run. Classic left-sidebar SaaS dashboard. No design system, no animations beyond a pulse dot, no dark mode. Stack is 3 years old and that is the point.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context spec extraction + LLM-as-judge scoring across full Phoenix trace tails — Opus reads the entire OpenInference span tree per flow and emits a structured score + one-line judge note that we render verbatim in the table</p></details>
+      <details><summary>Per-card must-fix (2)</summary><ul><li class="m must_fix">Hardcoded URL fixture admitted by P11 -- wire live URL->deploy on stretch-day pre-submission.</li><li class="m must_fix">Mobile breakpoint: 220px sidebar + 1fr/360px split breaks below 900px.</li></ul></details>
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P12">
+  <header class="card-h">
+    <span class="pid">P12</span>
+    <span class="adv">The Privacy Hawk</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P12-the-privacy-hawk.html" loading="lazy" title="P12 preview"></iframe>
+    <div class="meta">
+      <h3>The only YC-roasting agent that won't leak your stealth target — encrypted input, region-pinned spec, ephemeral preview, self-hostable Phoenix.</h3>
+      <p class="framing">WhyC's killer-feature contradiction is that founders may submit URLs to *unlaunched* stealth YC startups, while Phoenix Cloud + Cloud Run + Gemini all egress data by default. Reframe WhyC as a privacy-hardened satire tool: the roast is public, but the stealth artifact never leaves the submitter's trust boundary.</p>
+      <p class="persona"><b>persona:</b> Stealth-mode indie hacker (and the cautious VC associate) who wants to satirize / pre-validate a pre-Demo-Day YC company without leaking the parody target's URL or their own submission to Arize, Google, or hackathon judges.</p>
+      <details><summary>Framing → MVP scope</summary><p>Stealth-Mode toggle that, when ON: scrubs company/founder/batch tokens before any Gemini call, sets disableDataLogging on ADK, deploys the Cloud Run preview as private with a 24h signed URL + image-TTL, and routes Phoenix traces to a self-hosted Phoenix endpoint. Demoable as a single switch with a live 'what leaves your project' redacted-trace panel. | surface: Web (Next.js) with browser-side XChaCha20 encryption of URL/spec, run-scoped data residency (us-central1 pinned), ephemeral 24h-signed Cloud Run preview, opt-in self-hosted Phoenix to keep OpenInference traces inside the user's VPC instead of Phoenix Cloud.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context reasoning over the full hackathon-locked stack to (a) trace every PII/identifier flow across ADK -> Agent Builder -> Cloud Run -> Phoenix MCP and (b) auto-generate the redaction rule manifest + threat-model copy that matches each submission's stealth posture.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P13">
+  <header class="card-h">
+    <span class="pid">P13</span>
+    <span class="adv">The Data Nerd</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P13-the-data-nerd.html" loading="lazy" title="P13 preview"></iframe>
+    <div class="meta">
+      <h3>While YC hires, we ship — and we have the Phoenix dashboard to prove spec-fit climbed from 41% to 96% in 7 iterations.</h3>
+      <p class="framing">WhyC's satire only lands if the receipts are public. Re-frame the product as a Phoenix-powered scoreboard where founders watch spec-fit climb in real time and screenshot the convergence chart as their flex. The dashboard IS the headline.</p>
+      <p class="persona"><b>persona:</b> The numerate indie hacker / VC analyst who refuses to believe 'we shipped in a day' until they see traces, token cost per iteration, and a spec-fit time-series with timestamps — the type who lurks Arize Phoenix demos and bookmarks W&B reports</p>
+      <details><summary>Framing → MVP scope</summary><p>One screen: live Phoenix dashboard for a single in-flight WhyC run. Spec-fit time-series (animated), iteration bar chart (token cost), 6-flow heatmap (regen count per flow), 4 KPI tiles, and a 'convergence verdict' banner. Demo plays a 30-second replay of iterations 1→7. | surface: Dashboard + time-series + cohort + funnel is primary. Spec-fit-over-time line chart, per-iteration token-spend bars, regenerated-flow heatmap, KPI tiles (current spec-fit %, iterations, $ spent, convergence ETA), and a flow-by-flow funnel showing which flows passed the LLM-as-judge.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context trace correlation: Opus 4.7 reads the full OpenInference trace tree (often 200K+ tokens across iterations) and authors the analyst-grade narrative beneath each chart — 'iteration 4 regenerated /pricing because spec-fit dropped 12pts when the judge flagged missing tier comparison' — turning raw spans into board-ready commentary.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P14">
+  <header class="card-h">
+    <span class="pid">P14</span>
+    <span class="adv">The Educator</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P14-the-educator.html" loading="lazy" title="P14 preview"></iframe>
+    <div class="meta">
+      <h3>WhyC ships your prototype in a day AND teaches you how it did it — every tooltip is a free lesson YC charges 7% equity for.</h3>
+      <p class="framing">WhyC is a free PhD in shipping disguised as YC satire — every generated preview ships with annotated 'why this design choice' tooltips, so founders learn the agent's reasoning while the prototype builds itself.</p>
+      <p class="persona"><b>persona:</b> Stalled indie hackers and CS students who watched the YC Demo Day and want to *understand* the spec→ship pipeline (not just outsource it) — they read every tooltip because next week they'll rebuild it themselves.</p>
+      <details><summary>Framing → MVP scope</summary><p>One demo path: paste a synthetic JD URL, watch the 4-stage pipeline run with a live progress bar, hover any stage to see a tooltip lesson ('Why extract spec before code? Because spec-fit becomes your eval rubric'), and finish with a recap card listing 3 takeaways the founder can apply to their own startup tomorrow. | surface: Web app with an inline 'Build Academy' overlay: a persistent progress bar across the 4 agent stages, contextual tooltips on every UI affordance ('Why a hybrid sync model?'), a friendly toast tutor that explains each Phoenix trace as it streams, and a 'Lesson Recap' card after each iteration of the self-improvement loop.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context pedagogical reasoning — Opus 4.7 simultaneously generates the Next.js preview AND a parallel narration track explaining each architectural choice (token budget, eval rubric, why this LLM-as-judge prompt) grounded in the OpenInference trace.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P15">
+  <header class="card-h">
+    <span class="pid">P15</span>
+    <span class="adv">The Community Builder</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-veto">⚠ RP veto-armed (legal/abuse risk)</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P15-the-community-builder.html" loading="lazy" title="P15 preview"></iframe>
+    <div class="meta">
+      <h3>A public roast wall where indie hackers collectively out-ship every YC batch — paste a JD, watch the gallery vote, comment, and rally.</h3>
+      <p class="framing">WhyC isn't a 1-person tool — it's a public gallery where indie hackers collectively roast every YC batch by shipping the previews YC companies couldn't. Multi-user from day one: anyone can paste a JD, vote, comment, and rally.</p>
+      <p class="persona"><b>persona:</b> Indie hacker collectives & ship-or-die Discord communities — people who lurk Hacker News threads, screenshot 'still hiring 8 months later' tweets, and want a shared trophy wall to point at. Secondary: a roast-room for VC analysts diligencing portfolio velocity.</p>
+      <details><summary>Framing → MVP scope</summary><p>4-day demo: public gallery seeded with 12 synthetic-JD previews across 3 cohort rooms. Anyone (no login required for browse) can paste a JD to add a card; verified hackers (magic link) can vote, @mention, and comment. Live spec-fit score badge updates as the self-improvement loop runs in background. | surface: Public gallery web app — single workspace where every visitor is a member. Role-based access (anon viewer / verified hacker / mod), @mentions on preview cards, reactions (ship-it, lol, oof), threaded comments, shared 'cohort rooms' per YC batch. Real-time presence dots on hot cards.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context aggregation across hundreds of generated previews + comment threads to surface 'this batch's most-shipped vs most-stalled' meta-takes; multi-agent orchestration where each member's submission becomes a tracked artifact in Phoenix MCP with shared spec-fit scores visible to all.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P16">
+  <header class="card-h">
+    <span class="pid">P16</span>
+    <span class="adv">The Solo Founder</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-top5">★ panel-top5 · #5 (3pt) · RP · chair: RP_LEAD</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P16-the-solo-founder.html" loading="lazy" title="P16 preview"></iframe>
+    <div class="meta">
+      <h3>Your overnight build agent. Paste a pitch before bed, wake up to a deployed preview and a spec-fit score. One operator, one budget, one button.</h3>
+      <p class="framing">WhyC is the solo indie hacker's overnight validation rig: paste your own pitch, sleep, wake up to a deployed preview before you write the resignation email. The YC satire is collateral damage; you are the user.</p>
+      <p class="persona"><b>persona:</b> The single-operator indie hacker with a day job and three half-finished ideas — wants a working hosted preview by morning so they can decide whether to keep building or kill the idea before sinking another weekend.</p>
+      <details><summary>Framing → MVP scope</summary><p>Personal queue panel: paste URL, set budget cap and quiet hours, hit Ship. One row per run with live spec-fit %, cost-so-far, and a single Kill switch. Demo shows the overnight job converging from 71% to 96% while the founder sleeps. | surface: Single-account web admin panel. No teams, no roles, no invites. Owner = admin = user. One Google login, one Cloud Run project, one queue. Settings page is honest about cost ceilings and notification minimalism.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-horizon agentic orchestration with sustained tool-use across the overnight self-improvement loop, plus structured cost/spec-fit reasoning that fits a single-operator's mental model (one number to watch, one button to kill).</p></details>
+      <details><summary>Per-card must-fix (1)</summary><ul><li class="m must_fix">P16 budget-cap + Kill switch + quiet-hours UX is canonical -- adopt as reference even if another candidate wins H1.</li></ul></details>
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P17">
+  <header class="card-h">
+    <span class="pid">P17</span>
+    <span class="adv">The Enterprise Buyer</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P17-the-enterprise-buyer.html" loading="lazy" title="P17 preview"></iframe>
+    <div class="meta">
+      <h3>Diligence-grade WhyC: SAML-gated, SOC2-audited, trace-provenance dossier that lets corporate VCs prove a portfolio company's build velocity in one click.</h3>
+      <p class="framing">WhyC repackaged as a corporate-VC diligence accelerator: paste a portfolio prospect's job-post URL, get an SOC2-grade build-capability dossier with the auto-generated preview embedded — auditable, SSO-gated, exportable to LP memos.</p>
+      <p class="persona"><b>persona:</b> Corporate VC associate at Google Ventures / M12 / Salesforce Ventures running technical diligence on Series A prospects (the 'Secondary' VC user from spec, but inside an enterprise IAM perimeter)</p>
+      <details><summary>Framing → MVP scope</summary><p>Single screen: SSO-authenticated diligence dashboard for one prospect — header with SAML/SOC2/residency badges, left rail = spec-fit timeline (71% → 96%), center = embedded Cloud Run preview, right rail = live audit log of every agent action with trace IDs. | surface: SAML/SCIM-gated diligence portal with audit log stream, data-residency toggle, SOC2 evidence vault, and embedded preview iframe — every spec-fit score timestamped and immutable.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context reasoning over Phoenix OpenInference traces to produce auditor-ready provenance chains: every spec-fit delta tied to a trace ID, judge prompt hash, and regenerated flow — exportable as evidence for IC memos.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P18">
+  <header class="card-h">
+    <span class="pid">P18</span>
+    <span class="adv">The Designer</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P18-the-designer.html" loading="lazy" title="P18 preview"></iframe>
+    <div class="meta">
+      <h3>An editorial scroll-story where YC-orange typography indicts six-month hiring loops and a draggable spec-fit slider lets judges feel the agent improve itself.</h3>
+      <p class="framing">WhyC is a counter-narrative artifact: an editorial scroll-story where the YC-orange typographic indictment is the product. The hosted preview iframe with a live spec-fit % slider IS the punchline — design carries the satire so engineering doesn't have to explain it.</p>
+      <p class="persona"><b>persona:</b> Hackathon judges and design-literate indie hackers scrolling on a Friday night who decide in 4 seconds whether a project is 'finished' or 'student demo' — they need the page itself to feel like a manifesto, not a form.</p>
+      <details><summary>Framing → MVP scope</summary><p>Day-4 demo: the WhyC landing scroll-story is fully designed and implemented; the 'spec-fit slider' is wired to 4 frozen iframe snapshots (71% / 84% / 92% / 96%) of one synthetic case so judges can drag through the convergence themselves. | surface: Long-form scroll-story landing: full-bleed editorial hero, parallax timeline (Day 0 vs Day 180), then the live preview iframe deck with a draggable spec-fit slider revealing each self-improvement iteration. Submission form is collapsed at the very bottom, almost hidden — the story sells before the CTA.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-form coherent visual generation: Opus 4.7 produces the design tokens, editorial copy, AND the SVG hero illustrations for each generated preview in one pass — keeping typographic voice consistent across 6 sections of the spec-derived microsite.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P19">
+  <header class="card-h">
+    <span class="pid">P19</span>
+    <span class="adv">The Embedded (SDK only)</span>
+    <span class="surface">Embedded SDK</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P19-the-embedded.html" loading="lazy" title="P19 preview"></iframe>
+    <div class="meta">
+      <h3>Three lines of code. One YC URL in. One deployed preview out. While they hire, your codebase ships.</h3>
+      <p class="framing">WhyC is not an app — it's a one-line SDK that any host (a VC's deal-flow tool, a founder's personal site, a Slack bot) embeds to turn a YC-style job-posting URL into a deployed Cloud Run preview. The web docs page is the platform-qualifying surface; the product is the package.</p>
+      <p class="persona"><b>persona:</b> Engineers at small VC firms and indie hackers building internal tools who want to drop `whyc.generate(url)` into their existing diligence stack rather than send their team to yet another dashboard.</p>
+      <details><summary>Framing → MVP scope</summary><p>One endpoint — `whyc.generate(yc_url) -> { job_id, status_url, webhook }` — with the docs page rendering a live request/response pair and a copy-paste curl snippet that actually returns a Cloud Run URL on the demo day. | surface: npm/PyPI package (`whyc`) with 3-line install, callable from Node/Python/curl. The only WhyC-owned UI is a Stripe-style docs page with live code samples — host apps own all other UX.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context spec extraction over scraped JD HTML + Gemini ADK orchestration of the self-improvement loop, exposed as a single idempotent SDK call returning a job handle and webhook contract.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P20">
+  <header class="card-h">
+    <span class="pid">P20</span>
+    <span class="adv">The OSS Maintainer</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P20-the-oss-maintainer.html" loading="lazy" title="P20 preview"></iframe>
+    <div class="meta">
+      <h3>While YC hires, we ship — and we ship the source. `git clone whyc` and out-build a batch before their next standup.</h3>
+      <p class="framing">WhyC is not a product, it is a public repository. The whole satire only lands if every layer (Gemini ADK examples, Phoenix, Next.js, our judge prompts) is forkable on day one — because YC's real moat is closed batches, and ours is `git clone`.</p>
+      <p class="persona"><b>persona:</b> The indie hacker who lands on the GitHub repo from Hacker News, scans the README for 30 seconds, and decides whether to star, fork, or close the tab — same person who'll later read trace logs in `/loop`.</p>
+      <details><summary>Framing → MVP scope</summary><p>A single landing page that reads as a polished GitHub README: hero with one clone command, OSI-license + Apache-2.0 + Arize-track badges, 4-step pipeline as a Mermaid-style SVG, contributors row, a real-looking issue + PR snippet that reveals the self-improvement loop convergence (71 -> 96). | surface: GitHub README rendered as the landing page. Hosted Cloud Run instance is the reference impl, linked under a `// try it` badge. Stars, forks, contributors, OSI badge, clone command above the fold.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context reasoning over the agent's own OpenInference traces — the README shows a real trace excerpt plus the judge's diff so anyone reading the repo can audit *why* a flow was regenerated, turning the self-improvement loop into reproducible OSS, not magic.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P21">
+  <header class="card-h">
+    <span class="pid">P21</span>
+    <span class="adv">The Indie Hacker</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-top5">★ panel-top5 · #4 (3pt) · BP · chair: BP_LEAD</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P21-the-indie-hacker.html" loading="lazy" title="P21 preview"></iframe>
+    <div class="meta">
+      <h3>YC는 6개월 동안 채용 공고만 올린다. 너는 $29/월로 매주 새 prototype을 ship한다. 결제·해지·환불 다 들어있다.</h3>
+      <p class="framing">YC 풍자는 마케팅이고, 진짜 게임은 인디 해커가 매달 $29~$99 자동 결제로 'YC가 6개월 걸리는 걸 1일에' 찍어내는 셀프-서브 SaaS다. 풍자 헤드라인은 무료 티어 미끼고, MRR은 Founder 티어에서 나온다.</p>
+      <p class="persona"><b>persona:</b> 월 $99 미만에서 결제 거부감 없이 카드를 긁는 부트스트랩 인디 해커 — 한 달에 5~10번씩 새 아이디어를 검증하고 싶은데 매번 Next.js 스캐폴딩 짜기 싫은, 이미 Stripe·Lemon Squeezy 계정 있는 솔로 파운더</p>
+      <details><summary>Framing → MVP scope</summary><p>4일 데모: Stripe Checkout 1개 + 3-tier pricing table + 'previews used this month' 카운터 1개. 결제→웹훅→Firestore 사용량 차감→preview 생성 트리거. 환불·invoice는 Stripe 기본 UI로 위임. 그게 다. | surface: Stripe 결제 퍼스트 pricing page — 3 tier (Free / Hacker $29 / Founder $99), preview-당 usage meter 시각화, 카드 거절 시 dunning 이메일 자동, invoice PDF 다운로드, 실패한 Cloud Run 빌드는 크레딧 자동 환불</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Opus 4.7의 spec→코드 변환 품질이 충분히 안정적이라 한 preview의 GPU/Cloud Run 비용을 unit economics로 예측 가능 → tier별 마진 계산이 가능 → confident pricing 가능. 또한 Phoenix self-improvement loop 수렴 횟수를 토큰 비용으로 환산해 'unlimited' 약속을 진짜로 지킬 수 있음.</p></details>
+      <details><summary>Per-card must-fix (3)</summary><ul><li class="m must_fix">DROP live monetization from MVP. Stripe Checkout creates PCI scope on 36-day timeline. Pricing UI may be STATIC mockup only; live billing deferred post-submission.</li><li class="m must_fix">'Mercenary in satire product' tone risk -- frame pricing as future-state preview, not active checkout.</li><li class="m must_fix">IF any payment UI ships: card data + preview URLs must NOT share tenant boundary; Stripe handles PII, WhyC stores only Stripe customer ID.</li></ul></details>
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P22">
+  <header class="card-h">
+    <span class="pid">P22</span>
+    <span class="adv">The Researcher</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P22-the-researcher.html" loading="lazy" title="P22 preview"></iframe>
+    <div class="meta">
+      <h3>WhyC as a peer-reviewable benchmark: 47 cohorts, μ=89.3% spec-fit at iter-10, σ=4.1, dataset and traces released MIT — shipping is empirically not hard.</h3>
+      <p class="framing">WhyC is reframed as an empirical benchmark — a reproducible falsification of the folk hypothesis that 'shipping is hard' — measured by spec-fit convergence of a self-improving multi-agent pipeline against a synthetic post-Demo-Day cohort.</p>
+      <p class="persona"><b>persona:</b> Agent-eval researchers, Arize-track judges, and serious indie engineers who read preprints — people who trust a finished artifact only when it ships with a dataset, traces, judge prompts, and Cohen's κ.</p>
+      <details><summary>Framing → MVP scope</summary><p>Day-4 demo: live preprint route auto-rendered from the most recent benchmark run — abstract, Figure 1 curve regenerated from real Phoenix traces, Table 1 from the eval harness, downloadable BibTeX + dataset bundle. | surface: Paper-style preprint page: abstract, Figure 1 spec-fit convergence curve (with τ-threshold and ±σ error bar), Table 1 per-cohort dataset summary, BibTeX export, references — artifact-as-evidence rather than marketing.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Opus 4.7's calibrated quantitative reasoning — generating internally consistent statistics (μ, σ, κ, n, τ), realistic convergence curves, and citation-grade prose that survives a skeptical reviewer's first read.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P23">
+  <header class="card-h">
+    <span class="pid">P23</span>
+    <span class="adv">The Game Designer</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-veto">⚠ RP veto-armed (legal/abuse risk)</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P23-the-game-designer.html" loading="lazy" title="P23 preview"></iframe>
+    <div class="meta">
+      <h3>Draft stalled YC companies, ship their products before they do, climb the leaderboard — WhyC turns the 6-month hire-no-ship pattern into a speedrun arena.</h3>
+      <p class="framing">WhyC becomes a competitive arena where indie hackers 'draft' stalled YC companies and race to ship spec-fit previews — the aggressive satire reframed as celebratory mockery via XP, leaderboards, and 'Out-shipped a Series A' badges.</p>
+      <p class="persona"><b>persona:</b> Indie hacker / serial founder who treats YC Demo Day cohorts as a draft pool — wants public scoreboards proving they out-shipped a batch in a weekend (status currency in indie-hacker / Arize circles).</p>
+      <details><summary>Framing → MVP scope</summary><p>Day-4 demo: live HUD wired to one synthetic JD run — XP bar fills as Gemini extracts spec, four boss bars animate against real ADK stage events, Phoenix MCP spec-fit score drives the Stage-4 boss bar in real-time, and the 'Out-shipped a Series A' achievement triggers when spec-fit crosses 95%. Leaderboard is seeded fixture data. No persistence, no auth. | surface: Quest-style web HUD: top XP bar with level progression, 4-stage pipeline as boss health bars (Spec Extract → Codegen → Deploy → Phoenix Judge), live leaderboard ranking by fastest spec-fit ≥ 95%, achievement popup with rotating gold aura, draft card with rarity tag, combo streak callout. Sound-effect-ready beats marked at: Ship It button press, stage clear, achievement unlock, combo trigger, leaderboard rank-up.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-horizon multi-agent orchestration narrated as game mechanics — Opus 4.7 maps the self-improvement loop's iteration-until-convergence behavior onto streak/combo systems, scoring each Phoenix judge verdict as a stage-clear event and converting agent spans into player-legible progression telemetry.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P24">
+  <header class="card-h">
+    <span class="pid">P24</span>
+    <span class="adv">The Reluctant Adopter</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P24-the-reluctant-adopter.html" loading="lazy" title="P24 preview"></iframe>
+    <div class="meta">
+      <h3>We didn't believe agents could ship either — so we published every trace, every failure, and the deployed URL next to the broken mock skeptics expected.</h3>
+      <p class="framing">Most agent demos are vaporware that crashes the moment a judge clicks the 'try it' link. WhyC's only honest pitch is to show — side by side — exactly what a skeptic expects (broken UI, hallucinated routes, 404s) versus the actual deployed Cloud Run URL the loop produces. The product IS the rebuttal.</p>
+      <p class="persona"><b>persona:</b> The cynical YC alum / staff engineer who has watched 30 agent-builder demos in 2026 and assumes #31 is also a screen-recorded lie — needs a transparent comparison and a clickable artifact before they will spend 10 minutes evaluating</p>
+      <details><summary>Framing → MVP scope</summary><p>Single page with: (1) hero split — 'what skeptics expect' static broken-mock SVG vs 'what WhyC actually deployed' iframe-style preview card with live URL pill; (2) objection-table with 7 rows, each row = objection / our honest answer / link to trace; (3) comparison table WhyC vs one-shot codegen vs hand-coded; (4) public known-failures log with last 3 entries. | surface: Landing page led by a 'Why you'll hate this' section listing the 7 reasons agent codegen normally fails, each crossed out with a one-line mitigation and a Phoenix trace link as evidence. Comparison table vs one-shot codegen and vs hand-coded MVP follows. Live spec-fit score and known-failure log are public.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context honesty audit — Opus 4.7 reads the full Phoenix trace bundle for a run, drafts the 'where this preview is still wrong' disclosure paragraph, and refuses to publish the deploy URL until the disclosure is attached. Skepticism as a first-class output, not a footer.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P25">
+  <header class="card-h">
+    <span class="pid">P25</span>
+    <span class="adv">The AI-Native</span>
+    <span class="surface">Web PWA</span>
+    
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P25-the-ai-native.html" loading="lazy" title="P25 preview"></iframe>
+    <div class="meta">
+      <h3>Chat with the builder. Paste a YC job URL, watch Gemini narrate the 24-hour ship in real-time tokens, with Phoenix traces and judge verdicts inline.</h3>
+      <p class="framing">WhyC is not a form-with-a-progress-bar — it IS the agent. You converse with the builder; it narrates spec extraction, codegen, deployment, and Phoenix-judged self-improvement in stream-of-consciousness Gemini tokens, with traces inline in the chat.</p>
+      <p class="persona"><b>persona:</b> Indie hacker who lives in Cursor/Claude/Aider and treats chat as the universal IDE — wants to drop a YC job URL into a prompt and watch the multi-agent pipeline think out loud, not fill out a wizard.</p>
+      <details><summary>Framing → MVP scope</summary><p>Single chat thread: user pastes YC job URL → Builder agent streams 'extracting spec... deploying... judging...' with inline trace cards and a live spec-fit gauge that updates as the background self-improvement loop iterates (71% → 84% → 96%). | surface: Conversational chat surface with @mention command palette (@spec, @deploy, @judge, @rerun, @trace) as primary. The Cloud Run URL, spec-fit score, and Phoenix trace timeline render as inline chat artifacts. No structured form anywhere.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Long-context streaming narration of a multi-agent pipeline — Opus 4.7 (proxy for Gemini ADK in the actual build) maintains coherent stream-of-consciousness across 10+ min of agent steps, weaves Phoenix MCP trace IDs and judge verdicts into prose, and lets the user @mention to inject mid-flight corrections without losing pipeline state.</p></details>
+      
+    </div>
+  </div>
+</article>
+<article class="card" id="card-P26">
+  <header class="card-h">
+    <span class="pid">P26</span>
+    <span class="adv">The Anti-AI</span>
+    <span class="surface">Web PWA</span>
+    <span class="badge badge-top5">★ panel-top5 · #2 (3pt) · TP · UP · RP</span>
+  </header>
+  <div class="card-body">
+    <iframe src="mockups/P26-the-anti-ai.html" loading="lazy" title="P26 preview"></iframe>
+    <div class="meta">
+      <h3>WhyC: paste a YC job posting, get a deployed product. No chatbot, no prompts, no AI theater — just a URL in, a URL out.</h3>
+      <p class="framing">WhyC is not an AI demo — it is a deployment tool. Hide every trace of the LLM stack from the surface so the satire lands as a normal serious product that simply ships faster than YC companies do.</p>
+      <p class="persona"><b>persona:</b> Skeptical senior engineer / indie hacker who distrusts ✨-laden AI products and only respects deterministic tooling — they read the YC headline as a productivity claim, not a generative-AI parlor trick.</p>
+      <details><summary>Framing → MVP scope</summary><p>One screen. Paste workatastartup.com URL → Deploy. Status pill cycles through 6 deterministic stages (Queued → Extracting Spec → Generating → Deploying → Judging → Converged). Result row shows deployed Cloud Run URL + spec-fit score + elapsed time. That is the entire app. | surface: rule-based, deterministic, 사용자가 기대한 것만 정확히. Single text field for the YC posting URL, one Deploy button, one persistent status line, one resulting URL. No chat, no sparkles, no model names, no sparkle emojis, no streaming token flicker on the surface.</p></details>
+      <details><summary>Opus 4.7 capability</summary><p>Opus 4.7 (server-side, invisible) handles spec extraction, codegen, and the Phoenix-fed self-improvement judging — but the surface only exposes a job queue and a URL. Capability shows up as outcome (deployed preview, spec-fit %), never as personality.</p></details>
+      <details><summary>Per-card must-fix (2)</summary><ul><li class="m must_fix">Anti-AI minimalism risks 'forgot to design hero' read -- add ONE typographic ambition signal without breaking restraint.</li><li class="m must_fix">Phoenix loop hidden by design -- surface explicit /audit or /trace page so Arize-track bonus criterion is visibly demoable.</li></ul></details>
+    </div>
+  </div>
+</article>
+</main>
+<footer>
+  Inspect each iframe → pick one P## → return to Claude Code conversation and answer the Gate H1 modal (you can type any P## in the "Other" field, e.g. <code>P14</code> or <code>P10</code>).
+</footer>
+</body>
+</html>

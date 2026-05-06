@@ -1,0 +1,12 @@
+{
+  "id": "P09",
+  "advocate": "The CLI Devotee",
+  "framing": "WhyC belongs in a terminal: indie hackers don't open dashboards — they pipe URLs into `npx whyc` and walk away. The web preview is the artifact; the CLI is the cockpit.",
+  "target_persona": "Serial indie hacker who lives in tmux, has 47 unfinished side-projects, and treats `npx` as a verb — wants to scoff-and-ship a YC mock-up between coffee refills.",
+  "primary_surface": "CLI",
+  "opus_4_7_capability": "Long-running streamed agent telemetry — Opus 4.7 emits structured ADK + Phoenix MCP events as ANSI-friendly progress frames, then surfaces LLM-as-judge spec-fit deltas as the background self-improvement loop converges.",
+  "mvp_scope": "Single command `whyc <url>` that streams ASCII spec-extraction → codegen → Cloud Run deploy → returns URL in ~10min, then tails Phoenix self-improvement loop in background (notify-send on each spec-fit jump). | surface: CLI (npx + brew install whyc) drives the pipeline; the deployed Cloud Run URL is the web artifact (hackathon platform requirement satisfied). Web auth handshake handled via short-lived browser callback only.",
+  "one_liner_pitch": "npx whyc <yc-job-url> — your terminal ships a working Cloud Run preview while their founders are still typing the JD.",
+  "spec_alignment_notes": "primary_surface.platform=web in spec → I respect that: the deliverable artifact is the deployed Cloud Run web URL. CLI is the *driver*, not the artifact, so platform requirement holds. target_persona=indie hacker → CLI-first is the native habitat (terminal-first bias honored). sync_model=hybrid → mapped to foreground stream (~10min) + backgrounded self-improvement tail with desktop notifications, matching killer_feature UX cadence verbatim.",
+  "mockup_path": "mockups/P09-the-cli-devotee.html"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "P18",
+  "advocate": "The Designer",
+  "framing": "WhyC is a counter-narrative artifact: an editorial scroll-story where the YC-orange typographic indictment is the product. The hosted preview iframe with a live spec-fit % slider IS the punchline — design carries the satire so engineering doesn't have to explain it.",
+  "target_persona": "Hackathon judges and design-literate indie hackers scrolling on a Friday night who decide in 4 seconds whether a project is 'finished' or 'student demo' — they need the page itself to feel like a manifesto, not a form.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-form coherent visual generation: Opus 4.7 produces the design tokens, editorial copy, AND the SVG hero illustrations for each generated preview in one pass — keeping typographic voice consistent across 6 sections of the spec-derived microsite.",
+  "mvp_scope": "Day-4 demo: the WhyC landing scroll-story is fully designed and implemented; the 'spec-fit slider' is wired to 4 frozen iframe snapshots (71% / 84% / 92% / 96%) of one synthetic case so judges can drag through the convergence themselves. | surface: Long-form scroll-story landing: full-bleed editorial hero, parallax timeline (Day 0 vs Day 180), then the live preview iframe deck with a draggable spec-fit slider revealing each self-improvement iteration. Submission form is collapsed at the very bottom, almost hidden — the story sells before the CTA.",
+  "one_liner_pitch": "An editorial scroll-story where YC-orange typography indicts six-month hiring loops and a draggable spec-fit slider lets judges feel the agent improve itself.",
+  "spec_alignment_notes": "primary_surface=web/hybrid → chose scroll-story landing because hybrid cadence (10min visible + hours background) needs visual narrative to compress; target_persona kept verbatim (indie hacker + judges); killer_feature spec-fit % made the literal interactive primitive of the page; trademark constraint honored via geometric YC-orange parody mark, no wordmark.",
+  "mockup_path": "mockups/P18-the-designer.html"
+}

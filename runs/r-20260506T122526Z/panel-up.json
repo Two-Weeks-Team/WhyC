@@ -1,0 +1,185 @@
+{
+  "panel": "UP",
+  "panel_name": "UX Panel",
+  "scoring_axis": "design",
+  "run_id": "r-20260506T122526Z",
+  "chair": "UP_LEAD",
+  "model_profile": "claude-opus-4-7 · xhigh effort · adaptive",
+  "synthesis_mode": "internal-10-lens (Task tool unavailable)",
+  "lenses_applied": [
+    "End User",
+    "Designer",
+    "Accessibility Advocate",
+    "Information Architect",
+    "Mobile UX",
+    "Content Designer",
+    "Usability Tester",
+    "Brand Voice",
+    "Visual Designer",
+    "Motion Designer"
+  ],
+  "mockups_read": [
+    "P05-the-design-forward.html",
+    "P03-the-speed-obsessed.html",
+    "P11-the-pragmatist.html",
+    "P07-the-mobile-first.html",
+    "P25-the-ai-native.html",
+    "P26-the-anti-ai.html",
+    "P18-the-designer.html",
+    "P13-the-data-nerd.html"
+  ],
+  "evaluation_criteria": {
+    "visual_finish": "Reads as shipped product, not wireframe (Stage-2 Design axis)",
+    "first_impression_30s": "Hackathon judge with 30-sec attention closes pitch in one viewport",
+    "brand_voice_consistency": "Aggressive YC satire executed with sleek control, not edgelord aggro",
+    "accessibility_hygiene": "WCAG 2.2 AA — contrast, focus states, semantic HTML, aria attributes",
+    "mobile_responsive_viability": "Web platform requirement — degrades cleanly to mobile breakpoints",
+    "punchline_delivery": "'WHILE YC HIRES, WE SHIP' moment lands on the surface itself"
+  },
+  "scores": [
+    {
+      "id": "P05",
+      "advocate": "The Design-Forward",
+      "composite": 9.4,
+      "axis_breakdown": {
+        "visual_finish": 9.8,
+        "first_impression_30s": 9.6,
+        "brand_voice": 9.5,
+        "accessibility": 7.8,
+        "mobile_viability": 8.4,
+        "punchline_delivery": 9.7
+      },
+      "notes": "Editorial-grade hero. OKLCH warm-paper palette, oversized 108px display headline with strike-through 'hire,' and gradient 'we ship.' The tilted living preview window with the 71→84→92→96 spec-fit climb IS the proof, IS the punchline, IS the pitch. Float-card dagger quote ('We just shipped theirs') executes the satire with control instead of aggro. Animated progress fill, pulse-dot live indicator, ticker strip — every detail finished. The page itself out-classes the YC sites it mocks; that's the brief."
+    },
+    {
+      "id": "P03",
+      "advocate": "The Speed-Obsessed",
+      "composite": 8.9,
+      "axis_breakdown": {
+        "visual_finish": 8.6,
+        "first_impression_30s": 9.5,
+        "brand_voice": 8.8,
+        "accessibility": 8.7,
+        "mobile_viability": 9.2,
+        "punchline_delivery": 9.3
+      },
+      "notes": "Clearest 30-second read in the panel. Hero ('They take 6 months. You ship in 24 hours.') with strike-through, single CTA card with prefilled URL, three-step onboarding, live demo strip with agent log, and a 'Their cohort vs You with WhyC' comparison table that quantifies '2,600× faster.' Mobile breakpoint clean. Form labels, aria-labels, semantic landmarks present. Slightly less designed than P05 but converts the punchline into operational receipts faster — a judge could grade this in 20 seconds."
+    },
+    {
+      "id": "P18",
+      "advocate": "The Designer",
+      "composite": 8.6,
+      "axis_breakdown": {
+        "visual_finish": 9.3,
+        "first_impression_30s": 7.4,
+        "brand_voice": 9.4,
+        "accessibility": 7.6,
+        "mobile_viability": 7.8,
+        "punchline_delivery": 9.2
+      },
+      "notes": "Editorial scroll-story. Serif (Iowan Old Style) display type at 128px, italic 'while they' / orange 'ship,' draggable spec-fit slider as the interactive punchline (judges drag through 71/84/92/96 themselves). Highest production value alongside P05, but density and scroll-to-comprehend cost it on the 30-sec axis. Newspaper-grade typography risks 'student type-spec demo' read if judges don't scroll. Stamp/seal artifact card is genuinely well-crafted."
+    },
+    {
+      "id": "P11",
+      "advocate": "The Pragmatist",
+      "composite": 8.1,
+      "axis_breakdown": {
+        "visual_finish": 7.9,
+        "first_impression_30s": 8.4,
+        "brand_voice": 7.4,
+        "accessibility": 8.6,
+        "mobile_viability": 6.8,
+        "punchline_delivery": 8.6
+      },
+      "notes": "Honest SaaS dashboard. The 0.92 ← 0.71 hero scoreboard with iter-strip + per-flow judge-note table delivers the killer feature literally: spec-fit climbing in real time IS the product. Linear's design language, no marketing chrome, footer 'while they hire, we ship.' as the only flourish. Strong accessibility (semantic table, aria-hidden SVG, real focus targets). 220px sidebar collapses poorly on mobile. Brand-voice slightly muted — the satire only lands via the footer line."
+    },
+    {
+      "id": "P26",
+      "advocate": "The Anti-AI",
+      "composite": 7.8,
+      "axis_breakdown": {
+        "visual_finish": 8.2,
+        "first_impression_30s": 7.6,
+        "brand_voice": 8.4,
+        "accessibility": 9.4,
+        "mobile_viability": 8.2,
+        "punchline_delivery": 7.8
+      },
+      "notes": "The meta-satire. Looks like Stripe/Linear console, zero ✨, deterministic 6-stage status pills, real semantic table with badge dots. Best accessibility hygiene in the cohort — WCAG-grade contrast, kbd hints, focus-visible outlines, real form labels. The satire works *because* it doesn't look like an AI demo: 'while YC hires, we ship a real tool that ships things.' Risk: judges may miss the joke entirely and read it as plain-vanilla. Strong inclusion as a hedge — proves the team can build pixel-perfect serious tooling."
+    }
+  ],
+  "top5": ["P05", "P03", "P18", "P11", "P26"],
+  "chair_vote": {
+    "primary": "P05",
+    "rationale": "P05 is the only mockup that single-handedly satisfies Stage-2 Design axis success_metric ('WhyC's own UI reads as finished work') AND delivers the punchline in one viewport for a 30-sec judge attention budget. The tilted preview window with the live 71→84→92→96 spec-fit climb is simultaneously the visual hero, the proof of the killer feature, and the satire. Editorial typography (108px display headline, strike-through 'hire,' gradient 'we ship.'), OKLCH warm-paper palette, and the float-card dagger ('We just shipped theirs.') execute aggressive YC satire with surgical control rather than edgelord aggro. The artifact itself out-classes 80% of YC portfolio sites — which is exactly the brief. Every other top-5 candidate optimizes one dimension at the cost of another; P05 is the only Pareto-front pixel.",
+    "second_choice": "P03",
+    "second_rationale": "If P05 fails the 4-day implementation budget, P03 is the safe ship: same punchline, simpler IA, faster to build, comparison-table receipts, mobile-clean."
+  },
+  "dissent": [
+    {
+      "lens": "Accessibility Advocate",
+      "against": "P05",
+      "issue": "oklch(38% 0.012 60) ink-soft body text on warm paper is borderline 4.5:1 — verify before ship; add focus-visible outlines on .nav-cta and .btn-primary."
+    },
+    {
+      "lens": "Mobile UX",
+      "against": "P05",
+      "issue": "1.05fr/.95fr hero grid collapses to 1fr at 960px but float-card absolute positioning on bottom-right at mobile risks overlap with metrics row."
+    },
+    {
+      "lens": "Information Architect",
+      "against": "P05",
+      "issue": "Single-fold-everything is high-risk: no scroll narrative, no FAQ, no how-it-works deeper dive — judges who want to inspect convergence cannot."
+    },
+    {
+      "lens": "Usability Tester",
+      "against": "P18",
+      "issue": "Editorial scroll-story requires scroll engagement; 30-sec judges may bounce before reaching the spec-fit slider punchline."
+    },
+    {
+      "lens": "Brand Voice",
+      "against": "P26",
+      "issue": "Anti-AI minimalism may read as 'forgot to design the hero' to judges scanning for visual ambition on the Design axis."
+    },
+    {
+      "lens": "Mobile UX",
+      "against": "P11",
+      "issue": "220px fixed sidebar and 1fr/360px main split have no mobile breakpoint declared — dashboard breaks below 900px."
+    },
+    {
+      "lens": "Content Designer",
+      "against": "P03",
+      "issue": "'2,600× faster' microcopy in comparison table risks reading as marketing-superlative; trim to 'minutes vs months' for honest-tone consistency."
+    },
+    {
+      "lens": "Visual Designer",
+      "against": "P25",
+      "issue": "Chat-as-product surface (excluded from top-5) reads as Cursor/Claude clone — no distinct visual identity for WhyC; satire gets lost in the chat shell."
+    },
+    {
+      "lens": "Motion Designer",
+      "against": "P05",
+      "issue": "@keyframes fill at 2.4s ease may feel slow on first paint; consider 1.6s with staggered loop-strip step delays for tighter perceived performance."
+    },
+    {
+      "lens": "End User",
+      "against": "P07",
+      "issue": "Mobile-only mockup (excluded from top-5) is a fragment — needs a desktop counterpart since hackathon judges grade on web platform first."
+    }
+  ],
+  "panel_consensus_summary": "P05 chair-vote is consensus across Designer/Visual/Motion/End-User/Brand-Voice/Content-Designer/Usability-Tester lenses. Accessibility-Advocate, IA, and Mobile-UX lenses register dissent on single-fold risk and contrast hygiene — fixable with targeted polish, not architecture changes. P03 unanimously the fallback. P18 wins pure-design but loses 30-sec test. P11 wins killer-feature literalism. P26 wins accessibility but bets the joke on judge sophistication.",
+  "implementation_notes_for_M3": [
+    "If shipping P05: tighten oklch ink-soft contrast to ≥4.6:1, add explicit :focus-visible outlines on .nav-cta/.btn-primary/.btn-ghost, verify float-card mobile reposition, reduce @keyframes fill duration to 1.6s.",
+    "If shipping P03: keep comparison table but soften '2,600× faster' microcopy; add explicit empty/error/loading states for the live demo strip.",
+    "If hybrid: P05 hero + P03 comparison-table-and-demo-strip below the fold = best of both punchline density and operational receipts.",
+    "Required across all winners: real semantic <main>/<nav>/<section> landmarks, alt-text on all decorative SVGs (use aria-hidden), keyboard-traversable form, prefers-reduced-motion override for animated fill/pulse."
+  ],
+  "axis_alignment_with_idea_spec": {
+    "spec_success_metric_design": "both WhyC's own UI and the generated previews read as finished work",
+    "evaluation": "P05 directly satisfies — the tilted preview window inside the hero IS the 'generated preview reading as finished work' demonstration AND the WhyC UI itself. Single-mockup compliance with the dual-finish requirement.",
+    "spec_brand_tone": "픽셀 퍼펙트 sleek UI, 진지하게 끝난 작품처럼 (브루털리즘 아님)",
+    "evaluation": "P05 OKLCH warm-paper + editorial typography hits 'sleek finished work' precisely; explicitly not brutalist. P18 also compliant. P11/P26 read as 'serious tool' more than 'finished art piece.' P03 sits in the middle.",
+    "spec_killer_feature_visibility": "self-improvement loop: spec-fit climb 71→84→92→96",
+    "evaluation": "P05, P11, P13, P18 all surface the climb literally. P05 makes it the visual hero; P11 makes it the entire dashboard; P18 makes it interactive (slider). All three are spec-faithful — P05 just executes with the highest visual finish."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "P22",
+  "advocate": "The Researcher",
+  "framing": "WhyC is reframed as an empirical benchmark — a reproducible falsification of the folk hypothesis that 'shipping is hard' — measured by spec-fit convergence of a self-improving multi-agent pipeline against a synthetic post-Demo-Day cohort.",
+  "target_persona": "Agent-eval researchers, Arize-track judges, and serious indie engineers who read preprints — people who trust a finished artifact only when it ships with a dataset, traces, judge prompts, and Cohen's κ.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Opus 4.7's calibrated quantitative reasoning — generating internally consistent statistics (μ, σ, κ, n, τ), realistic convergence curves, and citation-grade prose that survives a skeptical reviewer's first read.",
+  "mvp_scope": "Day-4 demo: live preprint route auto-rendered from the most recent benchmark run — abstract, Figure 1 curve regenerated from real Phoenix traces, Table 1 from the eval harness, downloadable BibTeX + dataset bundle. | surface: Paper-style preprint page: abstract, Figure 1 spec-fit convergence curve (with τ-threshold and ±σ error bar), Table 1 per-cohort dataset summary, BibTeX export, references — artifact-as-evidence rather than marketing.",
+  "one_liner_pitch": "WhyC as a peer-reviewable benchmark: 47 cohorts, μ=89.3% spec-fit at iter-10, σ=4.1, dataset and traces released MIT — shipping is empirically not hard.",
+  "spec_alignment_notes": "v1.7.0+ A-6: target_persona narrowed from spec's 'indie hacker / serial founder' to the researcher-adjacent slice (Arize-track evaluators, agent-eval academics) because the Researcher persona's bias demands rigor-readers, not vibe-readers; primary_surface chosen as 'paper-style preprint' to occupy the dataset/method/result lane and avoid overlap with The Designer (visual hero) or The Engineer (code surface); killer_feature self-improvement loop preserved verbatim as Figure 1 convergence curve...",
+  "mockup_path": "mockups/P22-the-researcher.html"
+}

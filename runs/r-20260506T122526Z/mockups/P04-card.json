@@ -1,0 +1,12 @@
+{
+  "id": "P04",
+  "advocate": "The Cost-Conscious",
+  "framing": "YC 회사들이 6개월간 못 출시하는 진짜 이유는 '클라우드 비용이 무서워서 launch 미루는 것'이라는 가설로 재정의 — WhyC는 생성된 프리뷰를 $0/월 (scale-to-zero + 무료 tier만)로 호스팅해서 '돈도 안 들었는데 너네 6개월?' 이라는 도발을 비용 영수증으로 증명한다.",
+  "target_persona": "한 달 클라우드 청구서 $5도 아까운 bootstrapped 인디 해커. 신용카드 한도가 R&D 예산. '내 사이드프로젝트는 cold start 좀 느려도 무료여야 한다'가 종교.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Opus 4.7의 cost-aware planning 능력 — agent가 각 노드에서 'Gemini Flash로 충분한가 vs Pro 필요한가' 판단해서 토큰 예산을 절감. 1M context로 Phoenix trace 전체를 한 번에 읽어 redundant LLM 호출 제거.",
+  "mvp_scope": "단일 화면: URL 입력 → 실시간으로 누적 비용 카운터가 0.00달러부터 올라가는 게 보이고, 24h 후 deployed URL과 함께 '총 지출: $0.043' 영수증을 PDF로 발급. self-improvement loop의 각 iteration이 비용을 얼마나 더 썼는지 라인으로 표시. | surface: Next.js static export → Cloud Run min-instances=0, Phoenix free-tier (50k traces/mo), Gemini free quota first, Secret Manager 무료 6 secrets 한도 내. 모든 컴포넌트 옆에 '$/월' 스티커.",
+  "one_liner_pitch": "그들이 6개월간 클라우드비 무서워 못 출시한 걸, 우리는 4센트로 끝낸다 — 영수증 첨부.",
+  "spec_alignment_notes": "spec의 primary_surface=web/hybrid, latency=24h, hackathon stack 고정 — 모두 verbatim 따름. monetization_model='unknown'이었던 것을 'cost transparency itself = trust signal'로 해석 (free forever, 영수증이 마케팅). target_persona는 spec의 'indie hacker' 중에서도 cost-sensitive 서브세그먼트로 좁힘 (P01-P03와 차별화).",
+  "mockup_path": "mockups/P04-the-cost-conscious.html"
+}

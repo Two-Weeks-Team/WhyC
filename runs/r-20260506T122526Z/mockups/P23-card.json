@@ -1,0 +1,12 @@
+{
+  "id": "P23",
+  "advocate": "The Game Designer",
+  "framing": "WhyC becomes a competitive arena where indie hackers 'draft' stalled YC companies and race to ship spec-fit previews — the aggressive satire reframed as celebratory mockery via XP, leaderboards, and 'Out-shipped a Series A' badges.",
+  "target_persona": "Indie hacker / serial founder who treats YC Demo Day cohorts as a draft pool — wants public scoreboards proving they out-shipped a batch in a weekend (status currency in indie-hacker / Arize circles).",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-horizon multi-agent orchestration narrated as game mechanics — Opus 4.7 maps the self-improvement loop's iteration-until-convergence behavior onto streak/combo systems, scoring each Phoenix judge verdict as a stage-clear event and converting agent spans into player-legible progression telemetry.",
+  "mvp_scope": "Day-4 demo: live HUD wired to one synthetic JD run — XP bar fills as Gemini extracts spec, four boss bars animate against real ADK stage events, Phoenix MCP spec-fit score drives the Stage-4 boss bar in real-time, and the 'Out-shipped a Series A' achievement triggers when spec-fit crosses 95%. Leaderboard is seeded fixture data. No persistence, no auth. | surface: Quest-style web HUD: top XP bar with level progression, 4-stage pipeline as boss health bars (Spec Extract → Codegen → Deploy → Phoenix Judge), live leaderboard ranking by fastest spec-fit ≥ 95%, achievement popup with rotating gold aura, draft card with rarity tag, combo streak callout. Sound-effect-ready beats marked at: Ship It button press, stage clear, achievement unlock, combo trigger, leaderboard rank-up.",
+  "one_liner_pitch": "Draft stalled YC companies, ship their products before they do, climb the leaderboard — WhyC turns the 6-month hire-no-ship pattern into a speedrun arena.",
+  "spec_alignment_notes": "All anchor fields populated and respected: target_persona kept indie hacker / serial founder primary (spec.target_persona.profile) but added 'status currency / public scoreboard' angle because spec.jobs_to_be_done.social explicitly calls out 'be perceived as the team that out-shipped a YC batch' — leaderboard is a literal rendering of that JTBD. primary_surface=web/hybrid honored: real-time HUD covers the ~10min pre-deploy window (spec killer_feature), and the boss-bar metaphor visualizes the...",
+  "mockup_path": "mockups/P23-the-game-designer.html"
+}

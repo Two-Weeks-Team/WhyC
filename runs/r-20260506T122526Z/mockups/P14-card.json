@@ -1,0 +1,12 @@
+{
+  "id": "P14",
+  "advocate": "The Educator",
+  "framing": "WhyC is a free PhD in shipping disguised as YC satire — every generated preview ships with annotated 'why this design choice' tooltips, so founders learn the agent's reasoning while the prototype builds itself.",
+  "target_persona": "Stalled indie hackers and CS students who watched the YC Demo Day and want to *understand* the spec→ship pipeline (not just outsource it) — they read every tooltip because next week they'll rebuild it themselves.",
+  "primary_surface": "Web PWA",
+  "opus_4_7_capability": "Long-context pedagogical reasoning — Opus 4.7 simultaneously generates the Next.js preview AND a parallel narration track explaining each architectural choice (token budget, eval rubric, why this LLM-as-judge prompt) grounded in the OpenInference trace.",
+  "mvp_scope": "One demo path: paste a synthetic JD URL, watch the 4-stage pipeline run with a live progress bar, hover any stage to see a tooltip lesson ('Why extract spec before code? Because spec-fit becomes your eval rubric'), and finish with a recap card listing 3 takeaways the founder can apply to their own startup tomorrow. | surface: Web app with an inline 'Build Academy' overlay: a persistent progress bar across the 4 agent stages, contextual tooltips on every UI affordance ('Why a hybrid sync model?'), a friendly toast tutor that explains each Phoenix trace as it streams, and a 'Lesson Recap' card after each iteration of the self-improvement loop.",
+  "one_liner_pitch": "WhyC ships your prototype in a day AND teaches you how it did it — every tooltip is a free lesson YC charges 7% equity for.",
+  "spec_alignment_notes": "target_persona narrowed from 'indie hacker / serial founder' to the *learning-oriented* subset (students + founders who want to internalize the pipeline) → chose pedagogical surface because Educator bias requires teaching during use; primary_surface=web kept verbatim; sync_model=hybrid surfaced explicitly as a *teachable moment* (tooltip explains the 10min realtime → background loop cadence); killer_feature self-improvement loop reframed as a 'lesson recap per iteration' rather than just conv...",
+  "mockup_path": "mockups/P14-the-educator.html"
+}

@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WhyC · The Receipt — P04 Cost-Conscious</title>
+<style>
+  :root {
+    --bg: oklch(98% 0.01 90);
+    --paper: oklch(99.5% 0.005 90);
+    --ink: oklch(22% 0.02 60);
+    --muted: oklch(55% 0.02 60);
+    --rule: oklch(85% 0.01 60);
+    --hot: oklch(68% 0.21 45);     /* YC-ish orange parody */
+    --green: oklch(62% 0.16 145);  /* free / under budget */
+    --red: oklch(58% 0.22 25);     /* over budget */
+    --tag: oklch(95% 0.03 90);
+    --shadow: 0 1px 0 oklch(0% 0 0 / 0.04);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, system-ui, -apple-system, sans-serif;
+    font-size: 13px; line-height: 1.45; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 20px 60px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+    border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 20px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand h1 { font-size: 22px; margin: 0; letter-spacing: -0.02em;
+    font-family: ui-serif, "Iowan Old Style", Georgia, serif; font-weight: 800; }
+  .brand small { color: var(--muted); }
+  .stamp { border: 1.5px solid var(--green); color: var(--green); padding: 4px 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; transform: rotate(-3deg);
+    border-radius: 2px; text-transform: uppercase; }
+  .meta { font-size: 11px; color: var(--muted); text-align: right; }
+
+  .hero { background: var(--paper); border: 1px dashed var(--ink); padding: 16px;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .hero h2 { font-family: ui-serif, Georgia, serif; font-size: 28px; margin: 0 0 6px;
+    line-height: 1.1; letter-spacing: -0.02em; }
+  .hero h2 b { background: var(--hot); color: var(--paper); padding: 0 6px; }
+  .hero p { margin: 6px 0; color: var(--muted); }
+  .total { text-align: right; }
+  .total .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--muted); }
+  .total .amount { font-family: ui-serif, Georgia, serif; font-size: 56px; font-weight: 800;
+    line-height: 1; color: var(--green); letter-spacing: -0.04em; }
+  .total .vs { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .total .vs s { color: var(--red); }
+
+  .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
+  section.card { background: var(--paper); border: 1px solid var(--rule);
+    box-shadow: var(--shadow); padding: 14px; }
+  section.card h3 { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+  section.card h3 .price { color: var(--green); font-weight: 700; }
+
+  /* the input row */
+  .input-row { display: flex; gap: 0; border: 1.5px solid var(--ink); }
+  .input-row input { flex: 1; border: 0; padding: 10px 12px; font: inherit; background: transparent; outline: none; }
+  .input-row button { border: 0; border-left: 1.5px solid var(--ink);
+    background: var(--ink); color: var(--paper); padding: 0 16px; font: inherit;
+    font-weight: 700; cursor: pointer; letter-spacing: 0.04em; }
+  .input-row button small { display: block; font-weight: 400; font-size: 9px; opacity: 0.7; }
+
+  /* pipeline rows = receipt line items */
+  table.ledger { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.ledger th { text-align: left; font-weight: 600; color: var(--muted);
+    border-bottom: 1px solid var(--rule); padding: 6px 4px; font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase; }
+  table.ledger td { padding: 7px 4px; border-bottom: 1px dotted var(--rule); vertical-align: top; }
+  table.ledger td.amt { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.ledger td.amt.zero { color: var(--green); font-weight: 600; }
+  table.ledger td.amt.tiny { color: var(--ink); }
+  table.ledger tr.iter td { color: var(--muted); font-style: italic; padding-left: 18px; }
+  table.ledger tr.subtotal td { border-top: 1.5px solid var(--ink); border-bottom: 0;
+    font-weight: 700; padding-top: 8px; }
+  .tag { display: inline-block; background: var(--tag); border: 1px solid var(--rule);
+    padding: 1px 6px; font-size: 10px; border-radius: 3px; color: var(--muted); margin-right: 4px; }
+  .tag.free { color: var(--green); border-color: var(--green); }
+
+  /* progress bar = budget bar */
+  .budget { margin-top: 14px; }
+  .budget .bar { height: 22px; background: var(--tag); border: 1px solid var(--rule);
+    position: relative; overflow: hidden; }
+  .budget .fill { position: absolute; top: 0; left: 0; height: 100%;
+    width: 4.3%; background: var(--green); }
+  .budget .bar span { position: absolute; top: 3px; left: 8px; font-size: 11px;
+    font-weight: 700; color: var(--ink); }
+  .budget .bar em { position: absolute; top: 3px; right: 8px; font-size: 11px;
+    color: var(--muted); font-style: normal; }
+
+  /* fit score sparkline */
+  .fit { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .fit svg { flex-shrink: 0; }
+  .fit .pct { font-size: 22px; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+  .fit .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* free-tier rail */
+  ul.rail { list-style: none; padding: 0; margin: 0; font-size: 11.5px; }
+  ul.rail li { display: flex; justify-content: space-between; padding: 5px 0;
+    border-bottom: 1px dotted var(--rule); }
+  ul.rail li:last-child { border-bottom: 0; }
+  ul.rail .quota { color: var(--muted); font-variant-numeric: tabular-nums; }
+  ul.rail .quota b { color: var(--green); }
+  ul.rail .quota.warn b { color: var(--hot); }
+
+  /* receipt-style footer */
+  .receipt-foot { background: var(--paper); border: 1px solid var(--rule); padding: 14px;
+    margin-top: 18px; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; }
+  .receipt-foot .quote { font-family: ui-serif, Georgia, serif; font-size: 16px; font-style: italic;
+    color: var(--ink); }
+  .receipt-foot .quote span { background: oklch(94% 0.05 90); padding: 0 4px; }
+  .receipt-foot .pdf { border: 1px solid var(--ink); background: var(--paper);
+    padding: 10px 14px; font: inherit; cursor: pointer; font-weight: 700; letter-spacing: 0.04em; }
+
+  .footnote { font-size: 10px; color: var(--muted); margin-top: 14px; line-height: 1.6; }
+  .footnote code { background: var(--tag); padding: 1px 4px; border-radius: 2px; }
+
+  @media (max-width: 760px) {
+    .hero, .grid { grid-template-columns: 1fr; }
+    .total { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <!-- inline SVG: receipt-as-logo -->
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <rect x="6" y="3" width="22" height="28" fill="oklch(99% 0.005 90)" stroke="oklch(22% 0.02 60)" stroke-width="1.5"/>
+        <path d="M6 31 L9 28 L13 31 L17 28 L21 31 L25 28 L28 31" fill="none" stroke="oklch(22% 0.02 60)" stroke-width="1.5"/>
+        <line x1="10" y1="9"  x2="24" y2="9"  stroke="oklch(22% 0.02 60)" stroke-width="1"/>
+        <line x1="10" y1="13" x2="20" y2="13" stroke="oklch(22% 0.02 60)" stroke-width="1"/>
+        <line x1="10" y1="17" x2="22" y2="17" stroke="oklch(22% 0.02 60)" stroke-width="1"/>
+        <text x="17" y="25" text-anchor="middle" font-size="7" font-weight="800" fill="oklch(68% 0.21 45)" font-family="ui-monospace,monospace">$0.04</text>
+      </svg>
+      <div>
+        <h1>WhyC <span style="color:var(--hot)">/</span> The Receipt</h1>
+        <small>cost-conscious build console · v0.4-mvp</small>
+      </div>
+    </div>
+    <div>
+      <div class="stamp">$0/mo verified</div>
+      <div class="meta">run r-20260506T122526Z · 2026-05-06 · margin: free-tier only</div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <h2>They burned <b>$47k</b> in 6 months and shipped nothing.<br>We shipped this for <b>$0.04</b>.</h2>
+      <p>Same Cloud Run. Same Gemini. Same Phoenix. Different discipline.<br>
+      Every line below is a real billable event &mdash; or a free-tier hit, in green.</p>
+      <p style="font-size:11px;margin-top:10px;">
+        <span class="tag free">scale-to-zero</span>
+        <span class="tag free">free-tier first</span>
+        <span class="tag free">no SaaS subs</span>
+        <span class="tag">SQLite local cache</span>
+      </p>
+    </div>
+    <div class="total">
+      <div class="label">total spend, this generation</div>
+      <div class="amount">$0.043</div>
+      <div class="vs"><s>YC-co avg burn: $7,800/mo</s> &nbsp;·&nbsp; ratio: <b>1 : 181,395</b></div>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <section class="card" style="margin-bottom:18px">
+    <h3>Step 1 — paste a workatastartup.com URL <span class="price">est. $0.00–$0.06</span></h3>
+    <div class="input-row">
+      <input type="text" value="https://www.workatastartup.com/jobs/82957" readonly>
+      <button>SHIP IT<small>budget guard ON</small></button>
+    </div>
+    <div class="budget">
+      <div class="bar">
+        <div class="fill"></div>
+        <span>$0.043 spent</span>
+        <em>cap: $1.00 / run · auto-kill at 90%</em>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+
+    <!-- LEFT: ledger -->
+    <section class="card">
+      <h3>Step 2 — itemized ledger (live trace from Phoenix MCP) <span class="price">free tier: 50k spans/mo</span></h3>
+      <table class="ledger">
+        <thead>
+          <tr><th style="width:42%">node · vendor</th><th>units</th><th>tier</th><th class="amt">cost</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>spec_extract</b> &nbsp;·&nbsp; Gemini 2.5 Flash</td>
+            <td>3,140 in / 412 out tok</td>
+            <td><span class="tag free">free quota</span></td>
+            <td class="amt zero">$0.0000</td>
+          </tr>
+          <tr>
+            <td><b>design_tokens</b> &nbsp;·&nbsp; Gemini 2.5 Flash</td>
+            <td>1,820 in / 980 out tok</td>
+            <td><span class="tag free">free quota</span></td>
+            <td class="amt zero">$0.0000</td>
+          </tr>
+          <tr>
+            <td><b>nextjs_codegen</b> &nbsp;·&nbsp; Gemini 2.5 Pro</td>
+            <td>8,210 in / 4,402 out tok</td>
+            <td><span class="tag">paid · 1.2k req left</span></td>
+            <td class="amt tiny">$0.0312</td>
+          </tr>
+          <tr>
+            <td><b>cloud_run deploy</b> &nbsp;·&nbsp; min-instances=0</td>
+            <td>1 build · 0 idle</td>
+            <td><span class="tag free">2M req/mo free</span></td>
+            <td class="amt zero">$0.0000</td>
+          </tr>
+          <tr>
+            <td><b>secret_manager</b></td>
+            <td>3 secrets · 6 ops</td>
+            <td><span class="tag free">6 secrets free</span></td>
+            <td class="amt zero">$0.0000</td>
+          </tr>
+          <tr>
+            <td><b>phoenix_trace ingest</b> &nbsp;·&nbsp; OpenInference</td>
+            <td>248 spans</td>
+            <td><span class="tag free">50k/mo free</span></td>
+            <td class="amt zero">$0.0000</td>
+          </tr>
+          <tr class="iter">
+            <td colspan="4">↳ iter-2 · regenerated 'CTA flow' (judge: 71% → 84%) · Flash only</td>
+          </tr>
+          <tr>
+            <td style="padding-left:18px"><b>regen_partial</b> &nbsp;·&nbsp; Gemini 2.5 Flash</td>
+            <td>2,100 in / 1,210 out tok</td>
+            <td><span class="tag free">free quota</span></td>
+            <td class="amt zero">$0.0000</td>
+          </tr>
+          <tr class="iter">
+            <td colspan="4">↳ iter-3 · regenerated 'pricing API' (judge: 84% → 96% converged)</td>
+          </tr>
+          <tr>
+            <td style="padding-left:18px"><b>regen_partial</b> &nbsp;·&nbsp; Gemini 2.5 Pro</td>
+            <td>3,402 in / 1,840 out tok</td>
+            <td><span class="tag">paid</span></td>
+            <td class="amt tiny">$0.0118</td>
+          </tr>
+          <tr class="subtotal">
+            <td colspan="3">subtotal · 24h pipeline</td>
+            <td class="amt">$0.0430</td>
+          </tr>
+          <tr>
+            <td colspan="3" style="color:var(--muted)">monthly hosting (preview live, scale-to-zero)</td>
+            <td class="amt zero">$0.0000</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- RIGHT: free-tier rail + fit score -->
+    <div>
+      <section class="card" style="margin-bottom:14px">
+        <h3>spec-fit (Phoenix judge) <span class="price">free</span></h3>
+        <div class="fit">
+          <!-- inline sparkline SVG -->
+          <svg width="160" height="48" viewBox="0 0 160 48" aria-hidden="true">
+            <polyline points="0,28 40,22 80,12 120,5 160,4"
+              fill="none" stroke="oklch(62% 0.16 145)" stroke-width="2"/>
+            <circle cx="0"   cy="28" r="2.5" fill="oklch(58% 0.22 25)"/>
+            <circle cx="40"  cy="22" r="2.5" fill="oklch(68% 0.21 45)"/>
+            <circle cx="80"  cy="12" r="2.5" fill="oklch(62% 0.16 145)"/>
+            <circle cx="120" cy="5"  r="2.5" fill="oklch(62% 0.16 145)"/>
+            <circle cx="160" cy="4"  r="2.5" fill="oklch(62% 0.16 145)"/>
+            <text x="0"   y="46" font-size="8" fill="oklch(55% 0.02 60)">71%</text>
+            <text x="35"  y="46" font-size="8" fill="oklch(55% 0.02 60)">84%</text>
+            <text x="75"  y="46" font-size="8" fill="oklch(55% 0.02 60)">92%</text>
+            <text x="115" y="46" font-size="8" fill="oklch(55% 0.02 60)">96%</text>
+            <text x="148" y="46" font-size="8" fill="oklch(55% 0.02 60)">96%</text>
+          </svg>
+          <div>
+            <div class="pct">96%</div>
+            <div class="lbl">converged · 4 iters</div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin:10px 0 0">
+          Self-improvement loop killed at 96% &mdash; one more iter would have cost $0.012 for a +0.4% gain. <b>Skipped.</b>
+        </p>
+      </section>
+
+      <section class="card">
+        <h3>free-tier headroom · this month <span class="price">$0.00</span></h3>
+        <ul class="rail">
+          <li><span>Cloud Run requests</span><span class="quota"><b>1,998,402</b> / 2,000,000</span></li>
+          <li><span>Cloud Run CPU-sec</span><span class="quota"><b>178k</b> / 180k</span></li>
+          <li><span>Phoenix trace spans</span><span class="quota"><b>49,752</b> / 50,000</span></li>
+          <li><span>Gemini Flash RPM</span><span class="quota"><b>13</b> / 15</span></li>
+          <li><span>Gemini Pro RPD</span><span class="quota warn"><b>42</b> / 50</span></li>
+          <li><span>Secret Manager secrets</span><span class="quota"><b>3</b> / 6</span></li>
+          <li><span>Cloud Build min/day</span><span class="quota"><b>108</b> / 120</span></li>
+          <li><span>Artifact Registry GB</span><span class="quota"><b>0.41</b> / 0.50</span></li>
+        </ul>
+        <p style="font-size:10.5px;color:var(--muted);margin:10px 0 0">
+          Hackathon GCP credit: <b>$100.00</b> · used <b>$0.04</b> · runway: <b>2,325 generations</b>.
+        </p>
+      </section>
+
+      <section class="card" style="margin-top:14px">
+        <h3>generated preview &nbsp;·&nbsp; live URL <span class="price">$0/mo</span></h3>
+        <div style="border:1px dashed var(--rule);padding:10px;font-size:11.5px">
+          <div style="color:var(--muted);font-size:10px">https://&nbsp;</div>
+          <div style="font-weight:700">jd-82957-anon-x9k.a.run.app</div>
+          <div style="margin-top:6px;color:var(--muted)">
+            Next.js · static export · cold start ≈ 1.4s · idle cost <b style="color:var(--green)">$0.0000/h</b>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- FOOTER quote/receipt -->
+  <div class="receipt-foot">
+    <div class="quote">
+      &ldquo;The cheapest stack isn't a feature. <span>It's the proof</span> that the founders who outspent us on AWS still couldn't ship.&rdquo;
+    </div>
+    <button class="pdf">↓ export receipt.pdf</button>
+  </div>
+
+  <p class="footnote">
+    P04 · The Cost-Conscious. Stack: <code>Gemini ADK</code> (free Flash → paid Pro fallback) · <code>Agent Builder</code> · <code>Phoenix MCP free</code> · <code>Cloud Run min=0</code> · <code>Next.js static</code>. Local agent state in <code>SQLite</code>, no managed DB. No CDN, no SaaS, no third-party analytics. Every figure on this page is wired to a real OpenInference span — receipt is generated, not designed.
+  </p>
+
+</div>
+</body>
+</html>
