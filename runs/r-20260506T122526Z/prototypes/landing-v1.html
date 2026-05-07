@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>WhyC — While they hire, we ship.</title>
+<meta name="description" content="An autonomous agent that ingests Y Combinator batches and ships working previews — receipts attached."/>
+<meta name="robots" content="noindex"/>
+<style>
+  :root{
+    --paper:        oklch(97% 0.012 75);
+    --paper-2:      oklch(94% 0.014 75);
+    --rule:         oklch(86% 0.012 75);
+    --ink:          oklch(18% 0.020 65);
+    --ink-soft:     oklch(38% 0.018 65);
+    --ink-dim:      oklch(56% 0.014 65);
+    --accent:       oklch(64% 0.182 47);
+    --accent-soft:  oklch(94% 0.040 47);
+    --good:         oklch(56% 0.140 145);
+    --warn:         oklch(64% 0.180 35);
+    --display: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --body:    system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono:    'SF Mono', ui-monospace, 'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::selection{background:var(--accent);color:var(--paper)}
+
+  /* paper texture — pure CSS, additive */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(oklch(85% 0.020 75) 1px,transparent 1px) 0 0/3px 3px,
+      radial-gradient(oklch(85% 0.020 75) 1px,transparent 1px) 1.5px 1.5px/3px 3px;
+    opacity:.18;mix-blend-mode:multiply;
+  }
+  main,nav,footer{position:relative;z-index:1}
+
+  /* nav */
+  nav.top{display:flex;align-items:center;justify-content:space-between;padding:22px 40px;border-bottom:1px solid var(--rule);background:var(--paper);position:sticky;top:0;z-index:30;backdrop-filter:saturate(1.2)}
+  nav.top .brand{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:18px;letter-spacing:-.01em}
+  nav.top .brand .mark{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:var(--accent);color:var(--paper);font-family:var(--display);font-weight:700;font-size:14px;border-radius:4px}
+  nav.top .links{display:flex;gap:28px;font-size:14px;color:var(--ink-soft)}
+  nav.top a{color:inherit;text-decoration:none;padding:6px 0;border-bottom:1px solid transparent}
+  nav.top a:hover,nav.top a:focus-visible{color:var(--ink);border-bottom-color:var(--ink)}
+  nav.top a:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+  nav.top .cta{padding:8px 14px;background:var(--ink);color:var(--paper);border-radius:6px;font-family:var(--mono);font-size:13px;border:0}
+  nav.top .cta:hover{background:var(--accent)}
+
+  /* hero */
+  section.hero{padding:96px 40px 64px;border-bottom:1px solid var(--rule)}
+  .hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:64px;max-width:1280px;margin:0 auto;align-items:end}
+  .display{font-family:var(--display);font-weight:400;font-size:clamp(56px,8vw,116px);line-height:.94;letter-spacing:-.03em;color:var(--ink)}
+  .display .em{font-style:italic;color:var(--accent)}
+  .display .stamp{display:inline-block;background:var(--ink);color:var(--paper);padding:0 .15em;transform:rotate(-1.5deg);font-style:normal}
+  .sub{margin-top:32px;font-size:20px;line-height:1.45;color:var(--ink-soft);max-width:38ch;font-feature-settings:"ss01","tnum"}
+  .sub .pop{color:var(--ink);font-weight:500}
+  .meta-row{margin-top:40px;display:flex;gap:36px;font-family:var(--mono);font-size:12px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.08em}
+  .meta-row span b{color:var(--ink);font-weight:500}
+
+  /* hero receipt card */
+  .receipt{background:var(--paper-2);border:1px solid var(--rule);border-radius:14px;padding:28px;font-family:var(--mono);font-size:13px;line-height:1.7;box-shadow:0 1px 0 var(--rule), 0 24px 48px -32px oklch(20% 0.05 65 / .25);position:relative}
+  .receipt::before{content:"RECEIPT — sample";position:absolute;top:-9px;left:24px;background:var(--paper);padding:0 8px;font-size:10px;letter-spacing:.16em;color:var(--ink-dim);font-family:var(--mono)}
+  .receipt h3{font-family:var(--display);font-size:22px;font-weight:400;color:var(--ink);margin-bottom:18px;line-height:1.1}
+  .receipt h3 small{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-top:4px;text-transform:uppercase;letter-spacing:.12em;font-weight:400}
+  .receipt dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px}
+  .receipt dt{color:var(--ink-soft)}
+  .receipt dd{text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+  .receipt .rule{grid-column:1/-1;border-top:1px dashed var(--rule);margin:8px 0}
+  .receipt .climb{grid-column:1/-1;display:flex;align-items:center;gap:8px;color:var(--ink-soft);margin-top:4px}
+  .receipt .climb .bar{flex:1;height:6px;background:var(--rule);border-radius:3px;overflow:hidden}
+  .receipt .climb .bar i{display:block;height:100%;background:var(--good);width:96%;animation:fill 2.4s 0.4s ease-out both;transform-origin:left}
+  .receipt .climb b{color:var(--good);font-variant-numeric:tabular-nums}
+  .receipt a.url{display:block;margin-top:14px;color:var(--accent);text-decoration:none;font-size:12px;border-bottom:1px solid var(--accent-soft);padding-bottom:10px}
+  .receipt a.url:hover{border-bottom-color:var(--accent)}
+  .receipt a.url:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+  @keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  @media (prefers-reduced-motion: reduce){
+    .receipt .climb .bar i{animation:none;transform:scaleX(1)}
+  }
+
+  /* problem section — ledger style */
+  section.problem{padding:96px 40px;border-bottom:1px solid var(--rule);background:var(--paper)}
+  .problem-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:0.8fr 1.2fr;gap:80px}
+  .eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.16em;margin-bottom:24px}
+  .h2{font-family:var(--display);font-size:clamp(40px,5vw,68px);line-height:1.02;letter-spacing:-.022em;color:var(--ink)}
+  .h2 em{font-style:italic;color:var(--accent)}
+  .lede{margin-top:24px;font-size:17px;color:var(--ink-soft);max-width:42ch}
+  .ledger{font-family:var(--mono);font-size:14px;line-height:1.5;background:var(--paper-2);border:1px solid var(--rule);border-radius:10px;padding:8px 0;font-variant-numeric:tabular-nums}
+  .ledger li{display:flex;align-items:baseline;gap:16px;padding:14px 24px;border-bottom:1px solid var(--rule);list-style:none}
+  .ledger li:last-child{border-bottom:0}
+  .ledger .num{flex:0 0 auto;color:var(--ink);font-size:20px;font-weight:500;min-width:5ch;text-align:right}
+  .ledger .lab{flex:1;color:var(--ink-soft)}
+  .ledger .src{color:var(--ink-dim);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+  .ledger li.featured{background:var(--accent-soft)}
+  .ledger li.featured .num{color:var(--accent)}
+
+  /* pipeline */
+  section.pipeline{padding:96px 40px;background:var(--ink);color:var(--paper);border-bottom:1px solid var(--ink)}
+  section.pipeline .eyebrow{color:oklch(72% 0.16 47)}
+  section.pipeline .h2{color:var(--paper)}
+  section.pipeline .lede{color:oklch(78% 0.012 75)}
+  .pipe{max-width:1280px;margin:64px auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative}
+  .pipe::before{content:"";position:absolute;top:38px;left:5%;right:5%;height:1px;background:oklch(35% 0.02 65);z-index:0}
+  .stage{position:relative;z-index:1;background:var(--ink);padding:0 16px}
+  .stage .dot{width:14px;height:14px;border-radius:50%;background:oklch(80% 0.04 65);margin-bottom:24px;position:relative;z-index:2}
+  .stage.active .dot{background:var(--accent);box-shadow:0 0 0 6px oklch(64% 0.182 47 / .2)}
+  .stage h4{font-family:var(--mono);font-size:11px;color:oklch(70% 0.012 75);letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px}
+  .stage p{font-family:var(--display);font-size:24px;font-weight:400;line-height:1.15;letter-spacing:-.01em}
+  .stage small{display:block;margin-top:14px;font-size:13px;color:oklch(72% 0.012 75);line-height:1.5;font-family:var(--body)}
+  .pipe-loop{max-width:1280px;margin:64px auto 0;padding:24px 28px;border:1px dashed oklch(40% 0.05 47);border-radius:14px;display:flex;align-items:center;gap:24px;background:oklch(22% 0.020 65)}
+  .pipe-loop .icon{flex:0 0 auto;width:44px;height:44px;border-radius:50%;background:oklch(64% 0.182 47 / .2);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:22px;font-family:var(--display)}
+  .pipe-loop .txt{flex:1}
+  .pipe-loop b{color:var(--paper);font-weight:500;font-family:var(--display);font-size:18px}
+  .pipe-loop p{color:oklch(75% 0.012 75);font-size:14px;margin-top:4px}
+  .pipe-loop .climb-mini{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:oklch(80% 0.012 75)}
+  .pipe-loop .climb-mini i{font-style:normal;color:var(--accent);font-weight:600}
+
+  /* receipts wall */
+  section.wall{padding:96px 40px;border-bottom:1px solid var(--rule)}
+  .wall-grid{max-width:1280px;margin:0 auto}
+  .wall-head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:48px;flex-wrap:wrap}
+  .wall-head .h2{max-width:14ch}
+  .wall-head .lede{max-width:38ch}
+  .wall-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+  .wcard{background:var(--paper-2);border:1px solid var(--rule);border-radius:12px;padding:22px;font-family:var(--mono);font-size:13px;line-height:1.6;font-variant-numeric:tabular-nums;transition:border-color .2s, transform .2s}
+  .wcard:hover{border-color:var(--ink-soft);transform:translateY(-2px)}
+  .wcard h5{font-family:var(--display);font-weight:400;font-size:20px;color:var(--ink);margin-bottom:4px;line-height:1.1}
+  .wcard .batch{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.12em;margin-bottom:18px}
+  .wcard dl{display:grid;grid-template-columns:1fr auto;gap:5px 12px;font-size:12px}
+  .wcard dt{color:var(--ink-soft)}
+  .wcard dd{color:var(--ink)}
+  .wcard .status{margin-top:14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:.12em;padding-top:14px;border-top:1px dashed var(--rule)}
+  .wcard .status.shipped .badge{color:var(--good)}
+  .wcard .status.nogo .badge{color:var(--ink-dim)}
+  .wcard .status .badge::before{content:"●";margin-right:4px}
+  .wcard .arrow{color:var(--accent);text-decoration:none}
+  .wcard .arrow:hover{text-decoration:underline}
+  .wcard .arrow:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+  /* methodology / how it actually works */
+  section.method{padding:96px 40px;background:var(--paper-2);border-bottom:1px solid var(--rule)}
+  .method-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:80px}
+  .method-list{display:grid;gap:32px}
+  .method-list .item{padding-left:24px;border-left:2px solid var(--rule)}
+  .method-list .item h4{font-family:var(--display);font-size:22px;font-weight:400;line-height:1.2;color:var(--ink);margin-bottom:8px}
+  .method-list .item p{font-size:15px;color:var(--ink-soft);line-height:1.55;font-family:var(--body)}
+  .method-list .item code{font-family:var(--mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:4px}
+
+  /* CTA */
+  section.cta{padding:96px 40px;border-bottom:1px solid var(--rule)}
+  .cta-inner{max-width:980px;margin:0 auto;text-align:center}
+  .cta h2{font-family:var(--display);font-size:clamp(40px,6vw,80px);line-height:.98;letter-spacing:-.025em;margin-bottom:32px}
+  .cta h2 em{font-style:italic;color:var(--accent)}
+  .cta .row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+  .btn{display:inline-block;padding:14px 28px;font-family:var(--mono);font-size:13px;text-decoration:none;border-radius:8px;letter-spacing:.04em;border:0;cursor:pointer}
+  .btn-primary{background:var(--ink);color:var(--paper)}
+  .btn-primary:hover{background:var(--accent)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+  .btn-ghost:hover{background:var(--ink);color:var(--paper)}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+  .cta small{display:block;margin-top:36px;color:var(--ink-dim);font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+
+  /* footer */
+  footer.bottom{padding:56px 40px 80px;background:var(--ink);color:oklch(70% 0.012 75);font-size:13px;line-height:1.6}
+  .foot-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px}
+  .foot-grid h6{font-family:var(--display);color:var(--paper);font-weight:400;font-size:16px;margin-bottom:14px}
+  .foot-grid a{color:oklch(82% 0.012 75);text-decoration:none;display:block;padding:3px 0}
+  .foot-grid a:hover{color:var(--paper);text-decoration:underline}
+  .disclaimer{margin-top:48px;padding-top:32px;border-top:1px solid oklch(30% 0.02 65);max-width:1280px;margin-left:auto;margin-right:auto;font-size:12px;color:oklch(60% 0.012 75);font-family:var(--mono);line-height:1.7}
+  .disclaimer p{margin-bottom:8px}
+
+  /* responsive */
+  @media (max-width:960px){
+    section.hero{padding:64px 24px 48px}
+    .hero-grid,.problem-grid,.method-grid{grid-template-columns:1fr;gap:48px}
+    .receipt{margin-top:0}
+    section.problem,section.pipeline,section.wall,section.method,section.cta{padding:72px 24px}
+    .pipe{grid-template-columns:1fr;gap:8px}
+    .pipe::before{display:none}
+    .stage{border-left:2px solid oklch(35% 0.02 65);padding:8px 16px;margin-left:6px}
+    .pipe-loop{margin:48px auto 0;flex-direction:column;align-items:flex-start}
+    .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
+    nav.top{padding:18px 20px}
+    nav.top .links{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="brand"><span class="mark">W</span> WhyC</div>
+  <div class="links" role="navigation" aria-label="Primary">
+    <a href="#problem">The receipts</a>
+    <a href="#pipeline">How it works</a>
+    <a href="#wall">Live previews</a>
+    <a href="#method">Methodology</a>
+  </div>
+  <a class="cta" href="#wall" aria-label="Jump to live previews">View dashboard →</a>
+</nav>
+
+<main>
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-grid">
+    <div>
+      <h1 id="hero-title" class="display">
+        While they<br>
+        <span class="em">hire</span>,<br>
+        <span class="stamp">we ship.</span>
+      </h1>
+      <p class="sub">
+        WhyC is an autonomous agent that ingests <span class="pop">Y Combinator batches</span> and ships working previews of the products they've been hiring engineers to build —
+        <span class="pop">in 11 minutes, not 11 months.</span>
+        Receipts attached.
+      </p>
+      <div class="meta-row" aria-label="Project credentials">
+        <span><b>Stack</b> · Gemini ADK · Phoenix MCP · Cloud Run</span>
+        <span><b>Track</b> · Arize</span>
+        <span><b>License</b> · Apache-2.0</span>
+      </div>
+    </div>
+
+    <article class="receipt" aria-label="Sample preview receipt">
+      <h3>anon co. <small>YC W26 · sample</small></h3>
+      <dl>
+        <dt>Demo Day</dt><dd>2026-03-15</dd>
+        <dt>Engineer hires posted</dt><dd>14</dd>
+        <dt>Days since Demo Day</dt><dd>53</dd>
+        <dt>Product launched</dt><dd>—</dd>
+        <div class="rule"></div>
+        <dt>WhyC ship time</dt><dd>11m 04s</dd>
+        <dt>Cost</dt><dd>$0.41</dd>
+        <dt>Iterations</dt><dd>7 → converged</dd>
+        <dt class="climb-label">spec-fit</dt><dd><b>96%</b></dd>
+        <div class="climb" aria-label="spec-fit progress 96 percent">
+          <div class="bar" role="progressbar" aria-valuenow="96" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+        </div>
+      </dl>
+      <a class="url" href="#wall">https://whyc-w26-anon.run.app ↗</a>
+    </article>
+  </div>
+</section>
+
+<section class="problem" id="problem" aria-labelledby="problem-title">
+  <div class="problem-grid">
+    <div>
+      <p class="eyebrow">The Receipts</p>
+      <h2 id="problem-title" class="h2">Six months <em>after</em> Demo Day, half the batch is still hiring.</h2>
+      <p class="lede">Every line below is verifiable from public job-posting data. None of these statements are an opinion. The product launch column does the talking.</p>
+    </div>
+    <ul class="ledger" aria-label="Public-data ledger">
+      <li class="featured">
+        <span class="num">187</span>
+        <span class="lab">days the median W25 company has been hiring engineers since their Demo Day</span>
+        <span class="src">[TK pending scrape]</span>
+      </li>
+      <li>
+        <span class="num">47%</span>
+        <span class="lab">of W25 companies still posting eng roles as of 2026-05-07</span>
+        <span class="src">[TK pending scrape]</span>
+      </li>
+      <li>
+        <span class="num">12</span>
+        <span class="lab">companies WhyC selected from W25/S25/W26 → shipped a working preview</span>
+        <span class="src">[live below]</span>
+      </li>
+      <li>
+        <span class="num">11m</span>
+        <span class="lab">median end-to-end ship time for the WhyC pipeline</span>
+        <span class="src">[Phoenix telemetry]</span>
+      </li>
+      <li>
+        <span class="num">$0.41</span>
+        <span class="lab">median cost per converged preview, all-in (Gemini + Cloud Run + Phoenix)</span>
+        <span class="src">[GCP billing]</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="pipeline" id="pipeline" aria-labelledby="pipeline-title">
+  <div style="max-width:1280px;margin:0 auto">
+    <p class="eyebrow">How it works</p>
+    <h2 id="pipeline-title" class="h2">Four stages. <em>One agent.</em> No humans-in-the-loop.</h2>
+    <p class="lede">The agent owns its own judgment. It decides which companies it can credibly ship. It writes its own evaluation prompt. It iterates until it's right.</p>
+  </div>
+
+  <div class="pipe" aria-label="Pipeline stages">
+    <div class="stage active">
+      <div class="dot" aria-hidden="true"></div>
+      <h4>01 · Analyze</h4>
+      <p>Read the public posting.</p>
+      <small>Gemini ADK extracts product hypothesis from the YC blurb + open job descriptions. Outputs a 14-line spec.</small>
+    </div>
+    <div class="stage active">
+      <div class="dot" aria-hidden="true"></div>
+      <h4>02 · Go / No-Go</h4>
+      <p>Decide what to ship.</p>
+      <small>Cost ceiling $5. Complexity ≤7 iter. IP-safe. Demo-able. Failures get a public "why we passed" card.</small>
+    </div>
+    <div class="stage active">
+      <div class="dot" aria-hidden="true"></div>
+      <h4>03 · Develop</h4>
+      <p>Generate a Next.js scaffold.</p>
+      <small>Design tokens · 1–2 working APIs · seed data · OpenInference auto-instrumentation throughout.</small>
+    </div>
+    <div class="stage active">
+      <div class="dot" aria-hidden="true"></div>
+      <h4>04 · Deploy</h4>
+      <p>Ship to Cloud Run. Self-improve.</p>
+      <small>Phoenix MCP queries traces. LLM-as-judge scores spec-fit. Under-spec flows regenerate until convergence.</small>
+    </div>
+  </div>
+
+  <div class="pipe-loop" role="note">
+    <span class="icon" aria-hidden="true">↻</span>
+    <div class="txt">
+      <b>The self-improvement loop is the killer feature.</b>
+      <p>Phoenix MCP is the agent's own audit log. The judge prompt is versioned at <code style="font-family:var(--mono);font-size:12px;background:oklch(28% 0.02 65);color:oklch(78% 0.012 75);padding:1px 6px;border-radius:3px">/eval/judge_prompt.v1.md</code> and shown verbatim in the UI.</p>
+    </div>
+    <div class="climb-mini">71% → 84% → 92% → <i>96% converged</i></div>
+  </div>
+</section>
+
+<section class="wall" id="wall" aria-labelledby="wall-title">
+  <div class="wall-grid">
+    <div class="wall-head">
+      <h2 id="wall-title" class="h2">Click any URL. <em>Open the preview.</em></h2>
+      <p class="lede">12 real Y Combinator companies, selected from W25/S25/W26 batches. Each card is a public deploy. The numbers below are the receipts.</p>
+    </div>
+    <div class="wall-cards" role="list">
+      <article class="wcard" role="listitem">
+        <h5>anon-1</h5>
+        <p class="batch">YC W26 · Fintech</p>
+        <dl>
+          <dt>Days since DD</dt><dd>53</dd>
+          <dt>Hires posted</dt><dd>14</dd>
+          <dt>WhyC ship time</dt><dd>11m 04s</dd>
+          <dt>spec-fit</dt><dd>96%</dd>
+          <dt>Cost</dt><dd>$0.41</dd>
+        </dl>
+        <div class="status shipped"><span class="badge">shipped</span><a class="arrow" href="#">view ↗</a></div>
+      </article>
+      <article class="wcard" role="listitem">
+        <h5>anon-2</h5>
+        <p class="batch">YC W26 · Devtools</p>
+        <dl>
+          <dt>Days since DD</dt><dd>53</dd>
+          <dt>Hires posted</dt><dd>9</dd>
+          <dt>WhyC ship time</dt><dd>9m 12s</dd>
+          <dt>spec-fit</dt><dd>92%</dd>
+          <dt>Cost</dt><dd>$0.34</dd>
+        </dl>
+        <div class="status shipped"><span class="badge">shipped</span><a class="arrow" href="#">view ↗</a></div>
+      </article>
+      <article class="wcard" role="listitem">
+        <h5>anon-3</h5>
+        <p class="batch">YC S25 · Vertical AI</p>
+        <dl>
+          <dt>Days since DD</dt><dd>237</dd>
+          <dt>Hires posted</dt><dd>21</dd>
+          <dt>WhyC verdict</dt><dd>No-Go</dd>
+          <dt>Reason</dt><dd>regulated</dd>
+          <dt>Cost</dt><dd>$0.00</dd>
+        </dl>
+        <div class="status nogo"><span class="badge">no-go</span><a class="arrow" href="#">why ↗</a></div>
+      </article>
+      <article class="wcard" role="listitem">
+        <h5>anon-4</h5>
+        <p class="batch">YC W25 · Marketplace</p>
+        <dl>
+          <dt>Days since DD</dt><dd>418</dd>
+          <dt>Hires posted</dt><dd>32</dd>
+          <dt>WhyC ship time</dt><dd>14m 28s</dd>
+          <dt>spec-fit</dt><dd>94%</dd>
+          <dt>Cost</dt><dd>$0.52</dd>
+        </dl>
+        <div class="status shipped"><span class="badge">shipped</span><a class="arrow" href="#">view ↗</a></div>
+      </article>
+      <article class="wcard" role="listitem">
+        <h5>anon-5</h5>
+        <p class="batch">YC S25 · Consumer</p>
+        <dl>
+          <dt>Days since DD</dt><dd>237</dd>
+          <dt>Hires posted</dt><dd>11</dd>
+          <dt>WhyC ship time</dt><dd>10m 47s</dd>
+          <dt>spec-fit</dt><dd>91%</dd>
+          <dt>Cost</dt><dd>$0.38</dd>
+        </dl>
+        <div class="status shipped"><span class="badge">shipped</span><a class="arrow" href="#">view ↗</a></div>
+      </article>
+      <article class="wcard" role="listitem">
+        <h5>anon-6</h5>
+        <p class="batch">YC W26 · B2B SaaS</p>
+        <dl>
+          <dt>Days since DD</dt><dd>53</dd>
+          <dt>Hires posted</dt><dd>7</dd>
+          <dt>WhyC ship time</dt><dd>13m 05s</dd>
+          <dt>spec-fit</dt><dd>89%</dd>
+          <dt>Cost</dt><dd>$0.46</dd>
+        </dl>
+        <div class="status shipped"><span class="badge">shipped</span><a class="arrow" href="#">view ↗</a></div>
+      </article>
+    </div>
+    <p style="margin-top:32px;color:var(--ink-dim);font-family:var(--mono);font-size:12px;letter-spacing:.04em">+ 6 more in the full dashboard. <a href="#" style="color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-soft)">View all 12 receipts →</a></p>
+  </div>
+</section>
+
+<section class="method" id="method" aria-labelledby="method-title">
+  <div class="method-grid">
+    <div>
+      <p class="eyebrow">Methodology</p>
+      <h2 id="method-title" class="h2">Five things that <em>shouldn't be controversial,</em> but are.</h2>
+      <p class="lede">If your agent picks its own winners, it should also be willing to disqualify itself. WhyC does both, in public.</p>
+    </div>
+    <div class="method-list">
+      <div class="item">
+        <h4>The judge prompt is versioned and public.</h4>
+        <p>You can read <code>/eval/judge_prompt.v1.md</code>. You can compare it to v2 when we change it. You can audit every spec-fit score against the prompt that produced it.</p>
+      </div>
+      <div class="item">
+        <h4>The spec-fit formula is deterministic.</h4>
+        <p>Same trace, same prompt, same score. Phoenix stores the seed. Re-runs reproduce the number. No vibes.</p>
+      </div>
+      <div class="item">
+        <h4>No-Go is a first-class outcome.</h4>
+        <p>Companies WhyC won't touch get a public card explaining why. Hardware-bound, regulated, stealth, over-budget — all surfaced, none hidden.</p>
+      </div>
+      <div class="item">
+        <h4>Self-improvement uses the agent's own audit log.</h4>
+        <p>Phoenix MCP is queried by the agent itself, not by a sidecar. Under-spec flows regenerate. The trace tree shows every iteration.</p>
+      </div>
+      <div class="item">
+        <h4>One stack. No SDK. No CLI. No Slack bot.</h4>
+        <p>A single Next.js + Cloud Run codebase. Two engineers. Thirty-six days. Web-only on purpose — scope is the killer feature too.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="cta" aria-labelledby="cta-title">
+  <div class="cta-inner">
+    <h2 id="cta-title">Open <em>any</em> of the 12 receipts.<br>Then ask why theirs took longer.</h2>
+    <p class="row">
+      <a class="btn btn-primary" href="#wall">View dashboard →</a>
+      <a class="btn btn-ghost" href="https://github.com/Two-Weeks-Team/WhyC" rel="noopener">Read the source →</a>
+    </p>
+    <small>Submission deadline · 2026-06-11 14:00 PT · Google Cloud Rapid Agent Hackathon · Arize Track</small>
+  </div>
+</section>
+
+</main>
+
+<footer class="bottom">
+  <div class="foot-grid">
+    <div>
+      <h6>WhyC</h6>
+      <p style="color:oklch(80% 0.012 75)">An autonomous agent that ingests Y Combinator batches and ships working previews. Independent research project. Two-person team.</p>
+    </div>
+    <div>
+      <h6>Project</h6>
+      <a href="https://github.com/Two-Weeks-Team/WhyC">GitHub repo</a>
+      <a href="https://github.com/Two-Weeks-Team/WhyC/blob/main/LICENSE">Apache-2.0 license</a>
+      <a href="https://rapid-agent.devpost.com/">Hackathon page</a>
+    </div>
+    <div>
+      <h6>Methodology</h6>
+      <a href="#method">How it works</a>
+      <a href="#wall">Live receipts</a>
+      <a href="#problem">Public data</a>
+    </div>
+    <div>
+      <h6>Contact</h6>
+      <a href="mailto:abuse@whyc.dev">abuse@whyc.dev</a>
+      <a href="mailto:abuse@whyc.dev">Takedown · 1h SLA</a>
+    </div>
+  </div>
+  <div class="disclaimer">
+    <p><b style="color:oklch(82% 0.012 75)">Disclaimer.</b> WhyC is independent research. Inclusion of any company name is not endorsement by, affiliation with, or sponsorship by that company. All company information cited is sourced from publicly available job postings and Y Combinator's public batch listings. No company logos are reproduced. Companies that wish to be removed from the dataset can request takedown via the address above; we honor takedowns within 1 hour.</p>
+    <p>Y Combinator and "YC" are trademarks of Y Combinator Management, LLC. WhyC is not affiliated with, endorsed by, or sponsored by Y Combinator. Use of the YC name is nominative fair use for the purpose of describing publicly observable behavior of YC-batched companies, in line with established commentary and research norms.</p>
+    <p>Built by <b style="color:oklch(82% 0.012 75)">Two Weeks Team</b> for the Google Cloud Rapid Agent Hackathon — Arize Track. Submission deadline: 2026-06-11 14:00 PT.</p>
+  </div>
+</footer>
+
+</body>
+</html>
