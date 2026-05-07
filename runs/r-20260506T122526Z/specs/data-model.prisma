@@ -1,0 +1,448 @@
+// WhyC — Prisma schema (Postgres / Cloud SQL) — v1 (post-critic-revision)
+//
+// Conventions
+// - All ids are cuid().
+// - Timestamps: createdAt + updatedAt on every entity.
+// - Money: BigInt cents (USD-cents) on all monetary fields. No floats.
+//   currencyCode column on each money-bearing model (ISO 4217, fixed 'USD' v1).
+// - Enums for closed lifecycles (CompanyStatus, RunStatus, …).
+// - Soft delete on Company via takedownState=removed + takedownRemovedAt;
+//   we do NOT use a separate deletedAt because takedown semantics are richer
+//   (active / requested / removed with a 1h SLA — see SPEC.md §10).
+// - Indexes on every FK plus the columns the dashboard sorts/filters by.
+// - Optimistic-concurrency `version` on Company (H-Y3).
+//
+// Critic-revision changes vs v0 (full list in CHANGELOG-v1.md):
+// - B6:  Run.kickoffKey + partial-unique on (companyId, status IN pending|running)
+// - B8:  Composite indexes covering all sortable columns paired with id
+// - B10: Run.deployRevokedConfirmedAt distinct from deployRevokedAt
+// - B11: CHECK constraint on Company description_text ↔ description_source_url
+// - H-Y1: documented FOR-UPDATE / advisory-lock protocol for Iteration.idx
+//        + composite-unique on (runId, parentIterId, regenFlow)
+// - H-Y2: documented sweeper SQL (SELECT FOR UPDATE SKIP LOCKED) in comments
+// - H-Y3: Company.version (CAS) + indexes on transition columns
+// - SC4 medium: monotonic counters typed as BigInt (int64).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Connection pool sized for whyc-web (Cloud Run, max 5 instances).
+  // Prisma URL conventionally appends ?connection_limit=3&pool_timeout=10
+  // (documented in SPEC.md §2.1 — H-P4).
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum CompanyStatus {
+  ingested
+  analyzing
+  no_go
+  building
+  deployed
+  converged
+  failed
+}
+
+enum NoGoReason {
+  cost_over_ceiling
+  complexity_over_ceiling
+  ip_unsafe
+  not_demoable
+  regulated_domain
+}
+
+enum TakedownState {
+  active
+  requested
+  removed
+}
+
+enum RunStatus {
+  pending
+  running
+  converged
+  ceiling_hit // M7: hit iter_limit or cost_limit_cents
+  failed
+  aborted
+}
+
+enum RegenFlow {
+  analyze
+  design
+  develop
+  deploy
+  full
+}
+
+enum JudgeVerdictLabel {
+  pass
+  partial
+  fail
+}
+
+enum CommentKind {
+  public_quote // cites a public source — sourceUrl required
+  team_note    // internal team commentary
+}
+
+enum SpecFitState {
+  // Mirror of OpenAPI SpecFitState (B1) — coarse SR-determinable label.
+  converged
+  near
+  below_floor
+  pending
+  n_a
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Catalog
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Batch {
+  id          String   @id @default(cuid())
+  label       String   @unique // 'W25', 'S25', 'W26', …
+  demoDayAt   DateTime @map("demo_day_at") @db.Date
+  sourceUrl   String?  @map("source_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt       @map("updated_at")
+
+  companies   Company[]
+
+  @@index([demoDayAt])
+  @@map("batches")
+}
+
+model Company {
+  id                    String         @id @default(cuid())
+  slug                  String         @unique // normalized: lowercased ASCII, hyphen-separated (SC4 medium)
+  name                  String         // text only — no logo_url anywhere (M4)
+
+  // Optional pronunciation/aria hints for SR (H-A1)
+  namePronunciation     String?        @map("name_pronunciation")
+  nameAriaLabel         String?        @map("name_aria_label")
+  nameDisplayShort      String?        @map("name_display_short")
+
+  batchId               String         @map("batch_id")
+  batch                 Batch          @relation(fields: [batchId], references: [id])
+
+  // ── Description (M4 supersede / B11) ─────────────────────────────────────
+  // OpenAPI exposes a nested `description: {text, source_url, language}` object
+  // but the persisted columns stay flat for query simplicity. The CHECK
+  // constraint below structurally enforces that text ⇒ valid http(s) source_url.
+  // Migration excerpt (Postgres):
+  //   ALTER TABLE companies ADD CONSTRAINT companies_description_citation_chk
+  //     CHECK (
+  //       description_text IS NULL
+  //       OR (description_source_url IS NOT NULL
+  //           AND description_source_url ~ '^https?://')
+  //     );
+  // An integration test (`test/integration/company-description.test.ts`)
+  // asserts every served Company with description_text != null also has a
+  // valid description_source_url.
+  descriptionText       String?        @map("description_text")        @db.Text
+  descriptionSourceUrl  String?        @map("description_source_url")
+  descriptionLanguage   String?        @default("en") @map("description_language")
+
+  hiresPostedCount      BigInt         @default(0) @map("hires_posted_count")    // monotonic counter (SC4)
+  lastHiresCheckAt      DateTime?      @map("last_hires_check_at")
+  // ETag derivation MUST exclude lastHiresCheckAt (B5 — 6h cron churn).
+
+  status                CompanyStatus  @default(ingested)
+  noGoReason            NoGoReason?    @map("no_go_reason")            // set only when status=no_go
+
+  takedownState         TakedownState  @default(active) @map("takedown_state")
+  takedownRequestedAt   DateTime?      @map("takedown_requested_at")
+  takedownRemovedAt     DateTime?      @map("takedown_removed_at")
+  takedownReason        String?        @map("takedown_reason")         @db.Text
+
+  // Optimistic concurrency for state transitions (H-Y3).
+  // Internal write paths CAS:
+  //   UPDATE companies SET takedown_state=?, version=version+1, updated_at=now()
+  //     WHERE id=? AND version=?
+  // Returns 0 rows when a concurrent writer beat us; service layer retries
+  // with a fresh read.
+  version               BigInt         @default(0)                     // monotonic; never exposed as int32
+
+  // Pointer to the most recent run (or current in-flight run) for dashboard joins.
+  currentRunId          String?        @unique @map("current_run_id")
+  currentRun            Run?           @relation("CompanyCurrentRun", fields: [currentRunId], references: [id])
+
+  runs                  Run[]          @relation("CompanyAllRuns")
+  comments              Comment[]
+  takedownEvents        TakedownEvent[]
+
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt       @map("updated_at")
+
+  @@index([batchId, status])
+  @@index([status])
+  @@index([takedownState])
+  @@index([batchId, takedownState, status])              // dashboard primary filter combo
+  // Sort indexes covering each sortable column paired with `id` for stable
+  // cursor decoding (B8). Postgres b-tree handles ASC/DESC over the same index.
+  @@index([hiresPostedCount, id])
+  @@index([name, id])
+  @@map("companies")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pipeline
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Run {
+  id                  String     @id @default(cuid())
+  companyId           String     @map("company_id")
+  company             Company    @relation("CompanyAllRuns", fields: [companyId], references: [id])
+
+  // Idempotency key for pipeline_kickoff (B6).
+  // Format: `${companyId}:${kickoffBatchId}` where kickoffBatchId is the
+  // operator-supplied batch identifier for this kickoff wave. A duplicate
+  // kickoff with the same kickoffKey is a no-op that returns the existing
+  // Run row (HTTP-equivalent 200 from the kickoff job, never a duplicate
+  // INSERT). Wrapped in a single transaction with the Company.currentRunId
+  // and Company.status updates — see SPEC.md §9.
+  kickoffKey          String     @unique @map("kickoff_key")
+
+  startedAt           DateTime   @map("started_at")
+  completedAt         DateTime?  @map("completed_at")
+  status              RunStatus  @default(pending)
+
+  // M7: hard ceilings, enforced both server-side and as DB invariants.
+  iterLimit           BigInt     @default(7)   @map("iter_limit")
+  costLimitCents      BigInt     @default(500) @map("cost_limit_cents")
+
+  totalCostCents      BigInt     @default(0)   @map("total_cost_cents")
+  finalSpecFit        Float?     @map("final_spec_fit")          // 0..1, see SPEC.md §4
+  finalSpecFitState   SpecFitState? @map("final_spec_fit_state") // B1 SR label
+
+  // Currency stays per-row so a future non-USD batch needs no schema change.
+  currencyCode        String     @default("USD") @map("currency_code") // ISO 4217 (H-I1)
+
+  // Deploy URL lifecycle (M6).
+  deployUrl           String?    @map("deploy_url")
+  deployExpiresAt     DateTime?  @map("deploy_expires_at")
+  deployRevokedAt     DateTime?  @map("deploy_revoked_at")           // sweeper attempt time
+  deployRevokedConfirmedAt DateTime? @map("deploy_revoked_confirmed_at")
+  // ^ B10: distinct from deployRevokedAt — set ONLY after the Cloud Run
+  //   revision delete returns 200. Allows monitoring of cron-vs-actual drift
+  //   and feeds the dashboard health banner.
+
+  judgePromptVersion  String     @default("v1") @map("judge_prompt_version") // M10
+
+  iterations          Iteration[]
+  currentForCompany   Company?   @relation("CompanyCurrentRun")
+
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt       @map("updated_at")
+
+  @@index([companyId, startedAt])
+  @@index([status])
+  @@index([startedAt])
+  @@index([deployExpiresAt])                 // sweep_expired_deploys cron path
+  @@index([deployRevokedAt, deployRevokedConfirmedAt]) // monitor drift
+  // Sort indexes (B8) — every sortable column paired with `id` for stable cursors.
+  @@index([finalSpecFit, id])
+  @@index([totalCostCents, id])
+  // Partial-unique enforcing "one in-flight run per company" (B6).
+  // Prisma syntax does not support filtered unique indexes natively; declared
+  // as a raw migration:
+  //   CREATE UNIQUE INDEX runs_one_inflight_per_company
+  //     ON runs (company_id) WHERE status IN ('pending', 'running');
+  // The kickoff job catches the unique-violation error and treats it as
+  // "another kickoff already in flight, return that run".
+  @@map("runs")
+}
+
+model Iteration {
+  id              String     @id @default(cuid())
+  runId           String     @map("run_id")
+  run             Run        @relation(fields: [runId], references: [id])
+
+  idx             BigInt     // 0-based ordinal within the run.
+  // Idx-assignment protocol (H-Y1):
+  //   BEGIN;
+  //     SELECT id FROM runs WHERE id = $runId FOR UPDATE;       -- row lock
+  //     -- (alternative) SELECT pg_advisory_xact_lock(hash_run_id);
+  //     SELECT COALESCE(MAX(idx), -1) + 1 AS next_idx
+  //       FROM iterations WHERE run_id = $runId;
+  //     INSERT INTO iterations (id, run_id, idx, parent_iter_id, regen_flow, …)
+  //       VALUES (…, next_idx, …);
+  //   COMMIT;
+  // Partial-unique on (runId, parentIterId, regenFlow) prevents double-regen
+  // of the same parent on the same flow within the same run.
+
+  parentIterId    String?    @map("parent_iter_id")              // M12: regen lineage
+  parentIter      Iteration? @relation("IterationLineage", fields: [parentIterId], references: [id])
+  childIters      Iteration[] @relation("IterationLineage")
+
+  startedAt       DateTime   @map("started_at")
+  endedAt         DateTime?  @map("ended_at")
+
+  specFit         Float?     @map("spec_fit")                    // 0..1
+  specFitState    SpecFitState? @map("spec_fit_state")           // B1
+  regenFlow       RegenFlow? @map("regen_flow")
+  costCents       BigInt     @default(0) @map("cost_cents")
+  currencyCode    String     @default("USD") @map("currency_code")
+
+  judgeVerdictId  String?    @unique @map("judge_verdict_id")
+  judgeVerdict    JudgeVerdict? @relation(fields: [judgeVerdictId], references: [id])
+
+  phoenixTraceId  String?    @map("phoenix_trace_id")            // primary; pinned at INSERT, never reused on regen (SC5 medium)
+  phoenixTraceIds String[]   @default([]) @map("phoenix_trace_ids")
+
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt       @map("updated_at")
+
+  @@unique([runId, idx])
+  // H-Y1 partial-unique to prevent duplicate regen on same parent+flow.
+  // Prisma cannot declare conditional uniques; raw migration:
+  //   CREATE UNIQUE INDEX iterations_one_regen_per_parent_flow
+  //     ON iterations (run_id, parent_iter_id, regen_flow)
+  //     WHERE parent_iter_id IS NOT NULL AND regen_flow IS NOT NULL;
+  @@index([runId])
+  @@index([parentIterId])
+  @@index([phoenixTraceId])
+  @@map("iterations")
+}
+
+model JudgeVerdict {
+  id                  String             @id @default(cuid())
+  iterationId         String             @unique @map("iteration_id")
+  iteration           Iteration?
+
+  judgePromptVersion  String             @map("judge_prompt_version") // 'v1' …
+  score               Float              // 0..1
+  specFitState        SpecFitState?      @map("spec_fit_state")        // B1
+  label               JudgeVerdictLabel
+  verdictJson         Json               @map("verdict_json")          // per-flow breakdown
+  traceId             String?            @map("trace_id")              // judge call's own Phoenix trace
+
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt       @map("updated_at")
+
+  @@index([judgePromptVersion])
+  @@map("judge_verdicts")
+}
+
+// Frozen registry of judge prompt versions (M10).
+// We store the markdown body so /api/v1/judge/prompts/{version} can serve it
+// verbatim without a filesystem read at request time.
+model JudgePrompt {
+  id           String   @id @default(cuid())
+  version      String   @unique               // 'v1', 'v2', …
+  bodyMarkdown String   @map("body_markdown") @db.Text
+  bodyLanguage String   @default("en") @map("body_language")  // BCP-47 (SC4 medium)
+  sha256       String                                          // hex SHA-256 of bodyMarkdown
+  frozenAt     DateTime @map("frozen_at")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt       @map("updated_at")
+
+  @@map("judge_prompts")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Social (read-only seed)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Comment {
+  id            String      @id @default(cuid())
+  companyId     String      @map("company_id")
+  company       Company     @relation(fields: [companyId], references: [id])
+
+  kind          CommentKind
+  body          String      @db.VarChar(1000)
+  bodyLanguage  String      @default("en") @map("body_language")  // BCP-47 (H-A4)
+  authorHandle  String?     @map("author_handle")
+  sourceUrl     String?     @map("source_url")                    // required when kind=public_quote (service layer)
+  postedAt      DateTime    @map("posted_at")
+
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt       @map("updated_at")
+
+  @@index([companyId, postedAt])
+  @@map("comments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Operational
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Append-only takedown audit. The current state lives on `Company`; this table
+// records the full history for the abuse@ runbook (M8 + M22).
+model TakedownEvent {
+  id                String        @id @default(cuid())
+  companyId         String        @map("company_id")
+  company           Company       @relation(fields: [companyId], references: [id])
+  fromState         TakedownState @map("from_state")
+  toState           TakedownState @map("to_state")
+  reason            String?       @db.Text
+  reporterContact   String?       @map("reporter_contact")
+  actor             String        // 'abuse@', 'oncall:<handle>', 'cron:sweeper'
+  occurredAt        DateTime      @map("occurred_at")
+
+  // Optimistic-concurrency snapshot at transition (H-Y3) — for postmortem
+  // forensics if two writers race; never used for read serialization.
+  companyVersionBefore BigInt    @map("company_version_before")
+  companyVersionAfter  BigInt    @map("company_version_after")
+
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  @@index([companyId, occurredAt])
+  @@map("takedown_events")
+}
+
+// Aggregated public stats (rebuilt nightly). Powers GET /api/v1/stats without
+// running a heavy aggregation on the request path.
+//
+// Daily-uniqueness invariant (SC5 medium): we keep one snapshot per UTC day.
+// Migration:
+//   CREATE UNIQUE INDEX public_stats_snapshots_day_uniq
+//     ON public_stats_snapshots ((generated_at::date));
+// The rebuild cron uses ON CONFLICT DO UPDATE keyed on that expression.
+model PublicStatsSnapshot {
+  id                       String   @id @default(cuid())
+  totalCompaniesIngested   BigInt   @map("total_companies_ingested")
+  totalRunsCompleted       BigInt   @map("total_runs_completed")
+  totalShipped             BigInt   @map("total_shipped")
+  totalNoGo                BigInt   @map("total_no_go")
+  medianShipTimeSeconds    BigInt   @map("median_ship_time_seconds")
+  medianRunCostCents       BigInt   @map("median_run_cost_cents")
+  currencyCode             String   @default("USD") @map("currency_code")  // H-I1
+  generatedAt              DateTime @map("generated_at")
+
+  createdAt                DateTime @default(now()) @map("created_at")
+
+  @@index([generatedAt])
+  @@map("public_stats_snapshots")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sweeper-side notes (no model — documenting SQL contracts here for SCC review)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// H-Y2 — sweep_expired_deploys idempotent sweep:
+//   WITH due AS (
+//     SELECT id FROM runs
+//      WHERE deploy_expires_at < now()
+//        AND deploy_revoked_at IS NULL
+//      ORDER BY deploy_expires_at
+//      FOR UPDATE SKIP LOCKED
+//      LIMIT 100
+//   )
+//   UPDATE runs r
+//      SET deploy_revoked_at = COALESCE(r.deploy_revoked_at, now())
+//     FROM due
+//    WHERE r.id = due.id
+//   RETURNING r.id;
+// (Cloud Armor revoke happens in app code per returned id; on success we
+// then UPDATE deploy_revoked_confirmed_at = now() WHERE id = $id.)
+//
+// Concurrent sweeper instances are safe because of FOR UPDATE SKIP LOCKED.
+// Cadence ≤5 min (B10). Sweeper failures alert via Cloud Monitoring.

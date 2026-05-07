@@ -1,0 +1,115 @@
+{
+  "_run_id": "r-20260506T122526Z",
+  "_locked_at": "2026-05-07T07:30:00Z",
+  "_lock_method": "SpecDD round-2 consensus (SC2 + SC7 spot-check both PASS)",
+  "spec_version": "v1",
+  "round": 2,
+  "files": {
+    "openapi.yaml": {
+      "sha256": "db0bd559a7ab2915fc03a1669a34ff5e5fc165556fa96c746a7aa7133c768393",
+      "size": 61997,
+      "lines": 1577
+    },
+    "data-model.prisma": {
+      "sha256": "5687a291c77e921faf95067cd058fd4746c03f26f6c8fcded94ee758c14524b7",
+      "size": 20744,
+      "lines": 448
+    },
+    "SPEC.md": {
+      "sha256": "12bee7524984acfc489778e223e6224669a05269f22d5c92101a79922497637a",
+      "size": 37043,
+      "lines": 579
+    },
+    "CHANGELOG-v1.md": {
+      "sha256": "4171151f067dba505d64f4800b2d67270ffe45739f1d8ab80af59b37571eb2d2",
+      "size": 18940
+    }
+  },
+  "critic_verdicts": {
+    "round_1": {
+      "SC1_a11y": {
+        "verdict": "needs_revision",
+        "blocking": 2,
+        "high": 4,
+        "medium": 3,
+        "low": 1
+      },
+      "SC2_api_design": {
+        "verdict": "needs_revision",
+        "blocking": 0,
+        "high": 4,
+        "medium": 4,
+        "low": 2
+      },
+      "SC3_error_model": {
+        "verdict": "needs_revision",
+        "blocking": 2,
+        "high": 4,
+        "medium": 3,
+        "low": 2
+      },
+      "SC4_i18n": {
+        "verdict": "changes_requested",
+        "blocking": 0,
+        "high": 1,
+        "medium": 4,
+        "low": 2
+      },
+      "SC5_idempotency": {
+        "verdict": "changes_requested",
+        "blocking": 2,
+        "high": 3,
+        "medium": 2,
+        "low": 1
+      },
+      "SC6_performance": {
+        "verdict": "changes_requested",
+        "blocking": 3,
+        "high": 4,
+        "medium": 2,
+        "low": 1
+      },
+      "SC7_security": {
+        "verdict": "changes_requested",
+        "blocking": 2,
+        "high": 5,
+        "medium": 3,
+        "low": 2
+      },
+      "_aggregate": {
+        "blocking": 11,
+        "high": 25,
+        "medium": 21,
+        "low": 11,
+        "total": 68
+      }
+    },
+    "round_2_spot_check": {
+      "SC2_api_design": {
+        "verdict": "pass",
+        "all_findings": "RESOLVED",
+        "go_no_go": "ready_for_lock"
+      },
+      "SC7_security": {
+        "verdict": "pass",
+        "all_findings": "RESOLVED",
+        "go_no_go": "ready_for_lock",
+        "note": "structural enforcement (Postgres CHECK + OpenAPI dependentRequired + integration test) \u2014 not merely documentary"
+      }
+    }
+  },
+  "resolution_summary": {
+    "blocking_resolved": "11/11",
+    "high_resolved": "25/25",
+    "medium_resolved": "20/21 (1 deferred: SC2 sort comma-string)",
+    "low_deferred": "11/11 (listed in SPEC.md 'Deferred to v2 follow-up')"
+  },
+  "next_gate": "H2 (last user click before engineering scaffold)",
+  "engineering_unblocks": [
+    "BE team (Backend) \u2014 NestJS controllers + service + repository + auth-middleware + DTO/typia",
+    "FE team (Frontend) \u2014 Next.js App Router + components + state + tailwind + a11y",
+    "DB team \u2014 Prisma schema + migrations + seed + query optimization",
+    "DevOps team \u2014 Cloud Run Docker + Caddy reverse proxy + CI/CD + env-secrets",
+    "SDK team \u2014 Nestia SDK gen + TS client wrapper"
+  ]
+}

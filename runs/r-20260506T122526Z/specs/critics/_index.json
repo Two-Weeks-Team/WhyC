@@ -1,0 +1,92 @@
+{
+  "_round": 1,
+  "_run_id": "r-20260506T122526Z",
+  "_authored_at": "2026-05-07T07:00:00Z",
+  "spec_version_reviewed": "v0",
+  "verdict": "all_7_needs_revision",
+  "tally": {
+    "blocking_total": 11,
+    "high_total": 25,
+    "medium_total": 21,
+    "low_total": 11,
+    "grand_total": 68
+  },
+  "per_critic": [
+    {
+      "id": "SC1",
+      "domain": "a11y",
+      "verdict": "needs_revision",
+      "blocking": 2,
+      "high": 4,
+      "medium": 3,
+      "low": 1
+    },
+    {
+      "id": "SC2",
+      "domain": "api_design",
+      "verdict": "needs_revision",
+      "blocking": 0,
+      "high": 4,
+      "medium": 4,
+      "low": 2
+    },
+    {
+      "id": "SC3",
+      "domain": "error_model",
+      "verdict": "needs_revision",
+      "blocking": 2,
+      "high": 4,
+      "medium": 3,
+      "low": 2
+    },
+    {
+      "id": "SC4",
+      "domain": "i18n",
+      "verdict": "changes_requested",
+      "blocking": 0,
+      "high": 1,
+      "medium": 4,
+      "low": 2
+    },
+    {
+      "id": "SC5",
+      "domain": "idempotency",
+      "verdict": "changes_requested",
+      "blocking": 2,
+      "high": 3,
+      "medium": 2,
+      "low": 1
+    },
+    {
+      "id": "SC6",
+      "domain": "performance",
+      "verdict": "changes_requested",
+      "blocking": 3,
+      "high": 4,
+      "medium": 2,
+      "low": 1
+    },
+    {
+      "id": "SC7",
+      "domain": "security",
+      "verdict": "changes_requested",
+      "blocking": 2,
+      "high": 5,
+      "medium": 3,
+      "low": 2
+    }
+  ],
+  "top_10_blockers": [
+    "SC7-#6 description_text without source_url not enforced (M4 violation)",
+    "SC7-#2 Deploy URL revocation is DB-flag-only (no network-layer block)",
+    "SC6-#1 /companies N+1 on current_run; sort columns unindexed",
+    "SC6-#3 Audit endpoint may issue live Phoenix Cloud calls",
+    "SC5-#1 ETag declared but no 304/If-None-Match contract",
+    "SC5-#2 pipeline_kickoff lacks idempotency key",
+    "SC3-#2 410 Gone missing on takedown chain",
+    "SC3-#1 Problem schema lacks code extension",
+    "SC1-#1 spec-fit float lacks SR-determinable label",
+    "SC1-#2 receipts ledger numerics lack unit/SR phrasing"
+  ],
+  "feedback_for_v2_at": "/tmp/whyc-spec-feedback-v1.md"
+}
