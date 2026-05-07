@@ -52,10 +52,11 @@
       "id": "M4",
       "bucket": "legal",
       "severity": "must_fix",
-      "action": "Trademark hygiene: no YC names/logos/workatastartup IDs in video/README; substitute generic phrasing if naming risk surfaces.",
+      "action": "TRADEMARK + DEFAMATION SAFETY (revised after H1 'real names' decision): (a) NO logos anywhere; text names only in our own typography. (b) Company descriptions cite public sources only (e.g. job-posting excerpt). (c) Site + video footer disclaimer: 'WhyC is independent research. Inclusion is not endorsement by any company.' (d) 1h takedown SLA via abuse@ alias (combine with M8). (e) Submission video copy MUST be receipts-only (numbers and dates only); no accusatory adjectives.",
       "sources": [
         "BP",
-        "RP"
+        "RP",
+        "user_h1_decision_2026-05-07"
       ]
     },
     {
@@ -493,5 +494,7 @@
         ]
       }
     ]
-  }
+  },
+  "_h1_locked": true,
+  "_h1_locked_at": "2026-05-07T00:00:00Z"
 }

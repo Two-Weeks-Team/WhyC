@@ -1,0 +1,45 @@
+{
+  "_run_id": "r-20260506T122526Z",
+  "_locked_at": "2026-05-07T00:00:00Z",
+  "decisions": [
+    {
+      "axis": "demo_dataset_naming",
+      "choice": "real_yc_companies_named",
+      "constraint": "names_only_no_logos",
+      "framing": "factual_receipts_only_no_disparagement",
+      "user_rationale": "Maximum impact for hackathon judges; verifiable from public job-posting data."
+    },
+    {
+      "axis": "public_url_input",
+      "choice": "closed",
+      "rationale": "Curated dataset only. M5 abuse surface eliminated. Future v2 can open."
+    },
+    {
+      "axis": "phoenix_hosting",
+      "choice": "phoenix_cloud_saas",
+      "guardrail": "M14 sampling policy enforces 50k traces/mo cap"
+    },
+    {
+      "axis": "agent_system_prompt_voice",
+      "choice": "slightly_provocative_brand_consistent",
+      "example": "The product hypothesis they couldn't ship in 6 months is now a 14-line spec. Iterating until convergence."
+    },
+    {
+      "axis": "submission_video_framing",
+      "choice": "receipts_only",
+      "format_template": "Company X | YC W26 | Demo Day: YYYY-MM-DD | Engineer hires posted: N | Days since DD: D | Product launched: -- | WhyC ship time: Mm:Ss | spec-fit: NN% (converged) | URL ^",
+      "rule": "Numbers and dates only. No adjectives. No accusatory framing. Public-record citations only.",
+      "rationale": "Maximum impact with zero defamation risk; judges do their own math."
+    }
+  ],
+  "m4_supersede": {
+    "_replaces": "M4 (original: 'no YC names/logos in video; categorical satire only')",
+    "new_rules": [
+      "No company logos anywhere (site or video). Text names only, in our own typography.",
+      "Company descriptions: public-source citations only (e.g. quoted from public job posting).",
+      "Site + video footer disclaimer: 'WhyC is independent research. Inclusion is not endorsement by any company.'",
+      "1h takedown SLA via abuse@ alias (combine with M8 kill switch).",
+      "Submission video copy MUST be receipts-only (numbers and dates). No 'cannot ship' / 'failure' / 'incompetent' style adjectives."
+    ]
+  }
+}

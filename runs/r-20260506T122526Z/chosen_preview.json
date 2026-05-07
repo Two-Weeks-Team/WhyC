@@ -1,0 +1,76 @@
+{
+  "_run_id": "r-20260506T122526Z",
+  "_locked_at": "2026-05-07T00:00:00Z",
+  "_lock_method": "user H1 selection (composite of 5 advocates)",
+  "id": "P18+P06+detail",
+  "advocate_composition": {
+    "primary_landing": {
+      "id": "P18",
+      "advocate": "The Designer",
+      "role": "Editorial scroll-story landing — main copy, sub copy, problem awareness, solution flow, draggable spec-fit slider, 4-stage pipeline, pull-quote, minimal CTA"
+    },
+    "primary_dashboard": {
+      "id": "P06",
+      "advocate": "The Spreadsheet Jockey",
+      "role": "Dense VC-portfolio leaderboard — sticky header/column, sortable, filter chips, keyboard nav, sparkline convergence, aggregate footer. EXTENDED: auto-scrape ALL YC batches from 2025+, ingest companies, run Analyze→Go/No-Go→Develop→Deploy autonomously."
+    },
+    "detail_page_references": [
+      {
+        "id": "P10",
+        "advocate": "The Dreamer",
+        "use": "Hero: aurora-style live progress visualization (12 active loops, not 214)"
+      },
+      {
+        "id": "P13",
+        "advocate": "The Data Nerd",
+        "use": "KPI tiles + spec-fit time-series + token-spend bars + regen heatmap"
+      },
+      {
+        "id": "P15",
+        "advocate": "The Community-Builder",
+        "use": "Public reaction wall (READ-ONLY seed comments; no live UGC moderation)"
+      },
+      {
+        "id": "P07",
+        "advocate": "The Mobile-First",
+        "use": "Same Next.js page, mobile breakpoint at <960px, 375x812 phone-optimized layout"
+      },
+      {
+        "id": "P04",
+        "advocate": "The Cost-Conscious",
+        "use": "$0.04 receipt-style cost ledger row in detail page header"
+      }
+    ]
+  },
+  "primary_surface": "Web PWA (Next.js, mobile-responsive)",
+  "page_types": [
+    "landing",
+    "dashboard",
+    "project_detail"
+  ],
+  "killer_feature": "Autonomous YC-batch pipeline: scrape -> analyze -> Go/No-Go -> develop -> deploy -> Phoenix self-improvement loop until spec-fit converges. Demonstrated on ~12 real YC companies in the live demo dataset.",
+  "hero_thesis": "While they hire, we ship.",
+  "scope_guards_locked": [
+    "NO Stripe/PCI live billing (P21 cut)",
+    "NO Slack/CLI/SDK side surfaces (P19/P09/P08/P26 cut) -- web only, single Next.js codebase",
+    "NO live UGC moderation -- comment wall is read-only seed (12 hand-curated comments)",
+    "NO native mobile app -- responsive web only",
+    "NO public URL submission -- curated dataset only (M5 abuse surface = 0)",
+    "MAX 12 deployed previews in demo dataset (not 200; Cloud Run quota + $100 credit budget)"
+  ],
+  "panel_history": {
+    "user_selected_via_h1": true,
+    "panel_top5_was_advisory_only": true,
+    "user_chose_outside_panel_top5_for_landing": "P18 was UP top-5 but not the chair-favorite; P06 was BP top-5; user composed across panels",
+    "rp_veto_armed_components": [
+      {
+        "id": "P15",
+        "use_in_composite": "READ-ONLY seed only -- moderation hazard mitigated"
+      },
+      {
+        "id": "P10",
+        "use_in_composite": "Visual reference only, scope cut to 12 active not 214"
+      }
+    ]
+  }
+}
