@@ -1,0 +1,143 @@
+# Cloud Armor security policy: whyc-edge
+# Apply with:
+#   gcloud compute security-policies create whyc-edge --type=CLOUD_ARMOR
+#   for each rule: gcloud compute security-policies rules create ... \
+#     --security-policy=whyc-edge --action=... --src-ip-ranges=...
+#
+# Encodes SPEC §10.3 (preview hygiene) + §10.4 (rate limiting + HTTPS).
+# Document is human/operator readable; the apply script `apply-cloud-armor.sh`
+# (sibling) translates rule blocks to the gcloud CLI.
+
+name: whyc-edge
+description: >
+  WhyC edge policy: rate limits per route bucket, time-bound preview ACL,
+  noindex header injection, default-allow with monitoring.
+type: CLOUD_ARMOR
+adaptiveProtectionConfig:
+  layer7DdosDefenseConfig:
+    enable: true
+    ruleVisibility: STANDARD
+
+# Header injection on every response (preview hygiene, H-S1).
+# Configured via the LB URL map's responseHeadersToAdd, mirrored here for audit.
+responseHeaderInjection:
+  - name: X-Robots-Tag
+    value: "noindex, nofollow, noarchive"
+  - name: Strict-Transport-Security
+    value: "max-age=31536000; includeSubDomains"
+  - name: X-Content-Type-Options
+    value: nosniff
+  - name: X-Frame-Options
+    value: DENY
+  - name: Referrer-Policy
+    value: strict-origin-when-cross-origin
+
+rules:
+
+  # ---- 1000: rate limit /api/v1/companies* and /api/v1/runs* (60/min/IP) ----
+  - priority: 1000
+    description: "Throttle list/detail endpoints to 60 req/min/IP (SPEC §10.4)"
+    match:
+      versionedExpr: SRC_IPS_V1
+      config:
+        srcIpRanges: ["*"]
+      expr:
+        expression: |
+          request.path.matches('^/api/v1/(companies|runs)(/.*)?$')
+    action: rate_based_ban
+    rateLimitOptions:
+      conformAction: allow
+      exceedAction: deny(429)
+      enforceOnKey: IP
+      rateLimitThreshold:
+        count: 60
+        intervalSec: 60
+      banDurationSec: 60
+      exceedRedirectOptions: {}
+    headerAction:
+      responseHeadersToAdd:
+        - headerName: Retry-After
+          headerValue: "60"
+
+  # ---- 1100: rate limit /api/v1/health and /api/v1/stats (600/min/IP) ----
+  - priority: 1100
+    description: "Throttle health+stats to 600 req/min/IP (SPEC §10.4)"
+    match:
+      versionedExpr: SRC_IPS_V1
+      config:
+        srcIpRanges: ["*"]
+      expr:
+        expression: |
+          request.path.matches('^/api/v1/(health|stats)(/.*)?$')
+    action: rate_based_ban
+    rateLimitOptions:
+      conformAction: allow
+      exceedAction: deny(429)
+      enforceOnKey: IP
+      rateLimitThreshold:
+        count: 600
+        intervalSec: 60
+      banDurationSec: 60
+    headerAction:
+      responseHeadersToAdd:
+        - headerName: Retry-After
+          headerValue: "10"
+
+  # ---- 1200: rate limit /api/v1/iterations/*/audit and /comments (60/min/IP) ----
+  - priority: 1200
+    description: "Throttle audit + comments endpoints"
+    match:
+      versionedExpr: SRC_IPS_V1
+      config:
+        srcIpRanges: ["*"]
+      expr:
+        expression: |
+          request.path.matches('^/api/v1/(iterations/.*/audit|comments|judge/prompts/.*)$')
+    action: rate_based_ban
+    rateLimitOptions:
+      conformAction: allow
+      exceedAction: deny(429)
+      enforceOnKey: IP
+      rateLimitThreshold:
+        count: 60
+        intervalSec: 60
+      banDurationSec: 60
+
+  # ---- 2000: time-bound preview ACL (SPEC §10.3 / B10) ----
+  # Drops traffic to whyc-preview-${run_id}.run.app where the deploy_expires_at
+  # has passed. The condition is reconciled by the sweeper job which:
+  #   1. computes the dynamic IP/host list of *currently-active* preview runs,
+  #   2. PATCHes this rule's request.headers.host expression accordingly.
+  # The rule's *default* posture when the host list is empty is: DENY ALL preview hosts.
+  - priority: 2000
+    description: "Time-bound deploy ACL — deny expired preview hosts (B10)"
+    match:
+      versionedExpr: SRC_IPS_V1
+      config:
+        srcIpRanges: ["*"]
+      expr:
+        # Replaced by sweeper with: request.headers.host in [<active hosts>]
+        # Default (no active previews): match all preview hosts and deny.
+        expression: |
+          request.headers['host'].matches('^whyc-preview-[a-z0-9-]+\\.run\\.app$')
+          && !(request.headers['host'] in ${ACTIVE_PREVIEW_HOSTS})
+    action: deny(403)
+
+  # ---- 2100: WAF preconfig — OWASP Top 10 starter ----
+  - priority: 2100
+    description: "OWASP CRS sqli/xss canned rules"
+    match:
+      expr:
+        expression: |
+          evaluatePreconfiguredExpr('sqli-v33-stable')
+          || evaluatePreconfiguredExpr('xss-v33-stable')
+    action: deny(403)
+
+  # ---- 9999: default allow ----
+  - priority: 2147483647
+    description: "Default allow"
+    match:
+      versionedExpr: SRC_IPS_V1
+      config:
+        srcIpRanges: ["*"]
+    action: allow

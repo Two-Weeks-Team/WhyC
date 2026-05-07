@@ -1,0 +1,71 @@
+# Cloud Run service: whyc-web (Next.js)
+# Apply: gcloud run services replace deploy/cloud-run/service-web.yaml --region=us-central1
+#
+# Per SPEC §2.1: min=1, max=5, cpu=1, memory=512Mi, cpu-always-allocated=true,
+# concurrency=80, ingress=internal-and-cloud-load-balancing.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: whyc-web
+  namespace: PROJECT_ID
+  labels:
+    app: whyc
+    tier: web
+  annotations:
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+    run.googleapis.com/ingress-status: internal-and-cloud-load-balancing
+    run.googleapis.com/startup-cpu-boost: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        app: whyc
+        tier: web
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "5"
+        run.googleapis.com/cpu-throttling: "false"   # cpu-always-allocated
+        run.googleapis.com/client-name: github-actions
+    spec:
+      serviceAccountName: whyc-web-runtime@PROJECT_ID.iam.gserviceaccount.com
+      containerConcurrency: 80
+      timeoutSeconds: 30
+      containers:
+        - name: web
+          image: REGION-docker.pkg.dev/PROJECT_ID/whyc/whyc-web:GIT_SHA
+          ports:
+            - name: http1
+              containerPort: 3000
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+            # NEXT_PUBLIC_API_BASE is baked at build time too; this is the
+            # server-side fallback for any SSR fetches.
+            - name: NEXT_PUBLIC_API_BASE
+              value: https://whyc.example/api/v1
+          startupProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 0
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            periodSeconds: 30
+            timeoutSeconds: 4
+            failureThreshold: 3
+  traffic:
+    - percent: 100
+      latestRevision: true

@@ -1,0 +1,60 @@
+# syntax=docker/dockerfile:1.7
+# WhyC Web (Next.js) — multi-stage image, standalone output
+# Build context: repo root.  Build:  docker build -f deploy/Dockerfile.web -t whyc-web .
+
+# ---- 1. base ----------------------------------------------------------------
+FROM node:20-slim AS base
+ENV PNPM_HOME=/pnpm \
+    PATH=/pnpm:$PATH \
+    NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    CI=true
+RUN corepack enable && corepack prepare pnpm@9.1.0 --activate
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates openssl tini \
+ && rm -rf /var/lib/apt/lists/*
+
+# ---- 2. deps (cached install) ----------------------------------------------
+FROM base AS deps
+WORKDIR /app
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/web/package.json ./apps/web/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --filter "@whyc/web..." --filter "."
+
+# ---- 3. builder -------------------------------------------------------------
+FROM deps AS builder
+WORKDIR /app
+COPY apps/web ./apps/web
+# Public env baked into the bundle (no secrets — only NEXT_PUBLIC_*)
+ARG NEXT_PUBLIC_API_BASE
+ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
+RUN pnpm --filter @whyc/web run build
+
+# ---- 4. runtime (Next.js standalone) ---------------------------------------
+FROM node:20-slim AS runtime
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0 \
+    NEXT_TELEMETRY_DISABLED=1
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates tini curl \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --system --gid 10001 nodejs \
+ && useradd  --system --uid 10001 --gid nodejs --no-create-home --shell /usr/sbin/nologin whyc
+
+WORKDIR /app
+
+# Standalone server bundle (server.js + minimal node_modules)
+COPY --from=builder --chown=whyc:nodejs /app/apps/web/.next/standalone        ./
+COPY --from=builder --chown=whyc:nodejs /app/apps/web/.next/static            ./apps/web/.next/static
+COPY --from=builder --chown=whyc:nodejs /app/apps/web/public                  ./apps/web/public
+
+USER whyc:nodejs
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:3000/ || exit 1
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["node", "apps/web/server.js"]

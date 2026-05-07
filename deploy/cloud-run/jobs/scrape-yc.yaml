@@ -1,0 +1,55 @@
+# Cloud Run Job: scrape_yc
+# Trigger: Cloud Scheduler, every 6h.
+#   gcloud scheduler jobs create http whyc-scrape-yc \
+#     --schedule="0 */6 * * *" --uri="https://...run.googleapis.com/.../jobs/scrape-yc:run" ...
+#
+# Per SPEC §7: scrape_yc → Batch row + Company rows (status=ingested).
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: whyc-scrape-yc
+  namespace: PROJECT_ID
+  labels:
+    app: whyc
+    tier: job
+    cron: "every-6h"
+spec:
+  template:
+    spec:
+      parallelism: 1
+      taskCount: 1
+      template:
+        spec:
+          serviceAccountName: whyc-jobs-writer@PROJECT_ID.iam.gserviceaccount.com
+          maxRetries: 2
+          timeoutSeconds: 1800   # 30 min hard cap
+          containers:
+            - name: scrape
+              image: REGION-docker.pkg.dev/PROJECT_ID/whyc/whyc-api:GIT_SHA
+              command: ["node", "apps/api/dist/jobs/scrape-yc.js"]
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+              env:
+                - name: NODE_ENV
+                  value: production
+                - name: JOB_NAME
+                  value: scrape_yc
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-database-url-writer
+                      key: latest
+                - name: GEMINI_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-gemini-api-key
+                      key: latest
+                - name: ARIZE_PHOENIX_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-phoenix-api-key
+                      key: latest
+                - name: ARIZE_PHOENIX_ENDPOINT
+                  value: https://app.phoenix.arize.com

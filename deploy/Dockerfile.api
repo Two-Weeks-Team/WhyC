@@ -1,0 +1,73 @@
+# syntax=docker/dockerfile:1.7
+# WhyC API (NestJS + @nestia/core + Prisma) — multi-stage image
+# Build context: repo root.  Build:  docker build -f deploy/Dockerfile.api -t whyc-api .
+
+# ---- 1. base ----------------------------------------------------------------
+FROM node:20-slim AS base
+ENV PNPM_HOME=/pnpm \
+    PATH=/pnpm:$PATH \
+    NODE_ENV=production \
+    CI=true
+RUN corepack enable && corepack prepare pnpm@9.1.0 --activate
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates openssl tini \
+ && rm -rf /var/lib/apt/lists/*
+
+# ---- 2. deps (cached install) ----------------------------------------------
+FROM base AS deps
+WORKDIR /app
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/api/package.json ./apps/api/
+COPY prisma/schema.prisma ./prisma/schema.prisma
+# Full install incl. devDeps (we need nest cli + ts-patch for build)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --filter "@whyc/api..." --filter "."
+# Generate Prisma client into node_modules so it can be copied into runtime
+RUN pnpm --filter @whyc/api exec prisma generate --schema=../../prisma/schema.prisma
+
+# ---- 3. builder -------------------------------------------------------------
+FROM deps AS builder
+WORKDIR /app
+COPY apps/api ./apps/api
+COPY prisma ./prisma
+RUN pnpm --filter @whyc/api run build
+
+# ---- 4. prune to production deps -------------------------------------------
+FROM base AS prod-deps
+WORKDIR /app
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/api/package.json ./apps/api/
+COPY prisma/schema.prisma ./prisma/schema.prisma
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --prod --filter "@whyc/api..." --filter "."
+RUN pnpm --filter @whyc/api exec prisma generate --schema=../../prisma/schema.prisma
+
+# ---- 5. runtime -------------------------------------------------------------
+FROM node:20-slim AS runtime
+ENV NODE_ENV=production \
+    PORT=8080 \
+    NODE_OPTIONS="--enable-source-maps"
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates openssl tini curl \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --system --gid 10001 nodejs \
+ && useradd  --system --uid 10001 --gid nodejs --no-create-home --shell /usr/sbin/nologin whyc
+
+WORKDIR /app
+
+# Built JS + minimal runtime files
+COPY --from=builder   --chown=whyc:nodejs /app/apps/api/dist            ./apps/api/dist
+COPY --from=builder   --chown=whyc:nodejs /app/apps/api/package.json    ./apps/api/package.json
+COPY --from=prod-deps --chown=whyc:nodejs /app/node_modules             ./node_modules
+COPY --from=prod-deps --chown=whyc:nodejs /app/apps/api/node_modules    ./apps/api/node_modules
+COPY --from=builder   --chown=whyc:nodejs /app/prisma                   ./prisma
+
+USER whyc:nodejs
+EXPOSE 8080
+
+# Cloud Run does its own probing; HEALTHCHECK is for docker-compose / local dev.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:8080/api/v1/health || exit 1
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["node", "apps/api/dist/main.js"]

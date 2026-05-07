@@ -1,0 +1,105 @@
+# Cloud Run service: whyc-api
+# Apply: gcloud run services replace deploy/cloud-run/service-api.yaml --region=us-central1
+#
+# Per SPEC §2.1 + §10.4:
+#   min-instances=1, max-instances=5, cpu=1, memory=512Mi
+#   cpu-always-allocated=true (cold-start mitigation, M16)
+#   ingress=internal-and-cloud-load-balancing (HTTPS-only behind LB + Cloud Armor)
+#   concurrency=80
+#
+# Secret refs are injected via Secret Manager — *the deploy SA cannot read
+# them at deploy time*; Cloud Run mounts them at runtime (per §10.7).
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: whyc-api
+  namespace: PROJECT_ID  # replaced by `gcloud run` at deploy time
+  labels:
+    app: whyc
+    tier: api
+  annotations:
+    # Restrict ingress: only Google Cloud LB (where Cloud Armor sits) + internal.
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+    run.googleapis.com/ingress-status: internal-and-cloud-load-balancing
+    # Allow long startup for prisma client init.
+    run.googleapis.com/startup-cpu-boost: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        app: whyc
+        tier: api
+      annotations:
+        # Scaling
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "5"
+        # CPU always allocated → required for min-instances=1 to stay warm (M16).
+        run.googleapis.com/cpu-throttling: "false"
+        # Cloud SQL connection (managed, via Unix socket).
+        run.googleapis.com/cloudsql-instances: PROJECT_ID:REGION:whyc-pg
+        # Generation marker — bumped by deploy.yml to force new revision on
+        # otherwise-identical config.
+        run.googleapis.com/client-name: github-actions
+    spec:
+      serviceAccountName: whyc-api-runtime@PROJECT_ID.iam.gserviceaccount.com
+      containerConcurrency: 80
+      timeoutSeconds: 30
+      containers:
+        - name: api
+          image: REGION-docker.pkg.dev/PROJECT_ID/whyc/whyc-api:GIT_SHA
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "8080"
+            # DATABASE_URL points at the Cloud SQL unix socket; password from Secret Manager.
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: whyc-database-url
+                  key: latest
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: whyc-gemini-api-key
+                  key: latest
+            - name: ARIZE_PHOENIX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: whyc-phoenix-api-key
+                  key: latest
+            - name: ARIZE_PHOENIX_ENDPOINT
+              value: https://app.phoenix.arize.com
+            - name: CORS_ALLOWED_ORIGIN
+              value: https://whyc.example
+            - name: WEB_BASE_URL
+              value: https://whyc.example
+            - name: RATE_LIMIT_COMPANIES_PER_MIN
+              value: "60"
+            - name: RATE_LIMIT_HEALTH_PER_MIN
+              value: "600"
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 30   # 60s window
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            periodSeconds: 30
+            timeoutSeconds: 4
+            failureThreshold: 3
+  traffic:
+    - percent: 100
+      latestRevision: true

@@ -1,0 +1,38 @@
+{
+  "name": "whyc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WhyC — Y Combinator companies, the autonomous WhyC pipeline that targets each, and the Phoenix audit trail for every iteration.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.10.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "prisma:gen": "prisma generate --schema=prisma/schema.prisma",
+    "db:migrate:dev": "prisma migrate dev --schema=prisma/schema.prisma",
+    "db:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
+    "db:apply-checks": "for f in prisma/migrations/*/check_constraints.sql; do echo \"applying $f\"; psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f \"$f\"; done",
+    "db:setup": "pnpm db:migrate:deploy && pnpm db:apply-checks && pnpm db:seed",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force --schema=prisma/schema.prisma && pnpm db:apply-checks && pnpm db:seed",
+    "db:studio": "prisma studio --schema=prisma/schema.prisma",
+    "lock:verify": "node -e \"const j=require('./runs/r-20260506T122526Z/specs/_lock.json');const c=require('child_process');for(const[f,m]of Object.entries(j.files)){const o=c.execSync('shasum -a 256 runs/r-20260506T122526Z/specs/'+f).toString().split(' ')[0];if(o!==m.sha256){console.error('LOCK DRIFT',f,o,'!=',m.sha256);process.exit(1)}}console.log('lock OK')\""
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts",
+    "schema": "prisma/schema.prisma"
+  }
+}

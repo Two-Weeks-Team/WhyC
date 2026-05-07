@@ -1,0 +1,90 @@
+# Local-dev convenience stack for WhyC.
+# Production runs on Cloud Run; this file is for `docker compose up` on a laptop.
+# Reads from ../.env (the operator's local copy of .env.example).
+#
+# Usage:
+#   cp .env.example .env             # then fill in
+#   docker compose -f deploy/docker-compose.yml --env-file .env up --build
+#
+# Note: pipeline jobs (scrape_yc, sweep_expired_deploys, etc.) run as Cloud Run
+# Jobs in production. They are NOT included here; run them locally with:
+#   pnpm --filter @whyc/api exec node dist/jobs/<name>.js
+
+version: "3.9"
+
+name: whyc
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: whyc-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-whyc}
+      POSTGRES_USER: ${POSTGRES_USER:-whyc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-whyc-local-dev-only}
+    ports:
+      - "5432:5432"
+    volumes:
+      - whyc-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-whyc} -d ${POSTGRES_DB:-whyc}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    container_name: whyc-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "8080"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-whyc}:${POSTGRES_PASSWORD:-whyc-local-dev-only}@postgres:5432/${POSTGRES_DB:-whyc}?schema=public&connection_limit=3&pool_timeout=10
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ARIZE_PHOENIX_API_KEY: ${ARIZE_PHOENIX_API_KEY:-}
+      ARIZE_PHOENIX_ENDPOINT: ${ARIZE_PHOENIX_ENDPOINT:-https://app.phoenix.arize.com}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:3000}
+      RATE_LIMIT_COMPANIES_PER_MIN: ${RATE_LIMIT_COMPANIES_PER_MIN:-60}
+      RATE_LIMIT_HEALTH_PER_MIN: ${RATE_LIMIT_HEALTH_PER_MIN:-600}
+      WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:3000}
+    ports:
+      - "8081:8080"  # host 8081 → container 8080 (8080 is reserved per house rules)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8081/api/v1}
+    container_name: whyc-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8081/api/v1}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  whyc-pgdata:
+    name: whyc-pgdata

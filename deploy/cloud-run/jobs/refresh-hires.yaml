@@ -1,0 +1,41 @@
+# Cloud Run Job: refresh_hires
+# Trigger: Cloud Scheduler, every 6 hours.  (SPEC §7)
+# Updates Company.hiresPostedCount, Company.lastHiresCheckAt on the curated set.
+# lastHiresCheckAt is excluded from ETag derivation per B5.
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: whyc-refresh-hires
+  namespace: PROJECT_ID
+  labels:
+    app: whyc
+    tier: job
+    cron: "every-6h"
+spec:
+  template:
+    spec:
+      parallelism: 1
+      taskCount: 1
+      template:
+        spec:
+          serviceAccountName: whyc-jobs-writer@PROJECT_ID.iam.gserviceaccount.com
+          maxRetries: 2
+          timeoutSeconds: 900    # 15 min cap
+          containers:
+            - name: refresh-hires
+              image: REGION-docker.pkg.dev/PROJECT_ID/whyc/whyc-api:GIT_SHA
+              command: ["node", "apps/api/dist/jobs/refresh-hires.js"]
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+              env:
+                - name: NODE_ENV
+                  value: production
+                - name: JOB_NAME
+                  value: refresh_hires
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-database-url-writer
+                      key: latest

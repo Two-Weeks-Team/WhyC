@@ -1,0 +1,68 @@
+# Cloud Run Job: pipeline_kickoff
+# Trigger: manual or Cloud Scheduler ad-hoc (e.g. "0 9 * * *" for daily kickoff).
+# Per SPEC §7: dequeues Companies, creates Run rows under kickoffKey idempotency
+# guard (B6), single-tx INSERT Run + UPDATE Company.currentRunId + status,
+# then dispatches the agent pipeline (sanitize → analyze → go_no_go → develop →
+# deploy → self_improve) for each newly-kicked-off Run.
+#
+# This job runs the agent backbone (Gemini ADK + Phoenix MCP); it needs the
+# *jobs-writer* SA AND access to Gemini + Phoenix.
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: whyc-pipeline-kickoff
+  namespace: PROJECT_ID
+  labels:
+    app: whyc
+    tier: job
+    cron: "manual"
+spec:
+  template:
+    spec:
+      parallelism: 1     # serialize kickoff (kickoffKey enforces idempotency anyway)
+      taskCount: 1
+      template:
+        spec:
+          serviceAccountName: whyc-pipeline@PROJECT_ID.iam.gserviceaccount.com
+          maxRetries: 0           # idempotent at the DB layer; retry would dup-spam Phoenix
+          timeoutSeconds: 3600    # 1h cap per kickoff batch
+          containers:
+            - name: pipeline-kickoff
+              image: REGION-docker.pkg.dev/PROJECT_ID/whyc-pipeline/whyc-pipeline:GIT_SHA
+              command: ["node", "dist/jobs/pipeline-kickoff.js"]
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: 2Gi
+              env:
+                - name: NODE_ENV
+                  value: production
+                - name: JOB_NAME
+                  value: pipeline_kickoff
+                - name: KICKOFF_BATCH_SIZE
+                  value: "12"      # ≤12 companies × ≤7 iter × 5 stages = ≤420 traces (M14)
+                - name: ITER_LIMIT
+                  value: "7"
+                - name: COST_LIMIT_CENTS
+                  value: "500"     # $5 per run
+                - name: JUDGE_PROMPT_VERSION
+                  value: "v1"
+                - name: TAU_CONVERGE
+                  value: "0.92"
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-database-url-writer
+                      key: latest
+                - name: GEMINI_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-gemini-api-key
+                      key: latest
+                - name: ARIZE_PHOENIX_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-phoenix-api-key
+                      key: latest
+                - name: ARIZE_PHOENIX_ENDPOINT
+                  value: https://app.phoenix.arize.com

@@ -1,0 +1,48 @@
+# Cloud Run Job: sweep_expired_deploys
+# Trigger: Cloud Scheduler, every 5 minutes.  (SPEC §7, §10.3 / B10)
+#   gcloud scheduler jobs create http whyc-sweep-deploys \
+#     --schedule="*/5 * * * *" --uri="...jobs/sweep-deploys:run" ...
+#
+# Sets Run.deployRevokedAt=now() (idempotent COALESCE), deletes preview Cloud
+# Run revisions, sets Run.deployRevokedConfirmedAt on success.
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: whyc-sweep-deploys
+  namespace: PROJECT_ID
+  labels:
+    app: whyc
+    tier: job
+    cron: "every-5min"
+spec:
+  template:
+    spec:
+      parallelism: 1
+      taskCount: 1
+      template:
+        spec:
+          # NEEDS run.admin on preview services — separate SA so the API runtime
+          # SA stays read-only-DB.
+          serviceAccountName: whyc-sweeper@PROJECT_ID.iam.gserviceaccount.com
+          maxRetries: 1
+          timeoutSeconds: 240    # 4-min cap (cron is 5-min)
+          containers:
+            - name: sweeper
+              image: REGION-docker.pkg.dev/PROJECT_ID/whyc/whyc-api:GIT_SHA
+              command: ["node", "apps/api/dist/jobs/sweep-expired-deploys.js"]
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 256Mi
+              env:
+                - name: NODE_ENV
+                  value: production
+                - name: JOB_NAME
+                  value: sweep_expired_deploys
+                - name: SWEEP_BATCH_SIZE
+                  value: "100"
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-database-url-writer
+                      key: latest

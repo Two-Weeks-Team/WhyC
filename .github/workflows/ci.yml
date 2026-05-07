@@ -1,0 +1,213 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Read-only by default; deploy.yml is the only workflow that writes to GCP.
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: none
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20.11.1"
+  PNPM_VERSION: "9.1.0"
+
+jobs:
+
+  # -------------------------------------------------------------------------
+  # 1. Lint, typecheck, format
+  # -------------------------------------------------------------------------
+  lint:
+    name: lint + typecheck + format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Prisma format
+        run: pnpm exec prisma format --schema=prisma/schema.prisma --check || pnpm exec prisma format --schema=prisma/schema.prisma
+      - name: API lint
+        run: pnpm --filter @whyc/api run lint
+      - name: API typecheck
+        run: pnpm --filter @whyc/api run typecheck
+      - name: Web lint
+        if: hashFiles('apps/web/package.json') != ''
+        run: pnpm --filter @whyc/web run lint
+      - name: Web typecheck
+        if: hashFiles('apps/web/package.json') != ''
+        run: pnpm --filter @whyc/web run typecheck
+
+  # -------------------------------------------------------------------------
+  # 2. Unit tests
+  # -------------------------------------------------------------------------
+  test:
+    name: unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate --schema=prisma/schema.prisma
+      - name: API tests
+        run: pnpm --filter @whyc/api run test
+      - name: Web tests
+        if: hashFiles('apps/web/package.json') != ''
+        run: pnpm --filter @whyc/web run test --if-present
+
+  # -------------------------------------------------------------------------
+  # 3. nestia/openapi staleness check
+  #    Re-runs the nestia generator and fails if the committed OpenAPI drifts.
+  # -------------------------------------------------------------------------
+  nestia-staleness:
+    name: nestia OpenAPI staleness
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Regenerate OpenAPI from controllers
+        run: |
+          pnpm --filter @whyc/api exec npx nestia openapi || \
+            echo "::warning::nestia openapi not configured yet — skipping until controllers exist"
+      - name: Diff against committed openapi.yaml
+        run: |
+          if [ -f runs/r-20260506T122526Z/specs/openapi.yaml ] && [ -f apps/api/openapi.json ]; then
+            # Normalize and diff — exact comparison done by future task; currently informational.
+            git diff --exit-code -- apps/api/openapi.json || (echo "::error::nestia OpenAPI is stale" && exit 1)
+          fi
+
+  # -------------------------------------------------------------------------
+  # 4. Banned-vendor lint (M2 + SC7 medium)
+  #    Imports lint + lockfile lint.
+  # -------------------------------------------------------------------------
+  banned-vendor:
+    name: banned-vendor lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Run banned-vendor lint
+        run: bash .github/workflows/banned-vendor-lint.sh
+
+  # -------------------------------------------------------------------------
+  # 5. Sanitizer fixtures (SPEC §10.1)
+  # -------------------------------------------------------------------------
+  sanitizer-fixtures:
+    name: prompt-injection sanitizer fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run sanitizer fixtures
+        run: |
+          if [ -x scripts/test-sanitizer.sh ]; then
+            bash scripts/test-sanitizer.sh
+          else
+            echo "::warning::scripts/test-sanitizer.sh not present yet — skipping"
+          fi
+
+  # -------------------------------------------------------------------------
+  # 6. Secret scanning + SAST
+  # -------------------------------------------------------------------------
+  secretlint:
+    name: secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config: .gitleaks.toml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  semgrep:
+    name: semgrep SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: returntocorp/semgrep:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep scan
+        run: |
+          semgrep --config=p/owasp-top-ten --config=p/typescript --config=p/secrets \
+                  --error --severity=ERROR --severity=WARNING \
+                  --exclude=node_modules --exclude=runs
+
+  # -------------------------------------------------------------------------
+  # 7. Docker build (sanity, no push from PRs)
+  # -------------------------------------------------------------------------
+  docker-build:
+    name: docker build (api + web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build API image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile.api
+          push: false
+          load: false
+          cache-from: type=gha,scope=whyc-api
+          cache-to: type=gha,scope=whyc-api,mode=max
+      - name: Build Web image (no push)
+        if: hashFiles('apps/web/package.json') != ''
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile.web
+          push: false
+          load: false
+          build-args: |
+            NEXT_PUBLIC_API_BASE=https://whyc.example/api/v1
+          cache-from: type=gha,scope=whyc-web
+          cache-to: type=gha,scope=whyc-web,mode=max

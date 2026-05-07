@@ -1,0 +1,21 @@
+# Reduce build context — Docker COPYs from repo root.
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/.nyc_output
+.git
+.github
+runs
+hackathon
+*.log
+*.md
+!apps/api/README.md
+!apps/web/README.md
+.env
+.env.*
+!.env.example
+.vscode
+.idea
+.DS_Store

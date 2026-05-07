@@ -1,0 +1,54 @@
+# Gitleaks configuration for WhyC.
+# Extends the default ruleset and adds project-specific rules for our vendors.
+# CI invokes via .github/workflows/ci.yml → gitleaks-action.
+
+[extend]
+useDefault = true
+
+# -----------------------------------------------------------------------------
+# Project-specific rules
+# -----------------------------------------------------------------------------
+
+[[rules]]
+id = "gemini-api-key"
+description = "Google Gemini API key"
+regex = '''AIza[0-9A-Za-z\-_]{35}'''
+tags  = ["key", "google", "gemini"]
+
+[[rules]]
+id = "phoenix-cloud-api-key"
+description = "Arize Phoenix Cloud API key (typical UUID-ish format)"
+regex = '''(?i)(arize|phoenix)[-_]?api[-_]?key['"\s:=]+([A-Za-z0-9_\-]{32,})'''
+tags  = ["key", "arize", "phoenix"]
+
+[[rules]]
+id = "gcp-service-account-json"
+description = "GCP service account JSON (private_key field)"
+regex = '''-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----'''
+tags  = ["gcp", "service-account"]
+
+[[rules]]
+id = "database-url-with-password"
+description = "Postgres URL with embedded password"
+regex = '''postgres(?:ql)?:\/\/[^:\s]+:[^@\s]+@[^/\s]+\/[^\s'"]+'''
+tags  = ["db", "postgres"]
+# Allowlist localhost / docker-compose dev URLs handled in [allowlist] below.
+
+# -----------------------------------------------------------------------------
+# Allowlist
+# -----------------------------------------------------------------------------
+[allowlist]
+description = "Local-dev URLs and example placeholders"
+paths = [
+  '''(?i)^\.env\.example$''',
+  '''(?i)^deploy/docker-compose\.yml$''',
+  '''(?i)^deploy/README\.md$''',
+  '''(?i)^README\.md$''',
+  '''(?i)^runs/.*''',
+]
+regexes = [
+  '''postgresql:\/\/whyc:whyc-local-dev-only@''',     # docker-compose default
+  '''postgresql:\/\/whyc:CHANGE_ME@''',                # .env.example placeholder
+  '''CHANGE_ME''',
+  '''AIzaSy[A-Za-z0-9\-_]{0,5}\.\.\.''',               # truncated examples
+]

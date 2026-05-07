@@ -1,0 +1,19 @@
+# Root .dockerignore — used by both Dockerfile.api and Dockerfile.web
+# (Build context is the repo root for both.)
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/.nyc_output
+.git
+.github
+runs
+hackathon
+*.log
+.env
+.env.*
+!.env.example
+.vscode
+.idea
+.DS_Store
