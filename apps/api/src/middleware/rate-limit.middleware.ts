@@ -75,7 +75,7 @@ function getOrInitBucket(key: string, perMin: number): BucketState {
   return bucket;
 }
 
-export function rateLimitMiddleware(req: Request, res: Response, next: NextFunction): void {
+export function rateLimitMiddleware(req: Request, _res: Response, next: NextFunction): void {
   const tier = tierForPath(req.path);
   const ip = getClientIp(req);
   const key = `${tier.perMin}:${ip}`;
