@@ -54,7 +54,7 @@ const COMPANIES: Array<{
   status: CompanyStatus;
 }> = [
   { slug: 'tbd-w26-01', name: 'Acme Robotics (TBD)',     batchLabel: 'W26', hires: 14, status: CompanyStatus.converged },
-  { slug: 'tbd-w26-02', name: 'Bolt Health (TBD)',       batchLabel: 'W26', hires:  9, status: CompanyStatus.deployed },
+  { slug: 'tbd-w26-02', name: 'Birch Health (TBD)',      batchLabel: 'W26', hires:  9, status: CompanyStatus.deployed },
   { slug: 'tbd-w26-03', name: 'Cinder Logistics (TBD)',  batchLabel: 'W26', hires:  7, status: CompanyStatus.deployed },
   { slug: 'tbd-w26-04', name: 'Drift Studios (TBD)',     batchLabel: 'W26', hires: 11, status: CompanyStatus.building },
   { slug: 'tbd-s25-05', name: 'Ember Dataworks (TBD)',   batchLabel: 'S25', hires:  6, status: CompanyStatus.converged },

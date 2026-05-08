@@ -275,9 +275,13 @@ export default function LandingPage() {
                 Click any URL. <em>Open the preview.</em>
               </h2>
               <p className="lede">
-                12 real Y Combinator companies, selected from W25/S25/W26
-                batches. Each card is a public deploy. The numbers below are
-                the receipts.
+                Up to 12 curated Y Combinator companies from W25 / S25 / W26
+                batches{' '}
+                <span aria-label="dataset is being populated">
+                  (dataset populating — verified scrape lands in WK3)
+                </span>
+                . Each card links to a public deploy. The numbers below are
+                receipts sourced from public job postings.
               </p>
             </div>
             <div className="wall-cards" role="list">
