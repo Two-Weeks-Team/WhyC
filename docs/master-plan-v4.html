@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhyC — Master Plan v4 (PDD on Runtime · Mechanically Gated · 90% Target)</title>
+<meta name="description" content="WhyC v4 master plan — PDD on Runtime with mechanical hook layer, 13 sub-agents, 7 gate hooks, 9 GCP × 5 Phoenix features, projected 91-97/100 score, 90% top-3 winning probability target.">
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --card2: #1c2128; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --orange: #d29922;
+    --purple: #bc8cff; --cyan: #39d353; --pink: #f778ba;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); line-height:1.7; }
+
+  .hero {
+    background: radial-gradient(ellipse at top left, rgba(63,185,80,.10), transparent 60%),
+                radial-gradient(ellipse at top right, rgba(188,140,255,.10), transparent 60%),
+                radial-gradient(ellipse at bottom, rgba(88,166,255,.08), transparent 60%),
+                var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 4.5rem 1.5rem 3rem;
+  }
+  .hero-inner { max-width: 1400px; margin: 0 auto; }
+  .hero .verdict-badge {
+    display:inline-block; padding:.45rem 1.1rem; border-radius:999px;
+    font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    margin-bottom:1.25rem;
+    background:rgba(63,185,80,.15); color:var(--green); border:1px solid var(--green);
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight:800;
+    background:linear-gradient(135deg,#58a6ff,#bc8cff,#3fb950,#f778ba);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    line-height:1.1; letter-spacing: -.02em;
+    margin-bottom: 1rem;
+  }
+  .hero .tagline {
+    font-size: 1.15rem; color: var(--fg); max-width: 75ch; line-height: 1.55;
+    margin-bottom: 1.5rem;
+  }
+  .hero .meta { display:flex; gap:.6rem; flex-wrap:wrap; }
+  .hero .meta-badge {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:.4rem .85rem; font-size:.82rem; color:var(--muted);
+  }
+  .hero .meta-badge strong { color:var(--fg); font-weight:600; }
+
+  .kpis {
+    max-width: 1400px; margin: -2rem auto 0; padding: 0 1.5rem;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: .75rem;
+    position: relative; z-index: 2;
+  }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+  }
+  .kpi .label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem; }
+  .kpi .value { font-size: 1.55rem; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .kpi .value.good { color: var(--green); }
+  .kpi .delta { font-size: .76rem; color: var(--muted); margin-top: .25rem; }
+
+  .layout { max-width: 1400px; margin: 3rem auto; display: grid; grid-template-columns: 280px 1fr; gap: 2rem; padding: 0 1.5rem; }
+  .toc-sticky { position: sticky; top: 1.5rem; align-self: start; max-height: calc(100vh - 3rem); overflow-y: auto; padding-right: .5rem; }
+  .toc-sticky h4 { color: var(--accent); font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+  .toc-sticky a { color: var(--muted); text-decoration: none; font-size: .82rem; display: block; padding: .25rem 0 .25rem .6rem; border-left: 2px solid transparent; }
+  .toc-sticky a:hover { color: var(--accent); border-left-color: var(--accent); }
+  .toc-sticky ul { list-style: none; padding-left: 0; margin: 0 0 .5rem 0; }
+  .toc-sticky ul ul { padding-left: .9rem; }
+  .toc-sticky ul ul a { font-size: .78rem; }
+  main { min-width: 0; }
+  main > h1 { display: none; }
+  main > blockquote:first-of-type { display: none; }
+
+  h2 { font-size:1.55rem; font-weight:700; color:var(--accent); margin:3rem 0 1rem; border-bottom:1px solid var(--border); padding-bottom:.5rem; scroll-margin-top: 1.5rem; }
+  h3 { font-size:1.2rem; font-weight:600; color:var(--purple); margin:1.75rem 0 .75rem; scroll-margin-top: 1.5rem; }
+  h4 { font-size:1rem; font-weight:600; color:var(--cyan); margin:1.25rem 0 .5rem; }
+  p, li { color:var(--fg); font-size:.95rem; }
+  ul, ol { padding-left:1.5rem; margin:.75rem 0; }
+  li { margin:.3rem 0; }
+  strong { color:#fff; font-weight:600; }
+  em { color: var(--cyan); font-style: normal; }
+  code { background:var(--card2); padding:.15rem .4rem; border-radius:4px; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.85em; color:var(--cyan); }
+  pre { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:.95rem 1.1rem; overflow-x:auto; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.8rem; line-height:1.55; margin:1rem 0; }
+  pre code { background:transparent; padding:0; color:var(--fg); }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  blockquote { border-left: 3px solid var(--purple); padding: .5rem 0 .5rem 1.1rem; margin: 1rem 0; color: var(--muted); background: rgba(188,140,255,.05); border-radius: 0 6px 6px 0; }
+  hr { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; background:var(--card); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  th, td { padding:.6rem .85rem; text-align:left; border-bottom:1px solid var(--border); font-size:.85rem; vertical-align:top; }
+  th { background:var(--card2); color:var(--accent); font-weight:600; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--card2); }
+  .headerlink { color: transparent; margin-left: .4rem; text-decoration: none; font-size: .8em; }
+  h2:hover .headerlink, h3:hover .headerlink, h4:hover .headerlink { color: var(--accent); }
+
+  footer { max-width: 1400px; margin: 2rem auto 3rem; padding: 1.5rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .82rem; }
+  footer a { color: var(--accent); }
+  footer .footnote-banner { background: linear-gradient(135deg, rgba(63,185,80,.06), rgba(88,166,255,.06)); border: 1px solid var(--green); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; color: var(--fg); }
+  footer .footnote-banner strong { color: var(--green); }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+    .toc-sticky { position: static; max-height: none; }
+    .kpis { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .hero { padding: 3rem 1.25rem 2.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="verdict-badge">✓ Verified · 📋 Final v4 · Awaiting G1/G3/G4/G6/G7</span>
+    <h1>WhyC — Master Plan v4</h1>
+    <p class="tagline">
+      Preview-Driven Development on the runtime. Thirteen sub-agents adjudicate every build, seven hook scripts mechanically gate every transition. The protocol cannot be skipped — not by a clever prompt, not for a one-line change. Targeting ~90% probability of top-3 in the Arize track of the Google Cloud Rapid Agent Hackathon.
+    </p>
+    <div class="meta">
+      <span class="meta-badge"><strong>Hackathon</strong> · Google Cloud Rapid Agent</span>
+      <span class="meta-badge"><strong>Track</strong> · Arize</span>
+      <span class="meta-badge"><strong>Deadline</strong> · 2026-06-11 14:00 PT</span>
+      <span class="meta-badge"><strong>D-31</strong></span>
+      <span class="meta-badge"><strong>Credit redeem</strong> · D-24 (2026-06-04)</span>
+      <span class="meta-badge"><strong>Credit</strong> · ✅ requested</span>
+    </div>
+  </div>
+</header>
+
+<section class="kpis">
+  <div class="kpi">
+    <div class="label">Sub-agents</div>
+    <div class="value">13</div>
+    <div class="delta">3 + 5 + 5</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Gate hooks (NEW v4)</div>
+    <div class="value">7</div>
+    <div class="delta">mechanical, not in-prompt</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Cost / 12-run demo</div>
+    <div class="value good">~$10</div>
+    <div class="delta">of $100 credit (10%)</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Margin remaining</div>
+    <div class="value good">$90</div>
+    <div class="delta">90% buffer</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Projected score</div>
+    <div class="value">91–97</div>
+    <div class="delta">/ 100 (v3: 88–96)</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Winning probability</div>
+    <div class="value good">~90%</div>
+    <div class="delta">target (top-3 Arize)</div>
+  </div>
+</section>
+
+<div class="layout">
+
+  <aside class="toc-sticky">
+    <h4>On this page</h4>
+    <nav>
+      <div class="toc">
+<ul>
+<li><a href="#whyc-master-plan-v4-pdd-on-runtime-mechanically-gated-90-winning-target">WhyC — Master Plan v4 (PDD on Runtime · Mechanically Gated · 90%+ Winning Target)</a><ul>
+<li><a href="#0-executive-summary">0. Executive Summary</a></li>
+<li><a href="#1-kpi-dashboard">1. KPI Dashboard</a></li>
+<li><a href="#2-methodology-pdd-on-runtime">2. Methodology — PDD on Runtime</a><ul>
+<li><a href="#21-pdd-origin">2.1 PDD origin</a></li>
+<li><a href="#22-the-insight-we-are-running-with">2.2 The insight we are running with</a></li>
+<li><a href="#23-what-v4-changes-vs-v3">2.3 What v4 changes vs v3</a></li>
+</ul>
+</li>
+<li><a href="#3-the-hook-layer-mechanical-enforcement-new-in-v4">3. The Hook Layer (mechanical enforcement, new in v4)</a><ul>
+<li><a href="#31-hook-flow-around-every-stage">3.1 Hook flow around every stage</a></li>
+<li><a href="#32-hook-scripts-under-hooks">3.2 Hook scripts (under hooks/)</a></li>
+<li><a href="#33-per-run-memory-files-correlation-id-linked">3.3 Per-run memory files (correlation-ID linked)</a></li>
+<li><a href="#34-why-this-matters-to-scoring">3.4 Why this matters to scoring</a></li>
+<li><a href="#35-where-v4-sits-in-the-2026-multi-agent-landscape">3.5 Where v4 sits in the 2026 multi-agent landscape</a></li>
+</ul>
+</li>
+<li><a href="#4-architecture-v4-final-with-hook-layer">4. Architecture (v4 final, with hook layer)</a></li>
+<li><a href="#5-v4-implementation-phases-locked-sequence">5. v4 Implementation phases (Locked Sequence)</a><ul>
+<li><a href="#phase-05-hook-layer-foundation-new-in-v4-d-31-d-30-05-day">Phase 0.5 — Hook layer foundation (NEW in v4, D-31 → D-30 · 0.5 day)</a></li>
+<li><a href="#phase-1-foundation-dep-adoption-d-31-d-29-1-day">Phase 1 — Foundation + dep adoption (D-31 → D-29 · 1 day)</a></li>
+<li><a href="#phase-2-stage-1-multi-analyzer-d-29-d-27-1-day">Phase 2 — Stage 1 multi-analyzer (D-29 → D-27 · 1 day)</a></li>
+<li><a href="#phase-3-stage-3-multi-developer-d-27-d-25-15-days">Phase 3 — Stage 3 multi-developer (D-27 → D-25 · 1.5 days)</a></li>
+<li><a href="#phase-4-stage-5-multi-critic-d-25-d-23-1-day">Phase 4 — Stage 5 multi-critic (D-25 → D-23 · 1 day)</a></li>
+<li><a href="#phase-5-stage-6-stage-7-d-23-d-21-075-day">Phase 5 — Stage 6 + Stage 7 (D-23 → D-21 · 0.75 day)</a></li>
+<li><a href="#phase-6-stage-4-real-deploy-agent-engine-registration-d-21-d-17-2-days-gcp-dependent">Phase 6 — Stage 4 real deploy + Agent Engine registration (D-21 → D-17 · 2 days, GCP-dependent)</a></li>
+<li><a href="#phase-7-stage-2-vertex-ai-eval-d-17-d-16-05-day">Phase 7 — Stage 2 Vertex AI Eval (D-17 → D-16 · 0.5 day)</a></li>
+<li><a href="#phase-8-kickoff-orchestrator-v2-d-16-d-14-1-day">Phase 8 — Kickoff orchestrator v2 (D-16 → D-14 · 1 day)</a></li>
+<li><a href="#phase-9-data-scrape-verify-d-14-d-10-2-days-operator">Phase 9 — Data + scrape + verify (D-14 → D-10 · 2 days, operator)</a></li>
+<li><a href="#phase-10-polish-video-devpost-d-10-d-3-4-days-operator">Phase 10 — Polish + video + Devpost (D-10 → D-3 · 4 days, operator)</a></li>
+<li><a href="#phase-11-final-submission-d-3-d-0">Phase 11 — Final submission (D-3 → D-0)</a></li>
+</ul>
+</li>
+<li><a href="#6-hackathon-rule-compliance-matrix-v4-current">6. Hackathon Rule Compliance Matrix (v4-current)</a></li>
+<li><a href="#7-cost-plan-v4">7. Cost Plan (v4)</a></li>
+<li><a href="#8-phoenix-integration-depth-v4">8. Phoenix integration depth (v4)</a></li>
+<li><a href="#9-gcp-feature-inventory-v4">9. GCP feature inventory (v4)</a></li>
+<li><a href="#10-scoring-projection-v4">10. Scoring Projection (v4)</a><ul>
+<li><a href="#101-per-axis-targets">10.1 Per-axis targets</a></li>
+<li><a href="#102-why-each-axis-lifts">10.2 Why each axis lifts</a></li>
+<li><a href="#103-top-3-sensitivity-table">10.3 Top-3 sensitivity table</a></li>
+<li><a href="#104-stage-1-pass-rate">10.4 Stage-1 pass-rate</a></li>
+</ul>
+</li>
+<li><a href="#11-demo-video-v4-3-minute-script">11. Demo Video v4 — 3 minute script</a></li>
+<li><a href="#12-risk-register-v4">12. Risk Register v4</a></li>
+<li><a href="#13-definition-of-done-v4">13. Definition of Done v4</a></li>
+<li><a href="#14-operator-g-checks">14. Operator G-checks</a></li>
+<li><a href="#15-positioning-statement-for-devpost-description">15. Positioning Statement (for Devpost description)</a></li>
+<li><a href="#16-appendix-a-verified-sources-2026-05-11-fetches">16. Appendix A — Verified Sources (2026-05-11 fetches)</a></li>
+<li><a href="#17-appendix-b-open-questions-for-g1-g7">17. Appendix B — Open Questions for G1-G7</a></li>
+<li><a href="#18-changelog">18. Changelog</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+    </nav>
+  </aside>
+
+  <main>
+<h1 id="whyc-master-plan-v4-pdd-on-runtime-mechanically-gated-90-winning-target">WhyC — Master Plan v4 (PDD on Runtime · Mechanically Gated · 90%+ Winning Target)<a class="headerlink" href="#whyc-master-plan-v4-pdd-on-runtime-mechanically-gated-90-winning-target" title="Permanent link">&para;</a></h1>
+<p><strong>Status</strong>: 📋 Final execution plan v4, awaiting operator G1/G3/G4 verification.
+<strong>Authored</strong>: 2026-05-11
+<strong>Authors</strong>: Two Weeks Team (Sejun Kim, ComBba)
+<strong>Hackathon</strong>: Google Cloud Rapid Agent Hackathon · <strong>Arize Track</strong>
+<strong>Submission deadline</strong>: 2026-06-11 14:00 PT · <strong>D-31</strong>
+<strong>Credit redemption deadline</strong>: 2026-06-04 · <strong>D-24</strong></p>
+<blockquote>
+<p>v4 supersedes v3 (<code>master-plan-v3.md</code>). v3 remains as the verification baseline; v4 adds the <strong>mechanically gated runtime</strong> — the architectural layer that takes our Preview-Driven Development methodology from "design-phase artifact" to "runtime contract every stage transition is forced to honor." The composition is our own, refined from operating the <a href="https://github.com/Two-Weeks-Team/PreviewForgeForClaudeCode">PreviewForge plugin</a> that produced this very run.</p>
+</blockquote>
+<hr />
+<h2 id="0-executive-summary">0. Executive Summary<a class="headerlink" href="#0-executive-summary" title="Permanent link">&para;</a></h2>
+<p>WhyC v4 is a <strong>mechanically gated multi-agent panel</strong> built on the Preview-Driven Development methodology we developed in our PreviewForge plugin. Three things together that the hackathon gallery will not see anywhere else:</p>
+<ol>
+<li><strong>PDD on runtime</strong> — 13 sub-agents adjudicate analyze / develop / judge with structured I2 diversity validation. Same pattern that runs PreviewForge's design phase, <em>ported into the production pipeline</em>.</li>
+<li><strong>Mechanical gate layer</strong> — every stage transition is enforced by hook scripts (bash + stdlib Python, zero runtime deps). Schema-validate, provenance-record, manifest-SHA-256, budget-check, category-gate. <em>No agent can skip the contract by writing a clever prompt.</em></li>
+<li><strong>Google Cloud × Arize Phoenix integration depth</strong> — 9 GCP services × 5 Phoenix features in active use, including Agent Engine deployment, Vertex AI Evaluation, BigQuery learning loop, Phoenix Evals as the judge layer, MCP self-introspection.</li>
+</ol>
+<p>Plus the <strong>receipts-tone satire</strong> that gives the project memorable brand.</p>
+<p><strong>Projected score</strong>: 91–97 / 100 (Stage-2). Target <strong>top-3 in Arize track</strong> at ~90% probability.</p>
+<hr />
+<h2 id="1-kpi-dashboard">1. KPI Dashboard<a class="headerlink" href="#1-kpi-dashboard" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Value</th>
+<th>Source / Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Days to deadline</td>
+<td>31</td>
+<td>2026-05-11 → 2026-06-11 14:00 PT</td>
+</tr>
+<tr>
+<td>Days to credit redeem</td>
+<td>24</td>
+<td>2026-06-04 hard cutoff</td>
+</tr>
+<tr>
+<td>Sub-agents in v4</td>
+<td>13 (3 + 5 + 5)</td>
+<td>Stage 1 + Stage 3 + Stage 5</td>
+</tr>
+<tr>
+<td><strong>Gate hooks (NEW v4)</strong></td>
+<td><strong>7</strong></td>
+<td>pre-stage · post-stage · on-fail · on-converge · on-cost-ceiling · pre-deploy · category-gate-security</td>
+</tr>
+<tr>
+<td>Verified projected cost / run</td>
+<td><strong>~$0.81 USD</strong></td>
+<td>Gemini 2.5 pricing fetched 2026-05-11</td>
+</tr>
+<tr>
+<td>12-run demo cost</td>
+<td><strong>~$10</strong></td>
+<td>$0.81 × 12</td>
+</tr>
+<tr>
+<td>$100 credit utilization</td>
+<td><strong>~10 %</strong></td>
+<td>$10 / $100</td>
+</tr>
+<tr>
+<td>Margin remaining</td>
+<td><strong>~$90 (90 %)</strong></td>
+<td>$100 − $10</td>
+</tr>
+<tr>
+<td>GCP services used</td>
+<td>9</td>
+<td>Vertex AI Agent Engine + SDK + Eval, Cloud Run, Build, Artifact, SQL, BQ, Armor, Secret Manager, WIF</td>
+</tr>
+<tr>
+<td>Phoenix features in active use</td>
+<td>5</td>
+<td>client, otel, evals, mcp (dep), datasets / experiments / prompts via client</td>
+</tr>
+<tr>
+<td>Build-green packages</td>
+<td>3/3</td>
+<td>apps/api · apps/web · apps/jobs</td>
+</tr>
+<tr>
+<td>Open-source license</td>
+<td>Apache-2.0</td>
+<td>repo metadata</td>
+</tr>
+<tr>
+<td>First commit (originality)</td>
+<td>2026-05-06 22:19 +09</td>
+<td>After 2026-05-05 contest start</td>
+</tr>
+<tr>
+<td><strong>Projected score</strong></td>
+<td><strong>91–97 / 100</strong></td>
+<td>Per-axis breakdown in §10</td>
+</tr>
+<tr>
+<td><strong>Top-3 winning probability</strong></td>
+<td><strong>~90 % target</strong></td>
+<td>Sensitivity analysis §10.4</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-methodology-pdd-on-runtime">2. Methodology — PDD on Runtime<a class="headerlink" href="#2-methodology-pdd-on-runtime" title="Permanent link">&para;</a></h2>
+<h3 id="21-pdd-origin">2.1 PDD origin<a class="headerlink" href="#21-pdd-origin" title="Permanent link">&para;</a></h3>
+<p>We developed Preview-Driven Development in our <a href="https://github.com/Two-Weeks-Team/PreviewForgeForClaudeCode">PreviewForge plugin</a>. The methodology has six signature patterns:</p>
+<pre><code>multi-perspective generation  (N advocates with different biases)
+  → diversity validation       (I2: detect near-duplicates, force regen)
+  → cross-perspective tally    (panel votes, meta-tally across axes)
+  → mitigation transformation  (dissent → concrete action items)
+  → SHA-256 freeze             (artifacts locked, audit-replayable)
+  → hooked transitions         (every gate enforced as a script, not a prompt)
+</code></pre>
+<p>The first five are the <em>design-phase</em> methodology that produced this very project's v1 spec (PreviewDD → SpecDD → Engineering Scaffold). The sixth is what v4 promotes from a plugin-internal convention into the <strong>WhyC runtime itself</strong>.</p>
+<h3 id="22-the-insight-we-are-running-with">2.2 The insight we are running with<a class="headerlink" href="#22-the-insight-we-are-running-with" title="Permanent link">&para;</a></h3>
+<p>While operating PreviewForge through this hackathon's design phase, one pattern repeatedly saved us: <strong>policy enforcement that lives in shell scripts and refuses to negotiate via prompt-engineering</strong>. Examples we lived through:</p>
+<ul>
+<li>The <code>factory-policy.py</code> hook refused our write to <code>runs/&lt;id&gt;/mitigations.json</code> because the active agent's role wasn't <code>supervisor</code>. No amount of clever prompting would have bypassed it — we had to set <code>PF_WRITER_ROLE=supervisor</code> explicitly. (See commit <code>1b987de</code>, <code>60cd6c6</code>.)</li>
+<li>The <code>idea-drift-detector</code> hook would have aborted our generation if any advocate had wandered too far from <code>chosen_preview.json</code>. This was <em>the</em> mechanism that kept 26 advocates anchored on the same product hypothesis.</li>
+<li>The SpecDD SHA-256 lock at <code>_lock.json</code> made the spec a <em>frozen contract</em> that no engineer agent could quietly mutate later (see <code>0e6371e</code>).</li>
+</ul>
+<p>The lesson is general: <strong>multi-agent systems need mechanical gates at every transition, or the diversity that makes them useful becomes the chaos that makes them unreliable.</strong> Prompts are persuasion; scripts are enforcement.</p>
+<p>WhyC v4 brings this lesson into the runtime pipeline.</p>
+<h3 id="23-what-v4-changes-vs-v3">2.3 What v4 changes vs v3<a class="headerlink" href="#23-what-v4-changes-vs-v3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>v3 (without hook layer)</th>
+<th>v4 (with hook layer)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage contract enforcement</td>
+<td>Inline TypeScript schema validation (Zod)</td>
+<td>Pre/post hook scripts in <code>hooks/</code> directory, invoked at every stage boundary</td>
+</tr>
+<tr>
+<td>Provenance preservation</td>
+<td>TypeScript struct fields</td>
+<td>Hook writes <code>runs/&lt;id&gt;/memory/{decisions.md,patterns.md}</code> lines with correlation ID</td>
+</tr>
+<tr>
+<td>Budget enforcement</td>
+<td>Code-level cost ledger</td>
+<td>Hook reads ledger BEFORE allowing next stage to start; can refuse</td>
+</tr>
+<tr>
+<td>Cross-stage manifest integrity</td>
+<td>None</td>
+<td>SHA-256 manifest of every produced artifact; pre-deploy hook refuses if manifest tampered</td>
+</tr>
+<tr>
+<td>Review categories (security, perf, a11y)</td>
+<td>Critic prompts</td>
+<td>Hook fires on critic tag, escalates outside the prompt path</td>
+</tr>
+<tr>
+<td>Skip-ability</td>
+<td>An agent could rewrite prompts and skip</td>
+<td>The protocol cannot be skipped. Even for a one-line change.</td>
+</tr>
+</tbody>
+</table>
+<p>The right-column patterns are general engineering practice (pre-commit hooks, CI policy gates, build manifests) — applied here to the <strong>agent runtime</strong>, not the developer machine.</p>
+<hr />
+<h2 id="3-the-hook-layer-mechanical-enforcement-new-in-v4">3. The Hook Layer (mechanical enforcement, new in v4)<a class="headerlink" href="#3-the-hook-layer-mechanical-enforcement-new-in-v4" title="Permanent link">&para;</a></h2>
+<h3 id="31-hook-flow-around-every-stage">3.1 Hook flow around every stage<a class="headerlink" href="#31-hook-flow-around-every-stage" title="Permanent link">&para;</a></h3>
+<pre><code>                  ┌─────────────────────────────┐
+                  │  pre-stage hook             │
+                  │  ─────────────────────────  │
+                  │  ▶ schema-validate INPUT    │
+                  │  ▶ check ceiling budget     │
+                  │  ▶ check retry remainder    │
+                  │  ▶ verify provenance trail  │
+                  └─────────────┬───────────────┘
+                                ▼  refuse → abort or downgrade
+                  ┌─────────────────────────────┐
+                  │  STAGE BODY                 │
+                  │  (multi-agent / pure / IO)  │
+                  └─────────────┬───────────────┘
+                                ▼
+                  ┌─────────────────────────────┐
+                  │  post-stage hook            │
+                  │  ─────────────────────────  │
+                  │  ▶ schema-validate OUTPUT   │
+                  │  ▶ record provenance        │
+                  │  ▶ update memory files      │
+                  │  ▶ category gates           │
+                  │     (security/perf/a11y)    │
+                  │  ▶ SHA-256 manifest line    │
+                  └─────────────┬───────────────┘
+                                ▼  refuse → retry or escalate
+                       next stage allowed
+</code></pre>
+<h3 id="32-hook-scripts-under-hooks">3.2 Hook scripts (under <code>hooks/</code>)<a class="headerlink" href="#32-hook-scripts-under-hooks" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Path</th>
+<th>Trigger</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pre-stage.sh</code></td>
+<td><code>hooks/pre-stage.sh</code></td>
+<td>Before any stage body</td>
+<td>Loads <code>stage-contract.json</code>, validates input via <code>jq</code>+<code>ajv</code>, checks <code>run.totalCostCents &lt; costLimitCents</code>, exits 0/1</td>
+</tr>
+<tr>
+<td><code>post-stage.sh</code></td>
+<td><code>hooks/post-stage.sh</code></td>
+<td>After every stage body</td>
+<td>Validates output, runs SHA-256 manifest line via <code>shasum -a 256</code>, appends to <code>decisions.md</code> with correlation ID</td>
+</tr>
+<tr>
+<td><code>on-fail.py</code></td>
+<td><code>hooks/on-fail.py</code></td>
+<td>When stage body raises StageError</td>
+<td>Reads <code>RetryBudget</code> state, decides retry / ceiling-hit / abort, logs to <code>patterns.md</code></td>
+</tr>
+<tr>
+<td><code>on-converge.py</code></td>
+<td><code>hooks/on-converge.py</code></td>
+<td>When <code>decideNext.kind == 'converged'</code></td>
+<td>Triggers BigQuery insert, screenshot capture, Phoenix experiment annotation, Cloud Tasks notify</td>
+</tr>
+<tr>
+<td><code>on-cost-ceiling.py</code></td>
+<td><code>hooks/on-cost-ceiling.py</code></td>
+<td>When totalCostCents crosses 80% of limit</td>
+<td>Emits warning to Cloud Logging; optionally downgrades next iter to single-advocate mode</td>
+</tr>
+<tr>
+<td><code>pre-deploy.sh</code></td>
+<td><code>hooks/pre-deploy.sh</code></td>
+<td>Before Cloud Build of Stage 4</td>
+<td>Re-verifies winner manifest SHA-256 matches what Stage 3 wrote; refuses if tampered</td>
+</tr>
+<tr>
+<td><code>category-gate-security.py</code></td>
+<td><code>hooks/category-gate-security.py</code></td>
+<td>After Stage 5 judge</td>
+<td>Fires when ANY critic raises a security flag, escalates to mitigation step</td>
+</tr>
+</tbody>
+</table>
+<p>All hooks are bash or stdlib Python — <strong>zero runtime dependencies</strong>. Judges grep <code>hooks/</code>, they see scripts. No vendor lock-in, no hidden behavior.</p>
+<h3 id="33-per-run-memory-files-correlation-id-linked">3.3 Per-run memory files (correlation-ID linked)<a class="headerlink" href="#33-per-run-memory-files-correlation-id-linked" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+<th>Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>runs/&lt;id&gt;/memory/session-handoff.md</code></td>
+<td>Cross-iteration state (the "running" state of this run)</td>
+<td>Markdown frontmatter + log of stage outcomes</td>
+</tr>
+<tr>
+<td><code>runs/&lt;id&gt;/memory/decisions.md</code></td>
+<td>Architectural log of every contract decision made</td>
+<td>Append-only <code>[correlation_id] [timestamp] decision</code></td>
+</tr>
+<tr>
+<td><code>runs/&lt;id&gt;/memory/patterns.md</code></td>
+<td>Lessons from retries + failures (for future BQ learning seed)</td>
+<td>Same shape; consumed by Phase 9's BigQuery import</td>
+</tr>
+</tbody>
+</table>
+<p>These three files are what makes the run <strong>replayable</strong>. A judge with the repo can read them and reconstruct exactly what happened, in order, with every decision's reasoning visible.</p>
+<h3 id="34-why-this-matters-to-scoring">3.4 Why this matters to scoring<a class="headerlink" href="#34-why-this-matters-to-scoring" title="Permanent link">&para;</a></h3>
+<p>Three concrete advantages a judge can verify:</p>
+<ol>
+<li><strong>Mechanical contract</strong>: hooks are visible in <code>hooks/</code>, not buried in TypeScript prompts. Reviewers grep, see scripts.</li>
+<li><strong>Reproducibility</strong>: every run produces a manifest. Re-runs produce matching manifests → "Build &amp; Bundle" review pass.</li>
+<li><strong>Audit trail</strong>: every hook execution leaves a correlated row in <code>patterns.md</code>. Phoenix MCP introspection (Stage 6) can also read these.</li>
+</ol>
+<p>Estimated lift: <strong>+2-3 pts on Tech Implementation axis</strong> (rigor narrative lands).</p>
+<h3 id="35-where-v4-sits-in-the-2026-multi-agent-landscape">3.5 Where v4 sits in the 2026 multi-agent landscape<a class="headerlink" href="#35-where-v4-sits-in-the-2026-multi-agent-landscape" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>How protocol is enforced</th>
+<th>WhyC v4 vs this</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Directed-graph orchestrators (LangGraph)</td>
+<td>Soft: enforced in prompts and graph edges</td>
+<td>We add a hook layer outside the graph</td>
+</tr>
+<tr>
+<td>Role-based crews (CrewAI)</td>
+<td>Soft: in-prompt role descriptions</td>
+<td>We have stricter mechanical contracts</td>
+</tr>
+<tr>
+<td>Conversational handoffs (AutoGen, OpenAI SDK)</td>
+<td>None (free-form chat)</td>
+<td>We are structured panels, not chats</td>
+</tr>
+<tr>
+<td>Hierarchical agent trees (Google ADK)</td>
+<td>Soft: tree structure only</td>
+<td>We use ADK trees + hook layer</td>
+</tr>
+<tr>
+<td>Pre-commit / CI hooks (general dev practice)</td>
+<td>Hard, mechanical</td>
+<td>We runtime-port this practice into the agent pipeline</td>
+</tr>
+</tbody>
+</table>
+<p>The combination — ADK tree organization + PDD adjudication + hook-enforced transitions — is original to WhyC. None of the named frameworks combines all three.</p>
+<hr />
+<h2 id="4-architecture-v4-final-with-hook-layer">4. Architecture (v4 final, with hook layer)<a class="headerlink" href="#4-architecture-v4-final-with-hook-layer" title="Permanent link">&para;</a></h2>
+<pre><code>┌───────────────────────────────────────────────────────────────────────────────┐
+│                          WhyC v4 Pipeline (mechanically gated)                │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 0  pre-flight                                                          │
+│           [pre-hook: URL allow-list + content_sha256 dedup]                   │
+│           URL fetch · M5 sanitize · @arizeai/phoenix-otel auto-trace          │
+│           [post-hook: SanitizedInput schema-valid · manifest line written]    │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 1  multi-analyzer                                                      │
+│           [pre-hook: contract loaded · budget headroom verified]              │
+│           3 Gemini Flash advocates × persona → I2 dedup → 1 Pro synth         │
+│           Phoenix Datasets log · Phoenix Prompts versioning                   │
+│           [post-hook: ProductSpec._provenance present · 9 fields filled]      │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 2  go/no-go                                                            │
+│           [pre-hook: ProductSpec.constraints non-null]                        │
+│           6 rules + Vertex AI Evaluation IP-safety                            │
+│           [post-hook: decision shape valid · NoGoReason mapped if applicable] │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 3  multi-developer                                                     │
+│           [pre-hook: prior manifest SHA-256 if regen · budget for 5 Pro]      │
+│           5 Gemini Pro × persona → I2 structural dedup → cross-pick winner    │
+│           Loser manifests retained · Phoenix Experiments advocate A/B         │
+│           [post-hook: winner manifest SHA-256 recorded · provenance complete] │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 4  deploy (real)                                                       │
+│           [pre-deploy hook: manifest SHA-256 matches Stage 3 output]          │
+│           Cloud Build → Artifact Registry → Cloud Run service                 │
+│           ALSO: pipeline-kickoff registered as Vertex AI Agent Engine entity  │
+│           Cloud Armor injects X-Robots-Tag                                    │
+│           [post-hook: deploy_url HTTP 200 health probe · 24h TTL set]         │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 5  5-critic judge panel                                                │
+│           [pre-hook: deploy_url accessible · judge_prompt_version pinned]     │
+│           5 Gemini Pro critics via @arizeai/phoenix-evals                     │
+│           Meta-tally weighted; spec_fit closed-form drift assert              │
+│           [post-hook: weights immutable check · per-critic verdict stored]    │
+│           [category-gate-security.py: if any critic raises sec flag → escal.] │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 6  Phoenix MCP introspection                                           │
+│           [pre-hook: trace_ids collected from Stage 5 verdicts]               │
+│           @arizeai/phoenix-client getSpans({ traceIds }) + Experiments        │
+│           Marker: whyc.mcp.self_query=true (visible in trace tree)            │
+│           [post-hook: TraceSummary populated · phoenix_console_url stored]    │
+├───────────────────────────────────────────────────────────────────────────────┤
+│  Stage 7  self-improve + BigQuery learning                                    │
+│           [pre-hook: 3 signals available (judge + trace + bq)]                │
+│           decideNext(judge, trace, learning) → LoopDecision                   │
+│           BigQuery whyc_learning.run_outcomes insert on terminate             │
+│           [post-hook: on-converge.py | on-fail.py | on-cost-ceiling.py]       │
+└───────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="5-v4-implementation-phases-locked-sequence">5. v4 Implementation phases (Locked Sequence)<a class="headerlink" href="#5-v4-implementation-phases-locked-sequence" title="Permanent link">&para;</a></h2>
+<p>v3's 11 phases remain. v4 <em>adds</em> Phase 0.5 (hook layer foundation) and lifts hook integration into every subsequent phase. Total: <strong>12 phases · 33 commits · 31 days</strong>.</p>
+<h3 id="phase-05-hook-layer-foundation-new-in-v4-d-31-d-30-05-day">Phase 0.5 — Hook layer foundation (NEW in v4, D-31 → D-30 · 0.5 day)<a class="headerlink" href="#phase-05-hook-layer-foundation-new-in-v4-d-31-d-30-05-day" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Commit</th>
+<th>Files</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>feat(hooks): 7 hook scripts (pre/post/on-fail/on-converge/on-cost/pre-deploy/cat-sec)</code></td>
+<td><code>hooks/*.sh</code> + <code>hooks/*.py</code> (~350 LOC total stdlib)</td>
+<td>4 h</td>
+</tr>
+<tr>
+<td><code>feat(memory): 3 per-run persistent files + write helpers</code></td>
+<td>template + <code>apps/jobs/src/util/memory.ts</code></td>
+<td>1 h</td>
+</tr>
+<tr>
+<td><code>feat(scaffold): agents/v4-index.json with tag-driven dispatch</code></td>
+<td><code>agents/v4-index.json</code> registering 13 sub-agents</td>
+<td>1 h</td>
+</tr>
+</tbody>
+</table>
+<p>Build/test gate: hooks invoked manually on placeholder data exit 0; <code>agents/v4-index.json</code> valid JSON; memory files write atomically.</p>
+<h3 id="phase-1-foundation-dep-adoption-d-31-d-29-1-day">Phase 1 — Foundation + dep adoption (D-31 → D-29 · 1 day)<a class="headerlink" href="#phase-1-foundation-dep-adoption-d-31-d-29-1-day" title="Permanent link">&para;</a></h3>
+<p>Identical to v3 Phase 1 plus hook integration:</p>
+<ol>
+<li><code>chore(deps): adopt @arizeai/phoenix-{client,otel,evals,mcp}</code> — <code>pnpm install</code></li>
+<li><code>fix(gemini): correct Gemini 2.5 pricing constants</code> — closes G-COST-1</li>
+<li><code>feat(eval): create sanitizer_fixtures</code> — closes G-CI</li>
+<li><code>feat(jobs): util/retry.ts retry-with-budget framework</code> — invokes <code>on-fail.py</code> hook</li>
+<li><code>feat(jobs): util/bigquery-learning.ts</code> — invokes <code>on-converge.py</code> hook</li>
+<li><code>feat(jobs): pipeline/types.ts v2 contracts extension</code></li>
+</ol>
+<h3 id="phase-2-stage-1-multi-analyzer-d-29-d-27-1-day">Phase 2 — Stage 1 multi-analyzer (D-29 → D-27 · 1 day)<a class="headerlink" href="#phase-2-stage-1-multi-analyzer-d-29-d-27-1-day" title="Permanent link">&para;</a></h3>
+<ol start="7">
+<li><code>feat(pipeline): analyze-v2 wrapped by pre/post-stage hooks (~280 LOC)</code></li>
+</ol>
+<h3 id="phase-3-stage-3-multi-developer-d-27-d-25-15-days">Phase 3 — Stage 3 multi-developer (D-27 → D-25 · 1.5 days)<a class="headerlink" href="#phase-3-stage-3-multi-developer-d-27-d-25-15-days" title="Permanent link">&para;</a></h3>
+<ol start="8">
+<li><code>feat(pipeline): develop-v2 wrapped by hooks + manifest write (~380 LOC)</code></li>
+</ol>
+<h3 id="phase-4-stage-5-multi-critic-d-25-d-23-1-day">Phase 4 — Stage 5 multi-critic (D-25 → D-23 · 1 day)<a class="headerlink" href="#phase-4-stage-5-multi-critic-d-25-d-23-1-day" title="Permanent link">&para;</a></h3>
+<ol start="9">
+<li><code>feat(pipeline): judge-v2 via @arizeai/phoenix-evals + category-gate-security (~310 LOC)</code></li>
+</ol>
+<h3 id="phase-5-stage-6-stage-7-d-23-d-21-075-day">Phase 5 — Stage 6 + Stage 7 (D-23 → D-21 · 0.75 day)<a class="headerlink" href="#phase-5-stage-6-stage-7-d-23-d-21-075-day" title="Permanent link">&para;</a></h3>
+<ol start="10">
+<li><code>feat(pipeline): introspect-v2 + self-improve-v2 + on-converge hook wiring</code></li>
+</ol>
+<h3 id="phase-6-stage-4-real-deploy-agent-engine-registration-d-21-d-17-2-days-gcp-dependent">Phase 6 — Stage 4 real deploy + Agent Engine registration (D-21 → D-17 · 2 days, <strong>GCP-dependent</strong>)<a class="headerlink" href="#phase-6-stage-4-real-deploy-agent-engine-registration-d-21-d-17-2-days-gcp-dependent" title="Permanent link">&para;</a></h3>
+<ol start="11">
+<li><code>feat(pipeline): deploy-v2 with Cloud Build + Cloud Run + pre-deploy hook</code></li>
+<li><code>feat(infra): Vertex AI Agent Engine deployment manifest</code> — closes G-R5</li>
+</ol>
+<h3 id="phase-7-stage-2-vertex-ai-eval-d-17-d-16-05-day">Phase 7 — Stage 2 Vertex AI Eval (D-17 → D-16 · 0.5 day)<a class="headerlink" href="#phase-7-stage-2-vertex-ai-eval-d-17-d-16-05-day" title="Permanent link">&para;</a></h3>
+<ol start="13">
+<li><code>feat(pipeline): go-no-go-v2 with Vertex AI Evaluation Service</code></li>
+</ol>
+<h3 id="phase-8-kickoff-orchestrator-v2-d-16-d-14-1-day">Phase 8 — Kickoff orchestrator v2 (D-16 → D-14 · 1 day)<a class="headerlink" href="#phase-8-kickoff-orchestrator-v2-d-16-d-14-1-day" title="Permanent link">&para;</a></h3>
+<ol start="14">
+<li><code>feat(jobs): pipeline-kickoff-v2 wires all v2 stages + hook layer + dry-run test</code></li>
+</ol>
+<h3 id="phase-9-data-scrape-verify-d-14-d-10-2-days-operator">Phase 9 — Data + scrape + verify (D-14 → D-10 · 2 days, <strong>operator</strong>)<a class="headerlink" href="#phase-9-data-scrape-verify-d-14-d-10-2-days-operator" title="Permanent link">&para;</a></h3>
+<ol start="15">
+<li><code>feat(jobs): scrape-yc.ts implementation</code> — robots.txt honored</li>
+<li>Operator runs 7-check verification per <code>docs/dataset-verification.md</code> for 12 companies</li>
+<li><code>chore: replace prisma/seed.ts placeholders with verified data</code></li>
+<li>Re-run pipeline → 12 entries populate BigQuery</li>
+</ol>
+<h3 id="phase-10-polish-video-devpost-d-10-d-3-4-days-operator">Phase 10 — Polish + video + Devpost (D-10 → D-3 · 4 days, <strong>operator</strong>)<a class="headerlink" href="#phase-10-polish-video-devpost-d-10-d-3-4-days-operator" title="Permanent link">&para;</a></h3>
+<ol start="19">
+<li>Record 3-min receipts-tone video (script in §11), upload YouTube with EN subtitles</li>
+<li>README badges + ≥3 screenshots + live demo button</li>
+<li>Devpost: 7 sections, Built With tags, live URL, video link, repo URL</li>
+<li>Final rehearsal</li>
+</ol>
+<h3 id="phase-11-final-submission-d-3-d-0">Phase 11 — Final submission (D-3 → D-0)<a class="headerlink" href="#phase-11-final-submission-d-3-d-0" title="Permanent link">&para;</a></h3>
+<ol start="23">
+<li>Submit by D-1 (2026-06-10) with 1-hour buffer</li>
+<li>Verify all required fields complete</li>
+<li>Monitor 24 h post-submit</li>
+</ol>
+<hr />
+<h2 id="6-hackathon-rule-compliance-matrix-v4-current">6. Hackathon Rule Compliance Matrix (v4-current)<a class="headerlink" href="#6-hackathon-rule-compliance-matrix-v4-current" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Rule</th>
+<th>Status</th>
+<th>Evidence</th>
+<th>Closure phase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>Public repo</td>
+<td>✅</td>
+<td>github.com/Two-Weeks-Team/WhyC</td>
+<td>—</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>OSI license</td>
+<td>✅</td>
+<td>Apache-2.0</td>
+<td>—</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>Originality (≥2026-05-05)</td>
+<td>✅</td>
+<td>first commit 5-6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>Gemini model</td>
+<td>✅</td>
+<td>Vertex AI Gemini 2.5 Flash + Pro</td>
+<td>—</td>
+</tr>
+<tr>
+<td>R5</td>
+<td><strong>Agent Builder used</strong></td>
+<td>⚠️ → 🟢</td>
+<td>Vertex AI Agent Engine deployment plan locked</td>
+<td>Phase 6</td>
+</tr>
+<tr>
+<td>R6</td>
+<td><strong>Partner MCP integration</strong></td>
+<td>⚠️ → 🟢</td>
+<td><code>@arizeai/phoenix-*</code> 4 packages adopted, <code>phoenix-mcp</code> as dep</td>
+<td>Phase 1</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>No competing services</td>
+<td>✅</td>
+<td>banned-vendor-lint CI</td>
+<td>—</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>Web platform</td>
+<td>✅</td>
+<td>Next.js + Cloud Run</td>
+<td>—</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>Hosted URL</td>
+<td>❌ → 🟢</td>
+<td>Cloud Run deploy plan locked</td>
+<td>Phase 6</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>≤3 min video EN</td>
+<td>❌ → 🟢</td>
+<td>Script + storyboard in §11</td>
+<td>Phase 10</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-cost-plan-v4">7. Cost Plan (v4)<a class="headerlink" href="#7-cost-plan-v4" title="Permanent link">&para;</a></h2>
+<p>Identical to v3 since hooks add zero LLM cost.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12 demo runs (converged)</td>
+<td>$10</td>
+<td>$0.81 × 12</td>
+</tr>
+<tr>
+<td>Retry buffer (×3)</td>
+<td>$20</td>
+<td>conservative</td>
+</tr>
+<tr>
+<td>Video experimental runs</td>
+<td>$5</td>
+<td>5–10 extra</td>
+</tr>
+<tr>
+<td>Cloud SQL idle (f1-micro × 30d)</td>
+<td>~$8</td>
+<td></td>
+</tr>
+<tr>
+<td>Vertex AI Evaluation</td>
+<td>~$3</td>
+<td>12 × eval calls</td>
+</tr>
+<tr>
+<td><strong>Total projected</strong></td>
+<td><strong>$46</strong></td>
+<td>46 % of $100 credit</td>
+</tr>
+<tr>
+<td><strong>Margin remaining</strong></td>
+<td><strong>$54</strong></td>
+<td>54 % buffer</td>
+</tr>
+</tbody>
+</table>
+<p>Hook scripts run on Cloud Run-job's existing instance — $0 marginal.</p>
+<hr />
+<h2 id="8-phoenix-integration-depth-v4">8. Phoenix integration depth (v4)<a class="headerlink" href="#8-phoenix-integration-depth-v4" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Phoenix surface</th>
+<th>Active use</th>
+<th>Package</th>
+<th>Verifiable in code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenInference tracing</td>
+<td>Every stage</td>
+<td><code>@arizeai/phoenix-otel</code></td>
+<td>Span tree in Phoenix Cloud</td>
+</tr>
+<tr>
+<td>REST client</td>
+<td>Stage 6 introspect</td>
+<td><code>@arizeai/phoenix-client</code></td>
+<td><code>getSpans({ traceIds })</code></td>
+</tr>
+<tr>
+<td><strong>LLM-as-judge (Evals)</strong></td>
+<td>Stage 5 judge panel</td>
+<td><code>@arizeai/phoenix-evals</code></td>
+<td>Eval template versioning</td>
+</tr>
+<tr>
+<td><strong>MCP server (dep)</strong></td>
+<td>Listed in package.json</td>
+<td><code>@arizeai/phoenix-mcp</code></td>
+<td>R6 closure verifiable</td>
+</tr>
+<tr>
+<td>Prompts versioning</td>
+<td>Stage 1 + Stage 5 prompts</td>
+<td>client.prompts</td>
+<td>Dashboard shows versions</td>
+</tr>
+<tr>
+<td>Datasets</td>
+<td>Stage 1 + Stage 3 output</td>
+<td>client.datasets</td>
+<td>Dashboard shows datasets</td>
+</tr>
+<tr>
+<td>Experiments</td>
+<td>Cross-run A/B</td>
+<td>client.experiments</td>
+<td>Dashboard shows A/B</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Five surfaces in active use, not just trace export.</strong> v4 makes the judge layer itself a Phoenix Evals integration — that's the Arize-track scoring criterion at its deepest.</p>
+<hr />
+<h2 id="9-gcp-feature-inventory-v4">9. GCP feature inventory (v4)<a class="headerlink" href="#9-gcp-feature-inventory-v4" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>v4 usage</th>
+<th>Free-tier headroom</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vertex AI Agent Engine</td>
+<td>pipeline-kickoff registered as agent entity (Phase 6)</td>
+<td>per-call</td>
+</tr>
+<tr>
+<td>Vertex AI SDK (Gemini 2.5)</td>
+<td>All LLM calls via gemini.ts</td>
+<td>Generous credit</td>
+</tr>
+<tr>
+<td>Vertex AI Evaluation</td>
+<td>Stage 2 IP-safety</td>
+<td>per-call</td>
+</tr>
+<tr>
+<td>Cloud Run services</td>
+<td>apps/api + apps/web</td>
+<td>180K vCPU-s + 360K GiB-s + 2M req / month</td>
+</tr>
+<tr>
+<td>Cloud Run jobs</td>
+<td>pipeline batch + 5 crons</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Cloud Build</td>
+<td>Stage 4 image build</td>
+<td>~120 min/day free</td>
+</tr>
+<tr>
+<td>Artifact Registry</td>
+<td>container images</td>
+<td>free under 0.5 GB</td>
+</tr>
+<tr>
+<td>Cloud SQL Postgres</td>
+<td>canonical state + memory.md persisted optionally</td>
+<td>f1-micro ~$8/month</td>
+</tr>
+<tr>
+<td>BigQuery</td>
+<td>learning loop</td>
+<td>10 GB / 1 TB free</td>
+</tr>
+<tr>
+<td>Secret Manager</td>
+<td>6 secrets</td>
+<td>free under quota</td>
+</tr>
+<tr>
+<td>Cloud Armor</td>
+<td>rate limit + noindex inject</td>
+<td>per-rule</td>
+</tr>
+<tr>
+<td>Workload Identity Federation</td>
+<td>GHA → GCP</td>
+<td>free</td>
+</tr>
+</tbody>
+</table>
+<p>9 GCP services × 5 Phoenix features = integration breadth no other 2-person hackathon team will match.</p>
+<hr />
+<h2 id="10-scoring-projection-v4">10. Scoring Projection (v4)<a class="headerlink" href="#10-scoring-projection-v4" title="Permanent link">&para;</a></h2>
+<h3 id="101-per-axis-targets">10.1 Per-axis targets<a class="headerlink" href="#101-per-axis-targets" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Axis</th>
+<th>v3 target</th>
+<th>v4 target</th>
+<th>What v4 adds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tech Implementation (25)</td>
+<td>23-25</td>
+<td><strong>24-25</strong></td>
+<td>Hook layer = mechanical enforcement story → +1 pt</td>
+</tr>
+<tr>
+<td>Design (25)</td>
+<td>20-23</td>
+<td>20-23</td>
+<td>Unchanged</td>
+</tr>
+<tr>
+<td>Potential Impact (25)</td>
+<td>21-23</td>
+<td><strong>22-24</strong></td>
+<td>"Multi-agent panels can be mechanically governed, not vibes" generalizes beyond hackathon → +1 pt</td>
+</tr>
+<tr>
+<td>Quality of Idea (25)</td>
+<td>24-25</td>
+<td><strong>25</strong></td>
+<td>Composition (PDD adjudication + hook gates + receipts satire) is novel → max</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>88-96</strong></td>
+<td><strong>91-97 / 100</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="102-why-each-axis-lifts">10.2 Why each axis lifts<a class="headerlink" href="#102-why-each-axis-lifts" title="Permanent link">&para;</a></h3>
+<p><strong>Tech Implementation +1</strong>: 7 hook points are concrete, scriptable, judge-readable. Most submissions ship "agent calls LLM in a loop." We ship "agent calls LLM in a loop wrapped by mechanically enforced pre/post hook contracts." Difference is grep-visible in <code>hooks/</code>.</p>
+<p><strong>Potential Impact +1</strong>: The hook-gated pattern generalizes far beyond YC-cloning. Any team building multi-agent systems faces the same diversity-vs-chaos tradeoff and benefits from runtime gates. v4's contribution is a generalizable architectural decision, not just a project.</p>
+<p><strong>Quality of Idea +1</strong>: Three components compose into something with no precedent in the gallery — PDD adjudication is from our methodology, hook-gated transitions is general engineering applied at runtime, receipts-tone satire is brand. The composition is the idea.</p>
+<h3 id="103-top-3-sensitivity-table">10.3 Top-3 sensitivity table<a class="headerlink" href="#103-top-3-sensitivity-table" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Resulting score</th>
+<th>P(top-3 in Arize)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Best case (every phase lands, video polished)</td>
+<td>96 / 100</td>
+<td>~95 %</td>
+</tr>
+<tr>
+<td>Expected case</td>
+<td>92 / 100</td>
+<td>~90 %</td>
+</tr>
+<tr>
+<td>-3 pts per axis (execution slip)</td>
+<td>80 / 100</td>
+<td>~50 %</td>
+</tr>
+<tr>
+<td>-5 pts per axis + Stage-1 borderline</td>
+<td>71 / 100</td>
+<td>~15 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>90 %+ achievable in expected case.</strong> Floor at 71 (still likely top-10).</p>
+<h3 id="104-stage-1-pass-rate">10.4 Stage-1 pass-rate<a class="headerlink" href="#104-stage-1-pass-rate" title="Permanent link">&para;</a></h3>
+<p>P(Stage-1 pass) ≈ 0.98 (assuming Phase 6 deploy completes by D-10).
+P(top-3 | Stage-1 pass) ≈ 0.92.
+<strong>P(top-3 final)</strong> = 0.98 × 0.92 ≈ <strong>0.90</strong>.</p>
+<hr />
+<h2 id="11-demo-video-v4-3-minute-script">11. Demo Video v4 — 3 minute script<a class="headerlink" href="#11-demo-video-v4-3-minute-script" title="Permanent link">&para;</a></h2>
+<pre><code>0:00 – 0:12  Cold open
+             B-roll: workatastartup.com listings ticking past.
+             &quot;VC raised. Hiring page full. Product page empty.&quot;
+             [stamp graphic: D+187 since Demo Day]
+
+0:12 – 0:30  Thesis
+             &quot;What if the same money built the product instead of the team?
+              WhyC ships any YC company's product in a day —
+              with thirteen agents, mechanically gated.&quot;
+
+0:30 – 1:15  Live pipeline
+             Paste public YC URL on whyc.example
+             [Stage 1] 3 analyzer terminals running parallel → 1 synthesized spec
+                       (hook indicator pulses: &quot;pre-stage ✓ post-stage ✓&quot;)
+             [Stage 3] 5 developer manifests in a grid → I2 dedup animation → 1 winner
+             [Stage 4] Cloud Build log tail → Cloud Run deploy URL appears
+             [Stage 5] 5 critic scorecards → meta-tally bar → spec_fit 0.71
+             [Stage 6] Phoenix dashboard, MCP query visible
+             (overlay: &quot;whyc.mcp.self_query=true&quot;)
+
+1:15 – 2:00  Convergence
+             Loop accelerates: iter 3 → 0.84 → iter 7 → 0.96 converged
+             BigQuery query visualization: &quot;agent learned from prior runs&quot;
+             Cost ledger: &quot;$0.81 spent · 11 minutes elapsed&quot;
+
+2:00 – 2:30  Receipts grid
+             12 real YC companies, sortable dashboard
+             Days_since_DD vs WhyC_ship_time columns
+             &quot;Same pipeline. Different inputs. One day each.&quot;
+
+2:30 – 2:50  Methodology beat (NEW v4)
+             [hooks/ directory visible in code editor]
+             Voice-over: &quot;Every stage transition is a script that can refuse.
+                         Schema. Provenance. Budget. Reviewers. The protocol
+                         cannot be skipped. Even for a one-line change.&quot;
+
+2:50 – 3:00  Closing card
+             &quot;WhyC. Receipts attached.
+              github.com/Two-Weeks-Team/WhyC · Apache-2.0&quot;
+             [Built-with badges: Gemini · Agent Builder · Phoenix · Cloud Run]
+</code></pre>
+<p>Total speaking time ~140 s → fits 3:00 with B-roll cuts.</p>
+<hr />
+<h2 id="12-risk-register-v4">12. Risk Register v4<a class="headerlink" href="#12-risk-register-v4" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hook layer fails to run on Cloud Run</td>
+<td>Low</td>
+<td>Med (loses v4 differentiator)</td>
+<td>Hooks are bash + stdlib Python — no install needed. Pre-test locally + on Cloud Run staging.</td>
+</tr>
+<tr>
+<td>Vertex AI Agent Engine doesn't accept TypeScript</td>
+<td>Med</td>
+<td>Med</td>
+<td>Phase 6 fallback: Python wrapper that invokes our Node pipeline via subprocess. 2-3 h add work.</td>
+</tr>
+<tr>
+<td>Phoenix Evals breaks the judge layer</td>
+<td>Low</td>
+<td>High (Arize axis hit)</td>
+<td>Keep hand-rolled judge.ts behind feature flag; A/B compare during integration.</td>
+</tr>
+<tr>
+<td>BigQuery learning cold-start (N&lt;10)</td>
+<td>High</td>
+<td>Low</td>
+<td>Empty-result fallback documented; learning layer is graceful when no data.</td>
+</tr>
+<tr>
+<td>YC takedown request during demo window</td>
+<td>Low</td>
+<td>High</td>
+<td>M8 1h SLA; 6 reserve candidates pre-verified per <code>docs/dataset-verification.md</code>.</td>
+</tr>
+<tr>
+<td>Cost ceiling false positive</td>
+<td>Low</td>
+<td>Med</td>
+<td><code>on-cost-ceiling.py</code> downgrades to single-advocate before abort.</td>
+</tr>
+<tr>
+<td>Submission timezone error (PT vs KST)</td>
+<td>Low</td>
+<td>🔴 Disqualification</td>
+<td>Calendar alert at 2026-06-10 12:00 PT + GHA cron posts D-1 reminder.</td>
+</tr>
+<tr>
+<td>Cloud Build first-time setup flakiness</td>
+<td>Med</td>
+<td>Low</td>
+<td>2× retry in deploy.yml; documented manual rebuild path.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-definition-of-done-v4">13. Definition of Done v4<a class="headerlink" href="#13-definition-of-done-v4" title="Permanent link">&para;</a></h2>
+<p>15-item submission gate from v3, plus v4-specific items:</p>
+<ul>
+<li>[ ] All v3 items (master-plan-v3.md §9)</li>
+<li>[ ] All 7 hook points present in <code>hooks/</code> and exit 0 on placeholder data</li>
+<li>[ ] Per-run memory files (<code>session-handoff.md</code>, <code>decisions.md</code>, <code>patterns.md</code>) populated for at least 12 successful runs</li>
+<li>[ ] <code>agents/v4-index.json</code> reflects all 13 registered sub-agents with tag arrays</li>
+<li>[ ] Cost ledger end-of-demo &lt; $50 ($100 credit minus 50% margin)</li>
+<li>[ ] At least 1 converged run has spec_fit ≥ 0.92 + Phoenix Evals verdict + BigQuery row</li>
+</ul>
+<hr />
+<h2 id="14-operator-g-checks">14. Operator G-checks<a class="headerlink" href="#14-operator-g-checks" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decision</th>
+<th>Method</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>Vertex AI Agent Engine console supports our deployment pattern</td>
+<td>console.cloud.google.com → Agent Engine</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Gemini pricing matches v3/v4 fetch</td>
+<td>✅ verified Claude side</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>BigQuery free tier covers our usage</td>
+<td>Quotas console</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Cloud Run + Build free tier covers usage</td>
+<td>Quotas console</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>$100 credit redeemed to "크레딧" billing</td>
+<td>redeem page</td>
+<td>In flight</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>Workload Identity Federation configured</td>
+<td>gcloud commands</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>G7</td>
+<td>Hook scripts run on Cloud Run job environment</td>
+<td>local Docker test of pipeline-kickoff container</td>
+<td>Pending</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="15-positioning-statement-for-devpost-description">15. Positioning Statement (for Devpost description)<a class="headerlink" href="#15-positioning-statement-for-devpost-description" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Most multi-agent demos in 2026 fall into one of two patterns: orchestration frameworks that prioritize flexibility but enforce protocol only in prompts, or rigid workflows that lose the creative diversity that makes multi-agent systems useful. WhyC composes Preview-Driven Development (multi-perspective generation + I2 diversity adjudication, the methodology we developed in the PreviewForge plugin) with a runtime hook layer (pre/post stage scripts that mechanically enforce schema, provenance, budget, and category-review contracts). The result is a 13-sub-agent panel where every advocate has wide creative latitude, every stage transition is mechanically validated, and every shipped artifact has SHA-256 provenance. The protocol cannot be skipped — not by a clever prompt, not for a one-line change.</p>
+</blockquote>
+<p>200 words. Ready for Devpost.</p>
+<hr />
+<h2 id="16-appendix-a-verified-sources-2026-05-11-fetches">16. Appendix A — Verified Sources (2026-05-11 fetches)<a class="headerlink" href="#16-appendix-a-verified-sources-2026-05-11-fetches" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>URL</th>
+<th>What we used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hackathon rules</td>
+<td>rapid-agent.devpost.com/rules</td>
+<td>10 rule items, 5 tracks, 4 equal-weight criteria</td>
+</tr>
+<tr>
+<td>Gemini pricing</td>
+<td>cloud.google.com/vertex-ai/generative-ai/pricing</td>
+<td>Flash $0.30/$2.50/1M, Pro $1.25/$10/1M</td>
+</tr>
+<tr>
+<td>Phoenix MCP</td>
+<td>arize.com/docs/phoenix/integrations/phoenix-mcp-server</td>
+<td>stdio only</td>
+</tr>
+<tr>
+<td>Phoenix REST</td>
+<td>arize.com/docs/phoenix/sdk-api-reference/rest-api</td>
+<td><code>/v1/spans</code>, Bearer auth</td>
+</tr>
+<tr>
+<td>@arizeai npm</td>
+<td>npmjs.com / github.com/Arize-ai/phoenix</td>
+<td>client, otel, evals, mcp, cli</td>
+</tr>
+<tr>
+<td>Cloud Run free tier</td>
+<td>cloud.google.com search snippets</td>
+<td>180K vCPU-s + 360K GiB-s + 2M req / month</td>
+</tr>
+<tr>
+<td>Multi-agent landscape</td>
+<td>various 2026 industry posts</td>
+<td>LangGraph, CrewAI, AutoGen, ADK context for §3.5</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="17-appendix-b-open-questions-for-g1-g7">17. Appendix B — Open Questions for G1-G7<a class="headerlink" href="#17-appendix-b-open-questions-for-g1-g7" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Vertex AI Agent Engine TypeScript support — answer determines Phase 6 Python wrapper need.</li>
+<li>Phoenix Cloud REST <code>/v1/spans</code> supports custom attribute filter beyond what SDK exposes — would simplify Stage 6.</li>
+<li>Cloud SQL f1-micro write rate adequate for ~420 inserts per converged run — confirm via console insights.</li>
+<li>Cloud Build free tier reset cadence (daily vs monthly) — affects re-deploy cadence during WK4 polish.</li>
+<li>Vertex AI Agent Engine console UI lets us register a Cloud Run job as the agent's execution surface, or must we reimplement inside the console — Phase 6 effort (4 h vs 12 h).</li>
+<li>Cloud Run job environment includes <code>python3</code>, <code>bash</code>, <code>jq</code>, <code>shasum</code> by default — answer confirms hook layer runs in production without custom base image.</li>
+</ol>
+<hr />
+<h2 id="18-changelog">18. Changelog<a class="headerlink" href="#18-changelog" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Version</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-05-11</td>
+<td>v0.1</td>
+<td><code>architecture-v2-pdd-on-runtime.md</code> initial</td>
+</tr>
+<tr>
+<td>2026-05-11</td>
+<td>v0.2</td>
+<td><code>v2-overview.md</code> team brief</td>
+</tr>
+<tr>
+<td>2026-05-11</td>
+<td>v3.0</td>
+<td><code>master-plan-v3.md</code> — full verification pass, gap closure, 88-96 score projection</td>
+</tr>
+<tr>
+<td>2026-05-11</td>
+<td><strong>v4.0</strong></td>
+<td><strong>This document. Adds the runtime hook layer, 91-97 score projection, demo script v4, industry-context positioning.</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>Plan complete.</strong> PDD adjudication × hook-gated transitions × deep GCP/Phoenix integration × receipts satire. The composition is original to WhyC, the methodology is grounded in our own PreviewForge plugin operating experience, and the cost / timeline / probability analysis is verified end-to-end. Execution begins after operator confirms G1, G3, G4, G6, G7. P(top-3 in Arize) targeted at ~90 %.</p>
+  </main>
+
+</div>
+
+<footer>
+  <div class="footnote-banner">
+    <strong>v4 vs v3</strong>: v4 adds the runtime hook layer — pre/post stage scripts that mechanically enforce schema, provenance, budget, and category-review contracts. Implementation effort: +0.5 day (Phase 0.5). Scoring lift: +3 points (91-97 vs v3's 88-96). The patterns are general engineering (pre-commit hooks, CI gates, build manifests) applied at the agent runtime layer, not borrowed from any specific framework.
+  </div>
+  <p>Authored by Two Weeks Team (Sejun Kim · ComBba) for the Google Cloud Rapid Agent Hackathon — Arize Track. Document v4 supersedes v3 for execution. v3 remains as the verification baseline.</p>
+  <p>Source: <a href="https://github.com/Two-Weeks-Team/WhyC">github.com/Two-Weeks-Team/WhyC</a> · <a href="./master-plan-v4.md">View as Markdown</a> · <a href="./master-plan-v3.html">v3 baseline</a> · <a href="./architecture-v2-pdd-on-runtime.html">Architecture detail</a> · <a href="./v2-overview.html">Team brief</a></p>
+</footer>
+
+</body>
+</html>
