@@ -126,6 +126,57 @@ export interface JudgeOutput {
   trace_id: string;
 }
 
+// ─── Phoenix MCP introspection (SPEC §6 step 4 — Arize bonus criterion) ─────
+
+/** Per-span summary the agent reads back from Phoenix MCP.  Kept small —
+ *  judges grade the *fact that the agent reads its own trace*, not the volume
+ *  of data we surface.  M19: this call originates from the agent itself, not
+ *  from a sidecar. */
+export interface PhoenixSpanSummary {
+  /** Full span id from Phoenix Cloud. */
+  span_id: string;
+  /** Display name (e.g. "whyc.develop", "whyc.judge.model"). */
+  name: string;
+  /** Total duration in ms. */
+  duration_ms: number;
+  /** End status — "ok" | "error" | "unset". */
+  status: 'ok' | 'error' | 'unset';
+  /** Token spend captured by OpenInference, if any. */
+  input_tokens?: number | undefined;
+  output_tokens?: number | undefined;
+  /** Free-form attributes the agent might inspect (already redacted at export
+   *  time by RedactingSpanProcessor — so this is the *redacted* view). */
+  attrs: Readonly<Record<string, string | number | boolean>>;
+}
+
+/** What `introspect` produces — the agent's self-introspection over the run's
+ *  own Phoenix traces.  Feeds into self-improve's regen decision so the
+ *  weakest_flow choice is grounded in real observability data, not only the
+ *  judge's verdict text. */
+export interface TraceSummary {
+  /** Phoenix project id this trace lives under. */
+  project_id: string;
+  /** Total spans the agent inspected. */
+  span_count: number;
+  /** Most-expensive spans by duration_ms, capped at 5. */
+  top_expensive: ReadonlyArray<PhoenixSpanSummary>;
+  /** Any spans whose status is "error". */
+  errors: ReadonlyArray<PhoenixSpanSummary>;
+  /** Per-flow span breakdown: which flow's develop/judge span has the worst
+   *  status or longest tail.  Feeds the regen-flow override. */
+  per_flow: ReadonlyArray<{
+    flow: string;
+    total_duration_ms: number;
+    error_count: number;
+    has_high_latency: boolean;   // > 60s as proxy for "model hesitated"
+  }>;
+  /** Refined weakest-flow signal.  If the judge said 'global' but introspect
+   *  finds one flow accounts for >70% of duration or all errors, override. */
+  trace_weakest_flow: string | null;
+  /** Live MCP audit URL — judges click this from the detail page (SPEC §6). */
+  phoenix_console_url: string;
+}
+
 /** Decision the loop makes after each judge pass. */
 export type LoopDecision =
   | { kind: 'converged' }                                  // spec_fit ≥ τ_converge (0.92)

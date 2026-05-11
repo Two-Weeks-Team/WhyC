@@ -28,8 +28,9 @@ import { goNoGo } from '../pipeline/go-no-go.js';
 import { develop } from '../pipeline/develop.js';
 import { deploy } from '../pipeline/deploy.js';
 import { judge } from '../pipeline/judge.js';
+import { introspect } from '../pipeline/introspect.js';
 import { decideNext } from '../pipeline/self-improve.js';
-import { StageError, type DevelopResult, type JudgeOutput, type NoGoCode, type ProductSpec } from '../pipeline/types.js';
+import { StageError, type DevelopResult, type JudgeOutput, type NoGoCode, type ProductSpec, type TraceSummary } from '../pipeline/types.js';
 
 const KICKOFF_BATCH_LABEL = process.env['WHYC_KICKOFF_BATCH'] ?? `kickoff-${new Date().toISOString().slice(0, 10)}`;
 const DRY_RUN = process.env['WHYC_DRY_RUN'] === 'true';
@@ -202,6 +203,8 @@ interface AttemptResult {
   deployExpiresAt: string;
   judge: JudgeOutput;
   decision: ReturnType<typeof decideNext>;
+  /** Phoenix MCP introspection summary, when the call succeeded. */
+  trace?: TraceSummary | undefined;
 }
 
 interface AttemptArgs {
@@ -270,6 +273,21 @@ async function runOneAttempt(args: AttemptArgs): Promise<AttemptResult> {
     phoenix_trace_id: judgeOut.trace_id || null,
   });
 
+  // Phoenix MCP introspection (SPEC §6 step 4 — Arize bonus criterion).
+  // Agent reads its OWN trace tree back (M19) to refine the regen target.
+  // Failure here is non-fatal: introspect returns an empty-shape summary
+  // and self-improve falls back to judge.weakest_flow.
+  let trace: TraceSummary | undefined;
+  try {
+    trace = await introspect({
+      run_id: args.runId,
+      judge_weakest_flow: judgeOut.weakest_flow,
+    });
+  } catch (err) {
+    console.warn(`[pipeline-kickoff] introspect failed (non-fatal):`, err);
+    trace = undefined;
+  }
+
   // Pull the just-updated total for the loop decision.
   const totalCost = (await prisma().run.findUniqueOrThrow({
     where: { id: args.runId },
@@ -282,6 +300,7 @@ async function runOneAttempt(args: AttemptArgs): Promise<AttemptResult> {
     iter_limit: args.iterLimit,
     total_cost_cents: Number(totalCost),
     cost_limit_cents: args.costLimit,
+    ...(trace ? { trace } : {}),
   });
 
   return {
@@ -291,6 +310,7 @@ async function runOneAttempt(args: AttemptArgs): Promise<AttemptResult> {
     deployExpiresAt: deployOut.expires_at,
     judge: judgeOut,
     decision,
+    ...(trace ? { trace } : {}),
   };
 }
 

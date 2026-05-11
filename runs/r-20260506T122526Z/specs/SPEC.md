@@ -253,6 +253,37 @@ Phoenix Cloud sampling (M14): 100% sampling for the demo dataset (≤12
 companies × ≤7 iter × 5 stages = ≤420 traces/run), well under the 50k
 traces/mo free-tier cap.
 
+### 6.bis Engineering — `pipeline/introspect.ts` (v1, post-lock addendum)
+
+The §6 contract above is the canonical narrative.  Implementation lands as a
+discrete pipeline stage between `judge` and `self_improve`:
+
+  - **Module**: `apps/jobs/src/pipeline/introspect.ts`.
+  - **Span**: `whyc.introspect` (child of `whyc.pipeline.run`).
+  - **Marker attribute**: `whyc.mcp.self_query=true` — judges look for this in
+    the trace tree as proof the agent self-introspected (not a sidecar).
+  - **Backend**: `util/phoenix-client.ts` provides two transports — real
+    HTTP against Phoenix Cloud and a deterministic synthetic backend when
+    `WHYC_DRY_RUN=true`.  Both produce the same `TraceSummary` shape so the
+    rest of the pipeline is transport-agnostic.
+  - **Output**: `TraceSummary` (see `pipeline/types.ts`) — span_count,
+    top_expensive (5), errors, per_flow aggregation, refined
+    `trace_weakest_flow` override, and `phoenix_console_url` rendered on
+    the project detail page so judges can click into Phoenix.
+  - **Self-improve consumption**: `decideNext(... { trace })` favors
+    `trace.trace_weakest_flow` when present, falling back to
+    `judge.weakest_flow` otherwise.  Phoenix outage is non-fatal — the
+    function still returns a valid `LoopDecision`.
+
+Override triggers in `chooseTraceWeakestFlow` (implementation realization
+of SPEC §6 step 4 "operational signal overrides judge signal"):
+
+  1. Dominant-by-duration: one flow accounts for ≥70% of total span time
+     and differs from the judge's pick.
+  2. Error-bearing: any flow with `error_count > 0` differs from the
+     judge's pick.
+  3. Judge said `global` but introspect has a clear leader.
+
 ## 7. Data lifecycle
 
 ```
