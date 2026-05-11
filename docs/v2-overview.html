@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhyC v2 — Team Brief</title>
+<meta name="description" content="One-page team brief for WhyC v2 architecture — PDD on Runtime, 13 sub-agents, ~$3/run, +17-22 score points projected.">
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --card2: #1c2128; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --orange: #d29922;
+    --purple: #bc8cff; --cyan: #39d353; --pink: #f778ba;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); line-height:1.7; }
+
+  /* HERO */
+  .hero {
+    background: radial-gradient(ellipse at top left, rgba(188,140,255,.10), transparent 60%),
+                radial-gradient(ellipse at bottom right, rgba(88,166,255,.10), transparent 60%),
+                var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 4.5rem 1.5rem 3.5rem;
+  }
+  .hero-inner { max-width: 1100px; margin: 0 auto; }
+  .hero .verdict-badge {
+    display:inline-block; padding:.45rem 1.1rem; border-radius:999px;
+    font-size:.85rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    margin-bottom:1.25rem;
+    background:rgba(188,140,255,.12); color:var(--purple); border:1px solid var(--purple);
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight:800;
+    background:linear-gradient(135deg,#58a6ff,#bc8cff,#f778ba);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    line-height:1.1; letter-spacing: -.02em;
+    margin-bottom: 1rem;
+  }
+  .hero .tagline {
+    font-size: 1.15rem; color: var(--fg); max-width: 60ch; line-height: 1.55;
+    margin-bottom: 1.5rem;
+  }
+  .hero .tagline strong { color: var(--cyan); }
+  .hero .meta { display:flex; gap:.6rem; flex-wrap:wrap; }
+  .hero .meta-badge {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:.4rem .85rem; font-size:.82rem; color:var(--muted);
+  }
+  .hero .meta-badge strong { color:var(--fg); font-weight:600; }
+
+  /* KPI strip */
+  .kpis {
+    max-width: 1100px; margin: -2rem auto 0; padding: 0 1.5rem;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+    position: relative; z-index: 2;
+  }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem 1.4rem;
+  }
+  .kpi .label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem; }
+  .kpi .value { font-size: 1.7rem; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .kpi .delta { font-size: .82rem; color: var(--green); margin-top: .2rem; }
+  .kpi .delta.warn { color: var(--orange); }
+  .kpi .delta.dim { color: var(--muted); }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem; }
+  h1, h2, h3 { scroll-margin-top: 1.5rem; }
+  main > h1 { display: none; }  /* already in hero */
+  main > p:first-of-type { display: none; }  /* hide the redundant lead blockquote-ish intro */
+  h2 { font-size:1.5rem; font-weight:700; color:var(--accent); margin:3rem 0 1rem; border-bottom:1px solid var(--border); padding-bottom:.5rem; }
+  h3 { font-size:1.15rem; font-weight:600; color:var(--purple); margin:1.5rem 0 .75rem; }
+  p, li { color:var(--fg); font-size:.95rem; }
+  ul, ol { padding-left:1.5rem; margin:.75rem 0; }
+  li { margin:.35rem 0; }
+  strong { color:#fff; font-weight:600; }
+  em { color: var(--cyan); font-style: normal; }
+  code { background:var(--card2); padding:.15rem .4rem; border-radius:4px; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.85em; color:var(--cyan); }
+  pre { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:.95rem 1.1rem; overflow-x:auto; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.82rem; line-height:1.55; margin:1rem 0; }
+  pre code { background:transparent; padding:0; color:var(--fg); }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  blockquote { border-left: 3px solid var(--purple); padding: .25rem 0 .25rem 1.1rem; margin: 1rem 0; color: var(--muted); background: rgba(188,140,255,.05); border-radius: 0 6px 6px 0; }
+  hr { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; background:var(--card); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  th, td { padding:.65rem .9rem; text-align:left; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:top; }
+  th { background:var(--card2); color:var(--accent); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--card2); }
+  .headerlink { color: transparent; margin-left: .4rem; text-decoration: none; font-size: .8em; }
+  h2:hover .headerlink, h3:hover .headerlink { color: var(--accent); }
+
+  footer { max-width: 1100px; margin: 2rem auto 3rem; padding: 1.5rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .82rem; }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 800px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .hero { padding: 3rem 1.25rem 2.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="verdict-badge">📋 Proposal · Awaiting Verification</span>
+    <h1>WhyC v2 — Team Brief</h1>
+    <p class="tagline">
+      <strong>While they hire, we ship — and the agent panel adjudicates the build.</strong>
+      v1 ships in 31 days. v2 is the runtime-level redesign that turns WhyC from "another vibe-coding tool" into a 13-sub-agent panel that converges on a build via structured adjudication.
+    </p>
+    <div class="meta">
+      <span class="meta-badge"><strong>Hackathon</strong> · Google Cloud Rapid Agent</span>
+      <span class="meta-badge"><strong>Track</strong> · Arize</span>
+      <span class="meta-badge"><strong>Deadline</strong> · 2026-06-11 14:00 PT</span>
+      <span class="meta-badge"><strong>D-30</strong></span>
+      <span class="meta-badge"><strong>Credit</strong> · ✅ requested · redeem by 2026-06-04</span>
+    </div>
+  </div>
+</header>
+
+<section class="kpis">
+  <div class="kpi">
+    <div class="label">Sub-agents in v2</div>
+    <div class="value">13</div>
+    <div class="delta">vs 0 in v1</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Score projection</div>
+    <div class="value">89–94</div>
+    <div class="delta">+17–22 over v1</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Cost / 12-run demo</div>
+    <div class="value">~$37</div>
+    <div class="delta">of $100 credit (62%)</div>
+  </div>
+  <div class="kpi">
+    <div class="label">GCP + Phoenix features</div>
+    <div class="value">9 + 5</div>
+    <div class="delta">vs 4 + 1 in v1</div>
+  </div>
+</section>
+
+<main>
+<h1 id="whyc-v2-team-brief">WhyC v2 — Team Brief<a class="headerlink" href="#whyc-v2-team-brief" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>One-page summary of the v2 architecture.</strong> Full detail lives in <a href="./architecture-v2-pdd-on-runtime.md"><code>architecture-v2-pdd-on-runtime.md</code></a>. This file is for sharing with teammates in chat / DM / PR before the verification meeting.</p>
+</blockquote>
+<hr />
+<h2 id="the-hero">The Hero<a class="headerlink" href="#the-hero" title="Permanent link">&para;</a></h2>
+<p><strong>While they hire, we ship — and the agent panel adjudicates the build.</strong></p>
+<p>WhyC is a satirical counter-product for VC-backed YC teams that take six months to ship what an agent can produce in a day, <em>and</em> a practical fast-POC accelerator for any founder. v1 ships in 31 days; v2 is the runtime-level redesign that turns WhyC from "another vibe-coding tool" into <strong>a 13-sub-agent panel that converges on a build via structured adjudication.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>v1 (current)</th>
+<th>v2 (proposed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per-stage perspectives</td>
+<td><strong>1</strong> (single LLM call)</td>
+<td><strong>3 / 5 / 5</strong> (analyze / develop / judge)</td>
+</tr>
+<tr>
+<td>Total sub-agents</td>
+<td>0</td>
+<td><strong>13</strong></td>
+</tr>
+<tr>
+<td>Diversity validation</td>
+<td>None</td>
+<td>I2 Jaccard + structural hash</td>
+</tr>
+<tr>
+<td>Learning across runs</td>
+<td>None</td>
+<td><strong>BigQuery</strong> queries past outcomes</td>
+</tr>
+<tr>
+<td>GCP features used</td>
+<td>4</td>
+<td><strong>9</strong></td>
+</tr>
+<tr>
+<td>Phoenix features used</td>
+<td>1</td>
+<td><strong>5</strong></td>
+</tr>
+<tr>
+<td>Differentiation vs Bolt / Lovable / v0</td>
+<td>Weak</td>
+<td><strong>Structurally unprecedented</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="the-pipeline-7-stages">The Pipeline (7 stages)<a class="headerlink" href="#the-pipeline-7-stages" title="Permanent link">&para;</a></h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│  Stage 0  pre-flight                                                    │
+│            URL → sanitize → content_sha256 cache                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Stage 1  analyze              3 advocate analyzers (Flash)             │
+│                                  → synthesis (Pro)                      │
+│                                  → 1 ProductSpec with provenance        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Stage 2  go / no-go           6 rules + Vertex AI Eval IP-safety       │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Stage 3  develop              5 advocate developers (Pro)              │
+│                                  → I2 dedup                             │
+│                                  → cross-pick winner                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Stage 4  deploy               Cloud Build → Cloud Run (real)           │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Stage 5  judge                5 specialist critics (Pro)               │
+│                                  → meta-tally spec_fit                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Stage 6  introspect           Phoenix MCP self-query                   │
+│                                  → trace summary + experiment compare   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Stage 7  self-improve         judge + trace + BigQuery learning        │
+│                                  → converge | regen | ceiling           │
+└─────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Three loops, not one:</strong></p>
+<ol>
+<li><strong>Within-iteration loop</strong> — 5 developers compete, 5 critics judge, winner picked</li>
+<li><strong>Across-iteration loop</strong> — judge spec_fit + trace introspection decide regen</li>
+<li><strong>Across-run loop</strong> — BigQuery accumulates outcomes, future runs query history</li>
+</ol>
+<hr />
+<h2 id="why-this-wins-4-scoring-axes-25-pts-each">Why This Wins (4 scoring axes, 25 pts each)<a class="headerlink" href="#why-this-wins-4-scoring-axes-25-pts-each" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Axis</th>
+<th>v1 estimate</th>
+<th>v2 estimate</th>
+<th>What changed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tech Implementation</td>
+<td>17</td>
+<td><strong>23–24</strong></td>
+<td>Agent Builder + Vertex Eval + BigQuery learning + Phoenix 5-feature</td>
+</tr>
+<tr>
+<td>Design</td>
+<td>18</td>
+<td><strong>21–23</strong></td>
+<td>5 design lenses → adjudicated winner is by construction the consensus</td>
+</tr>
+<tr>
+<td>Potential Impact</td>
+<td>18</td>
+<td><strong>21–22</strong></td>
+<td>Learning loop demonstrates "agent gets smarter run by run"</td>
+</tr>
+<tr>
+<td>Quality of Idea</td>
+<td>19</td>
+<td><strong>24–25</strong></td>
+<td>PDD-on-Runtime is structurally unprecedented in the gallery</td>
+</tr>
+<tr>
+<td><strong>TOTAL / 100</strong></td>
+<td><strong>~72</strong></td>
+<td><strong>~89–94</strong></td>
+<td><strong>+17–22 points</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The Quality of Idea axis is the biggest swing. v1 in the gallery reads as "another AI builds an app." v2 reads as "an agent panel structurally adjudicates the build" — judges have not seen this pattern.</p>
+<hr />
+<h2 id="what-it-costs">What It Costs<a class="headerlink" href="#what-it-costs" title="Permanent link">&para;</a></h2>
+<pre><code>Per converged run (3 iter average):     ~$3.12
+12 demo dataset runs:                   ~$37
+Buffer for retries + experiments:       ~$25
+─────────────────────────────────────────────
+TOTAL projected:                        ~$62 of $100 credit (62 %)
+Margin remaining:                       ~$38 (38 %)
+</code></pre>
+<p>We are well inside the $100 credit. Retry budget is generous; even with worst-case retries on every stage, projected stays under $80.</p>
+<hr />
+<h2 id="how-long-d-30-d-0">How Long (D-30 → D-0)<a class="headerlink" href="#how-long-d-30-d-0" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Week</th>
+<th>Window</th>
+<th>Work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>WK1</strong></td>
+<td>D-30 → D-23</td>
+<td>Stage 1 multi-analyzer · Stage 3 multi-developer · Stage 5 5-critic · BigQuery schema · retry framework. <strong>Credit redeems this week</strong> (deadline 2026-06-04).</td>
+</tr>
+<tr>
+<td><strong>WK2</strong></td>
+<td>D-22 → D-16</td>
+<td>Stage 4 real Cloud Build + deploy · Stage 2 Vertex Eval · context-preservation tests · DRY_RUN E2E</td>
+</tr>
+<tr>
+<td><strong>WK3</strong></td>
+<td>D-15 → D-9</td>
+<td>YC scraper · 12 verified companies · learning loop runs 10× into BigQuery · video script</td>
+</tr>
+<tr>
+<td><strong>WK4</strong></td>
+<td>D-8 → D-3</td>
+<td>Agent Builder console screenshots · video recorded · README badges · Devpost description</td>
+</tr>
+<tr>
+<td><strong>WK5</strong></td>
+<td>D-2 → D-0</td>
+<td>Final rehearsal · submit D-1 (2026-06-10) with 1h buffer</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="three-things-to-verify-before-we-build">Three Things to Verify Before We Build<a class="headerlink" href="#three-things-to-verify-before-we-build" title="Permanent link">&para;</a></h2>
+<p>Per <code>architecture-v2-pdd-on-runtime.md</code> §11 — we walk through these together before any v2 code lands:</p>
+<ol>
+<li><strong>Agent Builder console actually supports the sub-agent registration pattern we describe.</strong> If it doesn't, the 13-sub-agent structure has to be implemented via direct Vertex AI SDK calls (which works, but loses one of the GCP feature signals).</li>
+<li><strong>Gemini current pricing matches our $3.12/run projection.</strong> Flash + Pro rates may have changed since the project started — re-check against console.</li>
+<li><strong>BigQuery free tier covers the per-run insert volume.</strong> Conservative estimate is ~50 rows per run × 100 runs = 5 K rows / month, well within free tier — but confirm before wiring.</li>
+</ol>
+<p>If all three pass → <code>architecture-v2-locked.md</code> is created and implementation begins. If any fail → degraded path documented and locked.</p>
+<hr />
+<h2 id="whats-not-in-v2">What's NOT in v2<a class="headerlink" href="#whats-not-in-v2" title="Permanent link">&para;</a></h2>
+<p>These were considered and explicitly held back because they don't move scoring within the hackathon window:</p>
+<ul>
+<li>Multi-language analyzer (Korean / Japanese) — English only for v1 dataset</li>
+<li>Real-time progressive deploy (deploy mid-iteration as flows complete) — v3</li>
+<li>Cross-company shared learning beyond batch-level — needs N ≥ 50 runs</li>
+<li>Public submission form — H1 locked closed</li>
+<li>Mobile native app — H1 locked web-only</li>
+</ul>
+<hr />
+<h2 id="operational-notes">Operational Notes<a class="headerlink" href="#operational-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>GCP account</strong> for redemption: <code>app.2weeks@gmail.com</code></li>
+<li><strong>Billing account</strong> name: <code>크레딧</code> (created specifically for this hackathon coupon)</li>
+<li><strong>Project</strong>: <code>whyc-prod</code> (provisioned per <code>deploy/README.md</code> §1)</li>
+<li><strong>Repo</strong>: https://github.com/Two-Weeks-Team/WhyC</li>
+<li><strong>Pages</strong>: https://two-weeks-team.github.io/WhyC/</li>
+</ul>
+<hr />
+<h2 id="links">Links<a class="headerlink" href="#links" title="Permanent link">&para;</a></h2>
+<ul>
+<li>📐 <a href="./architecture-v2-pdd-on-runtime.md">Full architecture (12 sections, validation matrix, risks, demo scenario)</a></li>
+<li>🎨 <a href="https://two-weeks-team.github.io/WhyC/docs/architecture-v2-pdd-on-runtime.html">Same doc rendered on Pages</a></li>
+<li>🔒 <a href="../runs/r-20260506T122526Z/specs/_lock.json">v1 spec lock (SHA-256)</a></li>
+<li>🏆 <a href="https://two-weeks-team.github.io/WhyC/claudedocs/hackathon-audit-20260511-rapid-agent.html">Hackathon audit report (D-31)</a></li>
+<li>📁 <a href="https://two-weeks-team.github.io/WhyC/runs/r-20260506T122526Z/gallery.html">26-advocate gallery from PreviewDD design phase</a></li>
+<li>🚀 <a href="https://rapid-agent.devpost.com/">Hackathon page</a> · Arize track</li>
+</ul>
+<hr />
+<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
+<p>📋 <strong>Proposal — awaiting verification.</strong> No v2 code has been written. The v1 pipeline (analyze · go-no-go · develop · deploy · judge · introspect · self-improve) is live, typechecked, and builds clean across <code>apps/api</code> · <code>apps/web</code> · <code>apps/jobs</code>. v1 deferred items become v2's expansion points.</p>
+<p>When the team has read this brief and the verification points clear, the implementation order is:</p>
+<ol>
+<li>BigQuery schema + retry framework (foundation)</li>
+<li>Stage 1 multi-analyzer (lowest-risk multi-advocate stage to validate the pattern)</li>
+<li>Stage 3 multi-developer (highest-impact)</li>
+<li>Stage 5 5-critic (highest-cost; validate against budget before committing)</li>
+<li>Stage 6 Phoenix MCP extensions</li>
+<li>Stage 7 BigQuery learning</li>
+<li>Stage 4 real Cloud Build + Cloud Run deploy</li>
+<li>End-to-end DRY_RUN test</li>
+<li>Real dataset (WK3 scrape) + final tuning</li>
+</ol>
+</main>
+
+<footer>
+  <p>Authored by Two Weeks Team (Sejun Kim, ComBba) — 2026-05-11. Status: <strong>proposal, awaiting verification</strong>. No v2 code has been written.</p>
+  <p>Full architecture: <a href="./architecture-v2-pdd-on-runtime.html">architecture-v2-pdd-on-runtime.html</a> · Source: <a href="https://github.com/Two-Weeks-Team/WhyC">github.com/Two-Weeks-Team/WhyC</a> · Markdown: <a href="./v2-overview.md">v2-overview.md</a></p>
+</footer>
+
+</body>
+</html>
