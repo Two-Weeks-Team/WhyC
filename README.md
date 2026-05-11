@@ -73,11 +73,24 @@ Once SpecDD locks the OpenAPI / Prisma schema and engineering scaffolds the Clou
 
 ## Status
 
-**Phase**: v1 pipeline foundation shipped (analyze · go-no-go · develop · deploy · judge · introspect · self-improve). Architecture v2 proposal authored, awaiting team verification before implementation.
+**Phase**: v1 pipeline foundation shipped (analyze · go-no-go · develop · deploy · judge · introspect · self-improve). **v4 master plan locked**, awaiting operator G-checks before implementation begins.
 
-**Submission deadline**: 2026-06-11, 14:00 PT.
+**Submission deadline**: 2026-06-11, 14:00 PT. **Credit redeem deadline**: 2026-06-04 (D-24).
 
-See [`docs/architecture-v2-pdd-on-runtime.md`](./docs/architecture-v2-pdd-on-runtime.md) for the proposed runtime-level redesign that ports PreviewDD methodology into the pipeline itself (13 sub-agents, multi-stage validation, BigQuery learning, ~$3/run, +17–22 score points projected).
+### Canonical execution plan
+
+**[📋 Master Plan v4](./docs/master-plan-v4.md) ([rendered HTML](https://two-weeks-team.github.io/WhyC/docs/master-plan-v4.html))** — PDD on Runtime · mechanically gated · 13 sub-agents · 7 hook points · 9 GCP × 5 Phoenix features · projected 91–97 / 100 score · ~90 % target probability of top-3 in Arize track. Cost: ~$10 of $100 credit (10 %, 90 % margin).
+
+### Document hierarchy
+
+| Doc | Purpose | When to read |
+| --- | --- | --- |
+| [Master Plan v4](https://two-weeks-team.github.io/WhyC/docs/master-plan-v4.html) | **Canonical execution plan** | First read for execution |
+| [Master Plan v3](https://two-weeks-team.github.io/WhyC/docs/master-plan-v3.html) | Verification baseline | Reference for what was verified, when |
+| [v2 Architecture](https://two-weeks-team.github.io/WhyC/docs/architecture-v2-pdd-on-runtime.html) | Deep technical reference | Detailed contract specs |
+| [v2 Overview](https://two-weeks-team.github.io/WhyC/docs/v2-overview.html) | Team brief | Quick share to new collaborators |
+| [Hackathon Audit](https://two-weeks-team.github.io/WhyC/claudedocs/hackathon-audit-20260511-rapid-agent.html) | Submission-readiness scorecard | Pre-submission checklist |
+| [Run gallery](https://two-weeks-team.github.io/WhyC/runs/r-20260506T122526Z/gallery.html) | 26 advocate previews from design phase | Design provenance |
 
 ---
 
