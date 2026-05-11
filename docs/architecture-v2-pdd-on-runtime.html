@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhyC — Architecture v2 (PDD on Runtime)</title>
+<meta name="description" content="WhyC v2 architecture proposal — 7-stage PDD-on-Runtime pipeline with 13 sub-agents, multi-stage validation, BigQuery learning. Awaiting team verification before implementation.">
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --card2: #1c2128; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --orange: #d29922;
+    --purple: #bc8cff; --cyan: #39d353; --pink: #f778ba;
+    --tag-bg: rgba(88,166,255,.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); line-height:1.7; }
+  .layout { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 260px 1fr; gap: 2rem; padding: 2rem 1.5rem; }
+  .toc-sticky { position: sticky; top: 2rem; align-self: start; max-height: calc(100vh - 4rem); overflow-y: auto; padding-right: .5rem; }
+  .toc-sticky h4 { color: var(--accent); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+  .toc-sticky a { color: var(--muted); text-decoration: none; font-size: .82rem; display: block; padding: .25rem 0; border-left: 2px solid transparent; padding-left: .6rem; }
+  .toc-sticky a:hover { color: var(--accent); border-left-color: var(--accent); }
+  .toc-sticky ul { list-style: none; padding-left: 0; margin: 0 0 .5rem 0; }
+  .toc-sticky ul ul { padding-left: .9rem; }
+  .toc-sticky ul ul a { font-size: .78rem; color: var(--muted); }
+  main { min-width: 0; }
+  h1 { font-size:2.6rem; font-weight:800; background:linear-gradient(135deg,#58a6ff,#bc8cff,#f778ba); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:.5rem; line-height:1.15; }
+  h2 { font-size:1.55rem; font-weight:700; color:var(--accent); margin:3rem 0 1rem; border-bottom:1px solid var(--border); padding-bottom:.5rem; scroll-margin-top: 2rem; }
+  h3 { font-size:1.2rem; font-weight:600; color:var(--fg); margin:1.75rem 0 .75rem; scroll-margin-top: 2rem; }
+  h4 { font-size:1rem; font-weight:600; color:var(--purple); margin:1.25rem 0 .5rem; }
+  p, li { color:var(--fg); font-size:.95rem; }
+  ul, ol { padding-left:1.5rem; margin:.75rem 0; }
+  li { margin:.3rem 0; }
+  strong { color:#fff; font-weight:600; }
+  em { color: var(--cyan); }
+  code { background:var(--card2); padding:.15rem .4rem; border-radius:4px; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.85em; color:var(--cyan); }
+  pre { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:.95rem 1.1rem; overflow-x:auto; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.82rem; line-height:1.55; margin:1rem 0; }
+  pre code { background:transparent; padding:0; color:var(--fg); }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  blockquote { border-left: 3px solid var(--purple); padding: .25rem 0 .25rem 1.1rem; margin: 1rem 0; color: var(--muted); background: rgba(188,140,255,.05); border-radius: 0 6px 6px 0; }
+  blockquote p { margin: .25rem 0; }
+  hr { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; background:var(--card); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  th, td { padding:.65rem .9rem; text-align:left; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:top; }
+  th { background:var(--card2); color:var(--accent); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--card2); }
+  .headerlink { color: var(--border); margin-left: .4rem; text-decoration: none; font-size: .8em; }
+  h2:hover .headerlink, h3:hover .headerlink, h4:hover .headerlink { color: var(--accent); }
+  .meta { display:flex; gap:.65rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+  .meta-badge { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:.4rem .85rem; font-size:.82rem; color:var(--muted); }
+  .meta-badge strong { color:var(--fg); }
+  .verdict-badge { display:inline-block; padding:.45rem 1.1rem; border-radius:999px; font-size:.95rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:1rem; background:rgba(188,140,255,.12); color:var(--purple); border:1px solid var(--purple); }
+  footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border); color:var(--muted); font-size:.82rem; }
+  footer a { color: var(--accent); }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; padding: 1.5rem 1rem; }
+    .toc-sticky { position: static; max-height: none; }
+    h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="toc-sticky">
+    <h4>On this page</h4>
+    <nav>
+      <div class="toc">
+<ul>
+<li><a href="#whyc-architecture-v2-pdd-on-runtime">WhyC Architecture v2 — PDD on Runtime</a><ul>
+<li><a href="#0-why-v2-what-v1-misses">0. Why v2 — what v1 misses</a></li>
+<li><a href="#1-the-7-stage-v2-pipeline">1. The 7-stage v2 pipeline</a><ul>
+<li><a href="#stage-0-pre-flight-new">Stage 0 — Pre-flight (NEW)</a></li>
+<li><a href="#stage-1-multi-analyzer-revised">Stage 1 — Multi-Analyzer (REVISED)</a></li>
+<li><a href="#stage-2-go-no-go-vertex-ai-eval">Stage 2 — Go / No-Go + Vertex AI Eval</a></li>
+<li><a href="#stage-3-multi-developer-i2-dedup-biggest-change">Stage 3 — Multi-Developer + I2 Dedup (BIGGEST CHANGE)</a></li>
+<li><a href="#stage-4-deploy-real-not-v1-stub">Stage 4 — Deploy (real, not v1 stub)</a></li>
+<li><a href="#stage-5-5-critic-judge-panel-revised">Stage 5 — 5-Critic Judge Panel (REVISED)</a></li>
+<li><a href="#stage-6-phoenix-mcp-introspection-extended">Stage 6 — Phoenix MCP Introspection (EXTENDED)</a></li>
+<li><a href="#stage-7-self-improve-bigquery-learning-new-learning-layer">Stage 7 — Self-Improve + BigQuery Learning (NEW LEARNING LAYER)</a></li>
+</ul>
+</li>
+<li><a href="#2-cross-cutting-concerns">2. Cross-cutting concerns</a><ul>
+<li><a href="#21-validation-matrix">2.1 Validation matrix</a></li>
+<li><a href="#22-retry-budget-per-stage">2.2 Retry budget per stage</a></li>
+<li><a href="#23-three-layer-context-preservation">2.3 Three-layer context preservation</a></li>
+<li><a href="#24-learning-loop-bigquery-kicks-in-n-10-runs">2.4 Learning loop (BigQuery, kicks in N ≥ 10 runs)</a></li>
+</ul>
+</li>
+<li><a href="#3-gcp-phoenix-native-feature-inventory">3. GCP + Phoenix native feature inventory</a></li>
+<li><a href="#4-hackathon-scoring-axis-impact">4. Hackathon scoring axis impact</a></li>
+<li><a href="#5-cost-projection">5. Cost projection</a></li>
+<li><a href="#6-timeline-d-30-d-0">6. Timeline (D-30 → D-0)</a></li>
+<li><a href="#7-risk-register">7. Risk register</a></li>
+<li><a href="#8-demo-video-3-min-receipts-tone">8. Demo video (3 min, receipts tone)</a></li>
+<li><a href="#9-operational-notes-post-credit-application">9. Operational notes (post-credit-application)</a></li>
+<li><a href="#10-whats-not-in-v2-deferred">10. What's NOT in v2 (deferred)</a></li>
+<li><a href="#11-verification-protocol-before-implementation">11. Verification protocol before implementation</a></li>
+<li><a href="#12-changelog">12. Changelog</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+    </nav>
+  </aside>
+
+  <main>
+    <span class="verdict-badge">📋 Proposal · Awaiting Verification</span>
+    <div class="meta">
+      <span class="meta-badge"><strong>Hackathon</strong> · Google Cloud Rapid Agent</span>
+      <span class="meta-badge"><strong>Track</strong> · Arize</span>
+      <span class="meta-badge"><strong>Deadline</strong> · 2026-06-11 14:00 PT</span>
+      <span class="meta-badge"><strong>Authored</strong> · 2026-05-11</span>
+      <span class="meta-badge"><strong>Source</strong> · <a href="./architecture-v2-pdd-on-runtime.md">.md</a></span>
+    </div>
+
+    <h1 id="whyc-architecture-v2-pdd-on-runtime">WhyC Architecture v2 — PDD on Runtime<a class="headerlink" href="#whyc-architecture-v2-pdd-on-runtime" title="Permanent link">&para;</a></h1>
+<p><strong>Status</strong>: 📋 Proposed (awaiting one more verification round before implementation)
+<strong>Authored</strong>: 2026-05-11
+<strong>Authors</strong>: Two Weeks Team (Sejun Kim, ComBba)
+<strong>Target deadline</strong>: 2026-06-11 14:00 PT
+<strong>Track</strong>: Arize (Google Cloud Rapid Agent Hackathon)</p>
+<blockquote>
+<p>This document captures the <strong>agreed-on-principle</strong> architecture for WhyC v2. The v1 architecture (<code>runs/r-20260506T122526Z/specs/SPEC.md</code>) and its v1 spec lock remain unchanged; v2 is a runtime-level redesign that ports PreviewForge's PDD methodology <em>into the pipeline itself</em>, not just into the design phase.</p>
+</blockquote>
+<hr />
+<h2 id="0-why-v2-what-v1-misses">0. Why v2 — what v1 misses<a class="headerlink" href="#0-why-v2-what-v1-misses" title="Permanent link">&para;</a></h2>
+<p>WhyC v1 is a single-perspective LLM agent loop:</p>
+<pre><code>analyze(1 call) → go/no-go(rules) → develop(1 call) → deploy → judge(1 call) → improve
+</code></pre>
+<p>This is structurally identical to Bolt / Lovable / Replit Agent / v0.dev. <strong>No technical differentiation.</strong> Judges seeing v1 will categorize it as "another vibe-coding tool" and the Idea Quality (25 pts) collapses.</p>
+<p>PDD's real value is in three signature patterns that v1 lacks:</p>
+<table>
+<thead>
+<tr>
+<th>PDD signature</th>
+<th>v1 has it?</th>
+<th>What this buys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N-advocate multi-perspective generation</td>
+<td>❌</td>
+<td>Diverse candidates per stage, not single LLM bias</td>
+</tr>
+<tr>
+<td>I2 diversity validator + adjudication</td>
+<td>❌</td>
+<td>Forces meaningful difference between candidates</td>
+</tr>
+<tr>
+<td>Mitigation step (dissent → action)</td>
+<td>❌</td>
+<td>Disagreement becomes the next iteration's instruction</td>
+</tr>
+</tbody>
+</table>
+<p>v2 ports all three into the runtime pipeline. WhyC then is no longer "an AI that builds an app" — it's "an agent panel that converges on a build via structured adjudication," which is genuinely unprecedented in the gallery.</p>
+<hr />
+<h2 id="1-the-7-stage-v2-pipeline">1. The 7-stage v2 pipeline<a class="headerlink" href="#1-the-7-stage-v2-pipeline" title="Permanent link">&para;</a></h2>
+<p>Each stage is documented with (a) multi-perspective generation, (b) validation, (c) re-validation, (d) failure / retry / learning, (e) context preservation, (f) GCP / Phoenix feature used.</p>
+<h3 id="stage-0-pre-flight-new">Stage 0 — Pre-flight  (NEW)<a class="headerlink" href="#stage-0-pre-flight-new" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>URL validation, JD body fetch, M5 sanitize, content-sha256 cache lookup</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td>Single fetch — no LLM call yet</td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>URL pattern allow-list, content_sha256 deduplication</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>24h after first ingest, automatic re-fetch (JD may have changed)</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>HTTP fetch 2× retry → permanent fail emits NoGo <code>source_unavailable</code></td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td><code>input_id = sha256(url + body)</code> is the canonical key referenced by every downstream stage</td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>Cloud Tasks queue, Cloud Logging</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stage-1-multi-analyzer-revised">Stage 1 — Multi-Analyzer  (REVISED)<a class="headerlink" href="#stage-1-multi-analyzer-revised" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Read public posting → ProductSpec (14-line product hypothesis)</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td><strong>3 advocate analyzers in parallel</strong> (Gemini Flash, registered as Agent Builder sub-agents): <code>speed-obsessed</code>, <code>design-forward</code>, <code>pragmatist</code>. Plus a 4th <strong>Synthesis Agent</strong> (Gemini Pro) that merges the 3 outputs into one canonical ProductSpec.</td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>Zod schema per output; I2-style Jaccard on <code>(target_persona, primary_surface)</code> ≥ 0.7 triggers regen of the most-similar advocate</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>Synthesis Agent re-checks consistency: are the 3 advocates within plausible interpretation bounds, or did one go off-spec?</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>parse-fail 2× retry per advocate (error feedback included in re-prompt); if 3 advocates all fail, single-advocate emergency mode</td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td><code>ProductSpec._provenance = { field_name: advocate_id }</code> — downstream can audit <em>which advocate contributed which field</em></td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>Agent Builder (sub-agents), Phoenix Prompts (advocate + synthesis prompts versioned), Phoenix Datasets (every analyze logged)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stage-2-go-no-go-vertex-ai-eval">Stage 2 — Go / No-Go + Vertex AI Eval<a class="headerlink" href="#stage-2-go-no-go-vertex-ai-eval" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Decide whether WhyC can ship a credible preview</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td>6 deterministic rules (regulated / hardware / stealth / over-complexity / over-budget / IP-safety) + one Vertex AI Evaluation call for IP-safety scoring</td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>Rule outputs are pure; eval score threshold checked against fixed cutoff</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>Borderline scores (0.4 – 0.6) get a second-opinion call with a different model</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>Rules: N/A. Eval API timeout 1× retry.</td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td>NoGoDecision carries the firing rule + eval score</td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>Vertex AI Evaluation (GCP feature beyond the basic SDK)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stage-3-multi-developer-i2-dedup-biggest-change">Stage 3 — Multi-Developer + I2 Dedup  (BIGGEST CHANGE)<a class="headerlink" href="#stage-3-multi-developer-i2-dedup-biggest-change" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Generate a Next.js scaffold manifest from the ProductSpec</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td><strong>5 advocate developers in parallel</strong> (Gemini Pro, Agent Builder sub-agents): <code>design-forward</code>, <code>pragmatist</code>, <code>speed-obsessed</code>, <code>mobile-first</code>, <code>data-nerd</code>. Each produces an independent manifest.</td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>Zod schema per manifest + structural validation (every flow has ≥1 file, total tokens ≤ budget)</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>I2 dedup: manifest structure-hash Jaccard &gt; 0.7 → the weakest advocate regenerates with a different seed</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>Per-developer 2× retry; if 4+ fail, single-developer fallback with a flagged "degraded mode" attribute on the span</td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td>Winner manifest tagged with <code>chosen_advocate</code>; <strong>losing manifests retained as runner-up candidates</strong> so a future regen-iter can cross-combine (e.g. "this hero from design-forward, this dashboard from pragmatist")</td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>Agent Builder (5 sub-agents), Phoenix Experiments (advocate win-rate over time), Phoenix Datasets (manifest comparison)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stage-4-deploy-real-not-v1-stub">Stage 4 — Deploy  (real, not v1 stub)<a class="headerlink" href="#stage-4-deploy-real-not-v1-stub" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Ship the winner manifest as a live Cloud Run preview</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td>Manifest → Next.js scaffold → Cloud Build → container → Artifact Registry → Cloud Run deploy</td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>Cloud Build status + Cloud Run health probe</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>5 min after deploy, auto re-probe (cold-start stability)</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>Cloud Build 2× retry; permanent fail → iteration marked failed</td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td><code>deploy_url</code>, <code>build_id</code>, <code>image_sha</code>, <code>region</code>, <code>deploy_expires_at</code> (24h TTL per M6)</td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>Cloud Build, Cloud Run, Artifact Registry, Cloud Armor</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stage-5-5-critic-judge-panel-revised">Stage 5 — 5-Critic Judge Panel  (REVISED)<a class="headerlink" href="#stage-5-5-critic-judge-panel-revised" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Score the deployed preview against the canonical ProductSpec</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td><strong>5 specialist critics in parallel</strong> (Gemini Pro): <code>critic-a11y</code>, <code>critic-api</code>, <code>critic-perf</code>, <code>critic-security</code>, <code>critic-brand</code>. Each scores all 4 axes; results meta-tallied with confidence intervals.</td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>Per-critic Zod schema; immutable weight invariant (.20/.20/.45/.15); meta-tally <code>spec_fit</code> must equal closed-form sum within 0.001</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>If spec_fit ≠ closed-form sum → StageError <code>judge.formula_mismatch</code> (hard fail, non-retriable)</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>Per-critic 1× retry; if 3+ critics fail, weighted re-normalization across available critics</td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td>Each critic's verdict stored separately; per-critic replay possible without re-running the whole panel</td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>Phoenix Evals (5 critic templates), Phoenix Prompts (versioned)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stage-6-phoenix-mcp-introspection-extended">Stage 6 — Phoenix MCP Introspection  (EXTENDED)<a class="headerlink" href="#stage-6-phoenix-mcp-introspection-extended" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Agent reads its own trace data back via Phoenix MCP and compares to past converged runs</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td>MCP tool calls: <code>phoenix.get_trace(run_id)</code>, <code>phoenix.list_experiments(project)</code>, <code>phoenix.compare_evals(this, last_converged)</code></td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>MCP response schema check + trace completeness (every stage left at least one span)</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>Phoenix data vs Postgres state cross-check — divergence → alert</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>MCP call timeout 5s, 1× retry; non-fatal — falls back to judge-only signal</td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td><code>TraceSummary.experiment_comparison</code> — quantitative position vs prior converged runs</td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>Phoenix MCP (Arize bonus criterion directly), OpenInference instrumentation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stage-7-self-improve-bigquery-learning-new-learning-layer">Stage 7 — Self-Improve + BigQuery Learning  (NEW LEARNING LAYER)<a class="headerlink" href="#stage-7-self-improve-bigquery-learning-new-learning-layer" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purpose</td>
+<td>Decide regen target or terminate, informed by judge + introspect + history</td>
+</tr>
+<tr>
+<td>(a) Generation</td>
+<td>Synthesizes 3 signal sources: judge meta-tally, Phoenix introspect, BigQuery learning query (<code>SELECT regen_choice FROM past_runs WHERE weakest_flow = ? AND outcome = 'converged'</code>)</td>
+</tr>
+<tr>
+<td>(b) Validation</td>
+<td>Decision struct schema; ceiling guards (iter ≤ 7, cost ≤ $5)</td>
+</tr>
+<tr>
+<td>(c) Re-validation</td>
+<td>N/A — pure function</td>
+</tr>
+<tr>
+<td>(d) Retry / failure</td>
+<td>BigQuery query failure → empirical-learning layer skipped, decision uses judge + introspect only</td>
+</tr>
+<tr>
+<td>(e) Context</td>
+<td><code>decision.rationale = { from_judge, from_trace, from_learning }</code> — full provenance of the regen choice</td>
+</tr>
+<tr>
+<td>(f) GCP / Phoenix</td>
+<td>BigQuery (per-run insert + cross-run query), Cloud Tasks (next-iter scheduling)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-cross-cutting-concerns">2. Cross-cutting concerns<a class="headerlink" href="#2-cross-cutting-concerns" title="Permanent link">&para;</a></h2>
+<h3 id="21-validation-matrix">2.1 Validation matrix<a class="headerlink" href="#21-validation-matrix" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Validation type</th>
+<th>Where applied</th>
+<th>Tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema</td>
+<td>Every stage I/O boundary</td>
+<td>Zod</td>
+</tr>
+<tr>
+<td>Cross-stage</td>
+<td>Stage N output ↔ Stage N-1 contract</td>
+<td>Custom validator</td>
+</tr>
+<tr>
+<td>Re-validation</td>
+<td>Every 3rd iter (Validator agent on Gemini Flash, cheap)</td>
+<td>Custom</td>
+</tr>
+<tr>
+<td>Drift detection</td>
+<td>Stage 5 spec_fit ↔ closed-form sum</td>
+<td>Hard assert</td>
+</tr>
+<tr>
+<td>Trace completeness</td>
+<td>Every iter end (≥ 6 spans expected)</td>
+<td>Stage 6 introspect</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-retry-budget-per-stage">2.2 Retry budget per stage<a class="headerlink" href="#22-retry-budget-per-stage" title="Permanent link">&para;</a></h3>
+<pre><code>analyze:         3 advocate × 2 retries  =  6 LLM calls max
+go/no-go:        1 eval × 1 retry        =  2 LLM calls max
+develop:         5 advocate × 2 retries  = 10 LLM calls max
+deploy:          Cloud Build × 2 retries =  build attempts
+judge:           5 critic × 1 retry      = 10 LLM calls max
+introspect:      MCP × 1 retry           =  2 MCP calls max
+self-improve:    BigQuery × 1 retry      =  2 BQ queries max
+─────────────────────────────────────────────────────────
+worst-case per iter: ~30 LLM calls + 2 builds + 2 MCP + 1 BQ
+typical per iter (no retries): ~14 LLM calls + 1 build + 1 MCP + 1 BQ
+</code></pre>
+<h3 id="23-three-layer-context-preservation">2.3 Three-layer context preservation<a class="headerlink" href="#23-three-layer-context-preservation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Purpose</th>
+<th>Storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Postgres</strong></td>
+<td>Canonical run state</td>
+<td>Run / Iteration / JudgeVerdict / TraceRef</td>
+</tr>
+<tr>
+<td><strong>Phoenix</strong></td>
+<td>Observability + experiment history</td>
+<td>OpenInference traces, Datasets, Experiments, Evals</td>
+</tr>
+<tr>
+<td><strong>BigQuery</strong></td>
+<td>Cross-run learning</td>
+<td><code>whyc_learning.run_outcomes</code> table</td>
+</tr>
+</tbody>
+</table>
+<h3 id="24-learning-loop-bigquery-kicks-in-n-10-runs">2.4 Learning loop (BigQuery, kicks in N ≥ 10 runs)<a class="headerlink" href="#24-learning-loop-bigquery-kicks-in-n-10-runs" title="Permanent link">&para;</a></h3>
+<pre><code>At Stage 1 entry:
+  prior_specs ← BQ.SELECT ProductSpec WHERE input_id_similarity(NEW_INPUT) &gt; 0.6 LIMIT 5
+  include as exemplars in analyzer prompt
+
+At Stage 3 entry:
+  winning_advocate_history ← BQ.SELECT advocate_id, COUNT(*) WHERE outcome='converged' GROUP BY advocate_id
+  weight the multi-developer dispatch (still 5 parallel, but the high-win advocate gets higher temperature)
+
+At Stage 7 entry:
+  regen_history ← BQ.SELECT regen_flow, AVG(spec_fit_delta) WHERE weakest_flow = ?
+  inform `decideNext` — if regenerating flow X has historically helped, do it
+</code></pre>
+<p>This is what makes the demo video say <strong>"the agent gets smarter run by run"</strong> — not just iter by iter, but across companies. Genuinely demonstrable.</p>
+<hr />
+<h2 id="3-gcp-phoenix-native-feature-inventory">3. GCP + Phoenix native feature inventory<a class="headerlink" href="#3-gcp-phoenix-native-feature-inventory" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Where used</th>
+<th>Scoring impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Agent Builder (sub-agents)</strong></td>
+<td>Stage 1 (3) + Stage 3 (5) + Stage 5 (5) — 13 sub-agents total</td>
+<td>Tech Implementation ★★★ (rules-mandated)</td>
+</tr>
+<tr>
+<td>Vertex AI SDK</td>
+<td><code>gemini.ts</code> wrapper</td>
+<td>Tech Implementation ★★</td>
+</tr>
+<tr>
+<td><strong>Vertex AI Evaluation</strong></td>
+<td>Stage 2 IP-safety</td>
+<td>Tech Implementation ★★</td>
+</tr>
+<tr>
+<td><strong>Cloud Build</strong></td>
+<td>Stage 4 deploy</td>
+<td>Tech Implementation ★★</td>
+</tr>
+<tr>
+<td>Cloud Run (services + jobs)</td>
+<td>API / Web + pipeline jobs</td>
+<td>Tech Implementation ★★, Stage-1 deliverable</td>
+</tr>
+<tr>
+<td>Cloud SQL Postgres</td>
+<td>Canonical state</td>
+<td>Tech Implementation ★</td>
+</tr>
+<tr>
+<td><strong>BigQuery</strong></td>
+<td>Learning loop</td>
+<td>Tech Implementation ★★★, Idea Quality ★★</td>
+</tr>
+<tr>
+<td>Cloud Tasks</td>
+<td>Next-iter queue</td>
+<td>Tech Implementation ★</td>
+</tr>
+<tr>
+<td>Secret Manager</td>
+<td>All credentials</td>
+<td>Stage-1 deliverable</td>
+</tr>
+<tr>
+<td>Cloud Armor</td>
+<td>Rate limit + noindex injection</td>
+<td>Stage-1 deliverable</td>
+</tr>
+<tr>
+<td><strong>Phoenix MCP</strong></td>
+<td>Stage 6 self-introspection</td>
+<td><strong>Arize bonus ★★★</strong></td>
+</tr>
+<tr>
+<td><strong>Phoenix Prompts</strong></td>
+<td>Advocate + critic prompts versioned</td>
+<td>Arize bonus ★★</td>
+</tr>
+<tr>
+<td><strong>Phoenix Datasets</strong></td>
+<td>Per-stage logging</td>
+<td>Arize bonus ★★</td>
+</tr>
+<tr>
+<td><strong>Phoenix Experiments</strong></td>
+<td>Advocate A/B over time</td>
+<td>Arize bonus ★★</td>
+</tr>
+<tr>
+<td><strong>Phoenix Evals</strong></td>
+<td>5-critic judge</td>
+<td>Arize bonus ★★★</td>
+</tr>
+<tr>
+<td>OpenInference</td>
+<td>All stages auto-instrumented</td>
+<td>Arize bonus ★★</td>
+</tr>
+</tbody>
+</table>
+<p><strong>9 GCP services + 5 Phoenix features = unprecedented integration depth</strong> for a 2-person hackathon team.</p>
+<hr />
+<h2 id="4-hackathon-scoring-axis-impact">4. Hackathon scoring axis impact<a class="headerlink" href="#4-hackathon-scoring-axis-impact" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Axis (25 pts each)</th>
+<th>v1 estimate</th>
+<th>v2 estimate</th>
+<th>Delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tech Implementation</td>
+<td>17</td>
+<td>23–24</td>
+<td>+6–7</td>
+</tr>
+<tr>
+<td>Design</td>
+<td>18</td>
+<td>21–23</td>
+<td>+3–5</td>
+</tr>
+<tr>
+<td>Potential Impact</td>
+<td>18</td>
+<td>21–22</td>
+<td>+3–4</td>
+</tr>
+<tr>
+<td>Quality of Idea</td>
+<td>19</td>
+<td>24–25</td>
+<td>+5–6</td>
+</tr>
+<tr>
+<td><strong>TOTAL (max 100)</strong></td>
+<td><strong>~72</strong></td>
+<td><strong>~89–94</strong></td>
+<td><strong>+17–22</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Reasoning:
+- <strong>Tech Implementation</strong> lift comes from Agent Builder sub-agents (rules-mandated), Vertex AI Eval, BigQuery learning, Phoenix 5-feature integration. Each is independently grade-able.
+- <strong>Design</strong> lift comes from 5 developer advocates → I2 dedup → judge cross-pick. The final preview shipped to the wall is by construction the consensus of 5 design lenses.
+- <strong>Potential Impact</strong> lift comes from the learning loop: "100 runs later, the agent is empirically better at this category of company." Demoable from BigQuery.
+- <strong>Quality of Idea</strong> lift comes from PDD-on-Runtime being structurally unprecedented in the hackathon gallery. Judges have not seen 13 sub-agents adjudicating per-run in any prior submission.</p>
+<hr />
+<h2 id="5-cost-projection">5. Cost projection<a class="headerlink" href="#5-cost-projection" title="Permanent link">&para;</a></h2>
+<pre><code>Per converged run (3 iter average):
+  Stage 1: 3 analyzers (Flash) + 1 synth (Pro)       ~$0.15
+  Stage 2: 1 eval call (Flash)                        ~$0.02
+  Stage 3: 5 developers (Pro) × 3 iter                ~$1.50
+  Stage 4: Cloud Build minutes                        ~$0.05
+  Stage 5: 5 critics (Pro) × 3 iter                   ~$1.20
+  Stage 6: Phoenix MCP (free under 50k traces/mo)     ~$0.00
+  Stage 7: BigQuery (free tier)                       ~$0.00
+  Cloud Run + SQL fixed                                ~$0.20
+  ──────────────────────────────────────────────────────────
+  TOTAL per run                                       ~$3.12
+
+12 demo runs:                                         ~$37
+Buffer for retries + experiments:                     ~$25
+TOTAL:                                                ~$62 of $100 credit (62 %)
+</code></pre>
+<p>Safety margin: $38 (38 %) remaining for: video re-renders, additional dataset experiments, demo-day live invocation.</p>
+<hr />
+<h2 id="6-timeline-d-30-d-0">6. Timeline (D-30 → D-0)<a class="headerlink" href="#6-timeline-d-30-d-0" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>WK1 — D-30 → D-23</strong></td>
+<td>$100 credit redeemed · Stage 1 multi-analyzer · Stage 3 multi-developer · Stage 5 5-critic · BigQuery schema · retry framework</td>
+</tr>
+<tr>
+<td><strong>WK2 — D-22 → D-16</strong></td>
+<td>Stage 4 real Cloud Build + deploy · Stage 2 Vertex AI Eval · context-preservation tests · DRY_RUN E2E integration</td>
+</tr>
+<tr>
+<td><strong>WK3 — D-15 → D-9</strong></td>
+<td>YC scraper · 12 verified companies · learning loop validated (10 runs into BigQuery, query returns useful priors) · video script</td>
+</tr>
+<tr>
+<td><strong>WK4 — D-8 → D-3</strong></td>
+<td>Agent Builder console screenshots · video recorded · README badges + screenshots · Devpost description</td>
+</tr>
+<tr>
+<td><strong>WK5 — D-2 → D-0</strong></td>
+<td>Final rehearsal · submit D-1 (2026-06-10) with 1h buffer</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-risk-register">7. Risk register<a class="headerlink" href="#7-risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent Builder API behavior differs from SDK</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Keep Vertex AI SDK fallback path; cancel Agent Builder sub-agent dispatch if registration fails</td>
+</tr>
+<tr>
+<td>BigQuery learning insufficient at N &lt; 10</td>
+<td>High</td>
+<td>Low</td>
+<td>Empty-result handling; learning layer is optional, judge + introspect alone are sufficient</td>
+</tr>
+<tr>
+<td>5-developer parallel dispatch cost surge</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>DRY_RUN cost measurement first; degrade to 3-developer if projected cost &gt; $4/run</td>
+</tr>
+<tr>
+<td>Phoenix MCP HTTP spec drift</td>
+<td>Low</td>
+<td>Medium</td>
+<td><code>phoenix-client.ts</code> is the abstraction layer; one-place fix</td>
+</tr>
+<tr>
+<td>YC company takedown request during demo</td>
+<td>Low</td>
+<td>High</td>
+<td>M8 1h SLA already operational; 6 reserve candidates pre-verified</td>
+</tr>
+<tr>
+<td>Cloud Build flakiness on first run</td>
+<td>Medium</td>
+<td>Low</td>
+<td>2× retry budget; documented manual-rebuild path</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-demo-video-3-min-receipts-tone">8. Demo video (3 min, receipts tone)<a class="headerlink" href="#8-demo-video-3-min-receipts-tone" title="Permanent link">&para;</a></h2>
+<pre><code>0:00 – 0:15  Hook
+             &quot;VC raised. Hiring posted. Product page empty.&quot;
+
+0:15 – 0:45  Input
+             User pastes a public Y Combinator company URL on whyc.example
+
+0:45 – 1:30  Live multi-agent progress
+             [Stage 1] 3 analyzers (split screen) → 1 spec via synthesis
+             [Stage 3] 5 developers in parallel → I2 dedup → 1 winner
+             [Stage 5] 5 critics scoring panel → spec_fit 0.71
+             [Stage 6] Phoenix dashboard, MCP query in progress
+
+1:30 – 2:15  Self-improvement loop accelerated
+             iter 3 → spec_fit 0.84
+             iter 7 → spec_fit 0.96, converged
+             Phoenix experiment comparison: &quot;+12 % vs prior converged runs&quot;
+
+2:15 – 2:45  Receipts grid
+             12 real YC companies × days_since_DD vs WhyC_ship_time
+
+2:45 – 3:00  Closing
+             &quot;Same pipeline. Any founder, any idea, 1 day.&quot;
+             [Apache-2.0 badge] [github.com/Two-Weeks-Team/WhyC]
+</code></pre>
+<hr />
+<h2 id="9-operational-notes-post-credit-application">9. Operational notes (post-credit-application)<a class="headerlink" href="#9-operational-notes-post-credit-application" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Google Cloud account</strong>: <code>app.2weeks@gmail.com</code> (existing, already linked to Devpost via the credit application)</li>
+<li><strong>Billing account</strong>: the one named "크레딧" (created specifically to redeem this hackathon's $100 coupon)</li>
+<li><strong>Redeem path</strong>: <code>console.cloud.google.com/billing/redeem</code> — apply the coupon to the "크레딧" billing account only</li>
+<li><strong>Approval window</strong>: 1–5 business days; coupon arrives from <code>Partner-developer-marketing@google.com</code></li>
+<li><strong>Hard redeem deadline</strong>: 2026-06-04 (no extension)</li>
+<li><strong>Project to be linked</strong>: <code>whyc-prod</code> (to be created — <code>deploy/README.md</code> §1 documents the steps)</li>
+</ul>
+<hr />
+<h2 id="10-whats-not-in-v2-deferred">10. What's NOT in v2 (deferred)<a class="headerlink" href="#10-whats-not-in-v2-deferred" title="Permanent link">&para;</a></h2>
+<p>These were considered and explicitly held back because they don't move the scoring needle for the hackathon window:</p>
+<ul>
+<li>Multi-language analyzer (Korean / Japanese / etc.) — English-only for v1 dataset</li>
+<li>Real-time progressive deploy (deploy mid-iteration as flows complete) — saved for v3</li>
+<li>Cross-company shared learning beyond batch-level — needs N ≥ 50 runs</li>
+<li>Public submission form (anyone can paste a URL) — H1 locked this closed</li>
+<li>Mobile app — H1 locked web-only</li>
+</ul>
+<hr />
+<h2 id="11-verification-protocol-before-implementation">11. Verification protocol before implementation<a class="headerlink" href="#11-verification-protocol-before-implementation" title="Permanent link">&para;</a></h2>
+<p>This document is a <strong>proposal</strong>, not a commitment. Before any code is written for v2, the team will:</p>
+<ol>
+<li>Walk through this document together</li>
+<li>Confirm each of the 13 sub-agent roles is sensible</li>
+<li>Confirm the cost projection holds against current Gemini pricing</li>
+<li>Confirm the Agent Builder console actually supports the sub-agent registration pattern we describe</li>
+<li>Confirm BigQuery free tier covers the per-run insert volume</li>
+</ol>
+<p>After verification, an <code>architecture-v2-locked.md</code> is created with the final agreed shape, and implementation work begins against that.</p>
+<hr />
+<h2 id="12-changelog">12. Changelog<a class="headerlink" href="#12-changelog" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Author</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-05-11</td>
+<td>Two Weeks Team</td>
+<td>Initial proposal authored (v0.1, awaiting verification)</td>
+</tr>
+</tbody>
+</table>
+
+    <footer>
+      <p>Authored by Two Weeks Team (Sejun Kim, ComBba) for the Google Cloud Rapid Agent Hackathon · Arize Track.</p>
+      <p>Source: <a href="https://github.com/Two-Weeks-Team/WhyC">github.com/Two-Weeks-Team/WhyC</a> · <a href="./architecture-v2-pdd-on-runtime.md">View as Markdown</a></p>
+    </footer>
+  </main>
+
+</div>
+</body>
+</html>
