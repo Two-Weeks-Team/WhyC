@@ -73,9 +73,11 @@ Once SpecDD locks the OpenAPI / Prisma schema and engineering scaffolds the Clou
 
 ## Status
 
-**Phase**: PreviewDD complete (26 advocate previews + 4-panel meta-tally + mitigation checklist). Awaiting Gate H1 (final preview lock) before SpecDD opens.
+**Phase**: v1 pipeline foundation shipped (analyze · go-no-go · develop · deploy · judge · introspect · self-improve). Architecture v2 proposal authored, awaiting team verification before implementation.
 
 **Submission deadline**: 2026-06-11, 14:00 PT.
+
+See [`docs/architecture-v2-pdd-on-runtime.md`](./docs/architecture-v2-pdd-on-runtime.md) for the proposed runtime-level redesign that ports PreviewDD methodology into the pipeline itself (13 sub-agents, multi-stage validation, BigQuery learning, ~$3/run, +17–22 score points projected).
 
 ---
 

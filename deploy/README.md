@@ -84,7 +84,15 @@ gcloud services enable \
 ```
 
 ### 3. Hackathon $100 credit
-Request via the Devpost portal. Approval window 1–5 business days. **Deadline: 2026-06-04** (D-7 from submission). Apply credit to project `whyc-prod`.
+Request via the Devpost portal. Approval window 1–5 business days. **Hard redeem deadline: 2026-06-04**.
+
+**Status (as of 2026-05-11)**: ✅ requested. Awaiting coupon from `Partner-developer-marketing@google.com`.
+
+**Operational facts**:
+- Google Cloud account to attach the coupon: **`app.2weeks@gmail.com`**
+- Billing account to redeem against: the one named **`크레딧`** (created specifically for this hackathon coupon — keep it separate from any other billing account on the same Google login)
+- Redeem path: `console.cloud.google.com/billing/redeem` — paste the coupon onto the `크레딧` billing account only
+- Project to be linked: `whyc-prod` (created in §1 above)
 
 ### 4. Cloud SQL (Postgres 16)
 ```bash
