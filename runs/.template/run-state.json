@@ -1,0 +1,11 @@
+{
+  "run_id": "r-TEMPLATE",
+  "iteration_id": "iter-TEMPLATE-0",
+  "company_slug": "template-co",
+  "iter": 0,
+  "iter_limit": 7,
+  "total_cost_cents": 0,
+  "cost_limit_cents": 500,
+  "advocate_mode": "multi",
+  "judge_prompt_version": "v1"
+}

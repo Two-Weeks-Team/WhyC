@@ -144,6 +144,21 @@ jobs:
         run: bash scripts/test-sanitizer.sh
 
   # -------------------------------------------------------------------------
+  # 5b. Hook layer smoke test (v4 mechanical stage gates)
+  #     bash + stdlib python3 only — no deps, no install.
+  # -------------------------------------------------------------------------
+  hooks:
+    name: hook layer smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate agents/v4-index.json
+        run: python3 -c "import json,sys; d=json.load(open('agents/v4-index.json')); assert len(d['agents'])>=13, d; print(len(d['agents']),'agents OK')"
+      - name: Run hook smoke test
+        run: bash hooks/smoke-test.sh
+
+  # -------------------------------------------------------------------------
   # 6. Secret scanning + SAST
   # -------------------------------------------------------------------------
   secretlint:

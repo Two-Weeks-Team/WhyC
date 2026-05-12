@@ -1,0 +1,139 @@
+{
+  "$schema": "./v4-index.schema.json",
+  "version": "v4.0",
+  "description": "Sub-agent registry for the WhyC v4 'PDD on Runtime' pipeline. The pipeline-kickoff orchestrator dispatches by tag — e.g. all agents tagged `stage:analyze` + `role:advocate` for the multi-analyzer fan-out. Each agent is a Gemini call with a persona system prompt; the model tier is part of the registry, not hard-coded in the stage module.",
+  "stage_config": {
+    "analyze": { "advocate_count": 3, "advocate_pool_tag": "stage:analyze", "synth_tier": "pro" },
+    "develop": { "advocate_count": 5, "advocate_pool_tag": "stage:develop", "chooser_tier": "pro" },
+    "judge":   { "critic_tag": "stage:judge", "panel_size": 5 }
+  },
+  "agents": [
+    {
+      "id": "advocate-designer",
+      "name": "The Designer (P18)",
+      "role": "advocate",
+      "persona": "designer",
+      "model_tier": "flash",
+      "tags": ["stage:analyze", "stage:develop", "role:advocate", "persona:designer"],
+      "bias": "editorial / visual storytelling — hero, type scale, rhythm; treats the preview as a piece of design, not a CRUD form",
+      "system_prompt_ref": "prompts/advocate/designer.md"
+    },
+    {
+      "id": "advocate-spreadsheet-jockey",
+      "name": "The Spreadsheet Jockey (P06)",
+      "role": "advocate",
+      "persona": "spreadsheet_jockey",
+      "model_tier": "flash",
+      "tags": ["stage:analyze", "stage:develop", "role:advocate", "persona:spreadsheet_jockey"],
+      "bias": "dense data grid power user — sortable columns, sparklines, keyboard nav; maximise information per pixel",
+      "system_prompt_ref": "prompts/advocate/spreadsheet-jockey.md"
+    },
+    {
+      "id": "advocate-pragmatist",
+      "name": "The Pragmatist (P11)",
+      "role": "advocate",
+      "persona": "pragmatist",
+      "model_tier": "flash",
+      "tags": ["stage:analyze", "stage:develop", "role:advocate", "persona:pragmatist"],
+      "bias": "ship today — the smallest surface that demonstrates the 3 flows; YAGNI; no speculative structure",
+      "system_prompt_ref": "prompts/advocate/pragmatist.md"
+    },
+    {
+      "id": "advocate-mobile-first",
+      "name": "The Mobile-First (P07)",
+      "role": "advocate",
+      "persona": "mobile_first",
+      "model_tier": "pro",
+      "tags": ["stage:develop", "role:advocate", "persona:mobile_first"],
+      "bias": "phone-frame default — 48px tap targets, bottom sheets, single-column flow, thumb-reachable primary action",
+      "system_prompt_ref": "prompts/advocate/mobile-first.md"
+    },
+    {
+      "id": "advocate-data-nerd",
+      "name": "The Data Nerd (P13)",
+      "role": "advocate",
+      "persona": "data_nerd",
+      "model_tier": "pro",
+      "tags": ["stage:develop", "role:advocate", "persona:data_nerd"],
+      "bias": "analytics first — KPI strip above the fold, every flow instrumented, the dashboard is the product",
+      "system_prompt_ref": "prompts/advocate/data-nerd.md"
+    },
+    {
+      "id": "synth-analyze",
+      "name": "Analyze Synthesizer",
+      "role": "synthesizer",
+      "model_tier": "pro",
+      "tags": ["stage:analyze", "role:synthesizer"],
+      "bias": "merge the surviving advocate ProductSpec drafts into one coherent 9-field spec; resolve conflicts toward demo-ability; never invent constraints the postings don't support",
+      "system_prompt_ref": "prompts/synth/analyze-synth.md"
+    },
+    {
+      "id": "chooser-develop",
+      "name": "Develop Cross-Picker",
+      "role": "chooser",
+      "model_tier": "pro",
+      "tags": ["stage:develop", "role:chooser"],
+      "bias": "pick the single advocate manifest that best realises the spec's 3 flows on one screen; record a verbatim rationale; ties broken toward the manifest with the fewest files (KISS)",
+      "system_prompt_ref": "prompts/chooser/develop-chooser.md"
+    },
+    {
+      "id": "critic-pitch-alignment",
+      "name": "Critic — Pitch Alignment",
+      "role": "critic",
+      "critic_axis": "pitch_alignment",
+      "model_tier": "pro",
+      "tags": ["stage:judge", "role:critic", "critic:pitch_alignment"],
+      "bias": "does the rendered preview say what the company's posting says it does? penalise generic SaaS template energy",
+      "system_prompt_ref": "prompts/critic/pitch-alignment.md"
+    },
+    {
+      "id": "critic-flows-present",
+      "name": "Critic — Flows Present",
+      "role": "critic",
+      "critic_axis": "flows_present",
+      "model_tier": "pro",
+      "tags": ["stage:judge", "role:critic", "critic:flows_present"],
+      "bias": "are all 3 spec flows actually reachable and demonstrable in the deployed preview? a flow that 404s scores 0",
+      "system_prompt_ref": "prompts/critic/flows-present.md"
+    },
+    {
+      "id": "critic-design-quality",
+      "name": "Critic — Design Quality",
+      "role": "critic",
+      "critic_axis": "design_quality",
+      "model_tier": "pro",
+      "tags": ["stage:judge", "role:critic", "critic:design_quality"],
+      "bias": "visual hierarchy, contrast, spacing, type; would a designer wince? polish of the first impression",
+      "system_prompt_ref": "prompts/critic/design-quality.md"
+    },
+    {
+      "id": "critic-implementation",
+      "name": "Critic — Implementation",
+      "role": "critic",
+      "critic_axis": "implementation",
+      "model_tier": "pro",
+      "tags": ["stage:judge", "role:critic", "critic:implementation"],
+      "bias": "does it actually run? hydration errors, console errors, broken links, layout shift — engineering rigor of the artifact",
+      "system_prompt_ref": "prompts/critic/implementation.md"
+    },
+    {
+      "id": "critic-security",
+      "name": "Critic — Security",
+      "role": "critic",
+      "critic_axis": "security",
+      "model_tier": "pro",
+      "tags": ["stage:judge", "role:critic", "critic:security"],
+      "bias": "pass/fail, not a score — does the preview leak anything (keys, internal URLs, PII), echo unsanitised input, or reproduce the company's proprietary IP verbatim? any concern raises security_flag",
+      "system_prompt_ref": "prompts/critic/security.md"
+    },
+    {
+      "id": "introspect-trace-reader",
+      "name": "Trace Self-Reader (Phoenix MCP)",
+      "role": "introspector",
+      "model_tier": "flash",
+      "tags": ["stage:introspect", "role:introspector"],
+      "bias": "read this run's OWN Phoenix traces back via @arizeai/phoenix-client; surface the slowest/erroring spans per flow so self-improve's regen choice is grounded in observability data, not just the judge's text",
+      "system_prompt_ref": "prompts/introspect/trace-reader.md"
+    }
+  ]
+}
