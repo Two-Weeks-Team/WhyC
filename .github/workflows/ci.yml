@@ -39,12 +39,20 @@ jobs:
           cache: pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate --schema=prisma/schema.prisma
       - name: Prisma format
         run: pnpm exec prisma format --schema=prisma/schema.prisma --check || pnpm exec prisma format --schema=prisma/schema.prisma
       - name: API lint
         run: pnpm --filter @whyc/api run lint
       - name: API typecheck
         run: pnpm --filter @whyc/api run typecheck
+      - name: Jobs typecheck
+        if: hashFiles('apps/jobs/package.json') != ''
+        run: pnpm --filter @whyc/jobs run typecheck
+      - name: Jobs build
+        if: hashFiles('apps/jobs/package.json') != ''
+        run: pnpm --filter @whyc/jobs run build
       - name: Web lint
         if: hashFiles('apps/web/package.json') != ''
         run: pnpm --filter @whyc/web run lint
@@ -93,6 +101,8 @@ jobs:
           cache: pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate --schema=prisma/schema.prisma
       - name: Regenerate OpenAPI from controllers
         run: |
           pnpm --filter @whyc/api exec npx nestia openapi || \
