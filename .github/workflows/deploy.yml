@@ -16,7 +16,6 @@ concurrency:
 
 env:
   NODE_VERSION: "20.11.1"
-  PNPM_VERSION: "9.1.0"
   GCP_REGION: us-central1
   GCP_PROJECT_NUMBER: "687675138316"           # for the deterministic *.run.app URL
   GCP_AR_REPO: whyc                            # Artifact Registry repo
@@ -106,9 +105,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      # No `version:` here — it conflicts with the `packageManager` field in
+      # package.json (pnpm/action-setup@v4 errors on "Multiple versions of pnpm
+      # specified"). ci.yml does the same: rely on packageManager: pnpm@9.12.0.
       - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
