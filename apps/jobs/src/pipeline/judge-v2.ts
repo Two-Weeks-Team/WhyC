@@ -26,7 +26,7 @@ import { join } from 'node:path';
 import { trace as otelTrace } from '@opentelemetry/api';
 import { callModel } from '../util/gemini.js';
 import { withSpan } from '../instrumentation/index.js';
-import { runHook, hookPassed, runDir, patchRunState, appendManifestLine, appendDecision } from '../util/memory.js';
+import { runHook, hookPassed, runDir, patchRunState, appendDecision } from '../util/memory.js';
 import { judgeCritics } from '../util/agents.js';
 import {
   StageError,
@@ -184,7 +184,6 @@ export async function judgeV2(args: JudgeV2Args): Promise<JudgeV2Result> {
       }
       let manifestLine: ManifestLine | null = null;
       try { manifestLine = JSON.parse(post.stdout.trim().split('\n').filter(Boolean).pop() ?? '') as ManifestLine; } catch { /* hook still wrote the file */ }
-      if (manifestLine) appendManifestLine(args.runId, manifestLine);
 
       // ── category gate: security ──
       const gate = await runHook('category-gate-security', [dir, outPath]);

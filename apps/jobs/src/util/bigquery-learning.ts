@@ -15,24 +15,37 @@
 // WHYC_BIGQUERY_DATASET is set AND the package is actually installed; otherwise
 // the filesystem path is used.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import type { RunOutcomeRow, LearningSignal } from '../pipeline/types.js';
 import { runHook, runDir, RUNS_DIR } from './memory.js';
 
-/** Record a converged run's outcome. Always writes the local record (via the
- *  on-converge.py hook); additionally inserts into BigQuery when configured. */
+/** Record a terminated run's outcome. For a CONVERGED run this goes through the
+ *  on-converge.py hook (which also emits the follow-up checklist). For a
+ *  ceiling-hit run the row is written directly (the converge hook hardcodes
+ *  outcome="converged", which would be wrong). Either way the canonical local
+ *  record is runs/<id>/run-outcome.json, and the row is additionally inserted
+ *  into BigQuery when configured. */
 export async function recordRunOutcome(runId: string, outcome: RunOutcomeRow): Promise<void> {
   const dir = runDir(runId);
-  await runHook('on-converge', [
-    dir,
-    outcome.run_id,
-    String(outcome.final_spec_fit),
-    String(outcome.iterations),
-    String(outcome.cost_cents),
-    outcome.company_slug,
-    outcome.most_regenerated_flow ?? 'null',
-  ]);
+  if (outcome.outcome === 'converged') {
+    await runHook('on-converge', [
+      dir,
+      outcome.run_id,
+      String(outcome.final_spec_fit),
+      String(outcome.iterations),
+      String(outcome.cost_cents),
+      outcome.company_slug,
+      outcome.most_regenerated_flow ?? 'null',
+    ]);
+  } else {
+    // ceiling-hit: write the row directly (don't claim "converged")
+    mkdirSync(dir, { recursive: true });
+    const p = join(dir, 'run-outcome.json');
+    const tmp = `${p}.tmp`;
+    writeFileSync(tmp, JSON.stringify(outcome, null, 2) + '\n');
+    renameSync(tmp, p);
+  }
   await maybeInsertBigQuery(outcome);
 }
 

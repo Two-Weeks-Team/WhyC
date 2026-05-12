@@ -20,7 +20,7 @@ import { trace as otelTrace } from '@opentelemetry/api';
 import { sanitize, fenceForPrompt } from '../util/sanitize.js';
 import { callModel } from '../util/gemini.js';
 import { withSpan } from '../instrumentation/index.js';
-import { runHook, hookPassed, runDir, seedRunDir, patchRunState, appendManifestLine, appendDecision } from '../util/memory.js';
+import { runHook, hookPassed, runDir, seedRunDir, patchRunState, appendDecision } from '../util/memory.js';
 import { advocatesForStage, agentByRole, agentsIndex } from '../util/agents.js';
 import {
   StageError,
@@ -269,7 +269,6 @@ export async function analyzeV2(args: AnalyzeV2Args): Promise<AnalyzeV2Result> {
       }
       let manifestLine: ManifestLine | null = null;
       try { manifestLine = JSON.parse(post.stdout.trim().split('\n').filter(Boolean).pop() ?? '') as ManifestLine; } catch { /* hook still wrote the file */ }
-      if (manifestLine) appendManifestLine(args.runId, manifestLine);
       appendDecision(args.runId, `analyze-v2: ${survivors.length}/${contributions.length} advocate clusters survived; synth tier=${synthAgent.model_tier}`);
 
       return { spec, sanitized, cost_cents: costCents, manifest_line: manifestLine, hook_results: hookResults };

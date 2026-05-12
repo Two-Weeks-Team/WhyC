@@ -26,7 +26,7 @@ import { join } from 'node:path';
 import { trace as otelTrace } from '@opentelemetry/api';
 import { callModel } from '../util/gemini.js';
 import { withSpan } from '../instrumentation/index.js';
-import { runHook, hookPassed, runDir, patchRunState, appendManifestLine, appendDecision } from '../util/memory.js';
+import { runHook, hookPassed, runDir, patchRunState, appendDecision } from '../util/memory.js';
 import { advocatesForStage, agentByRole, agentsIndex } from '../util/agents.js';
 import {
   StageError,
@@ -266,7 +266,6 @@ export async function developV2(args: DevelopV2Args): Promise<DevelopV2Result> {
       }
       let manifestLine: ManifestLine | null = null;
       try { manifestLine = JSON.parse(post.stdout.trim().split('\n').filter(Boolean).pop() ?? '') as ManifestLine; } catch { /* hook still wrote the file */ }
-      if (manifestLine) appendManifestLine(args.runId, manifestLine);
       appendDecision(args.runId, `develop-v2: ${survivorIdx.length}/${contributions.length} manifest clusters; winner=${winnerPersona} (${totalFiles(winnerManifest)} files); cp span=${cpSpanId.slice(0, 8)}`);
 
       return { result, cost_cents: costCents, manifest_line: manifestLine, hook_results: hookResults };

@@ -17,7 +17,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { trace as otelTrace } from '@opentelemetry/api';
 import { introspect } from './introspect.js';
-import { runHook, hookPassed, runDir, appendManifestLine, appendDecision } from '../util/memory.js';
+import { runHook, hookPassed, runDir, appendDecision } from '../util/memory.js';
 import { StageError, type JudgePanelOutput, type TraceSummary, type ManifestLine, type HookResult } from './types.js';
 
 export interface IntrospectV2Args {
@@ -62,7 +62,6 @@ export async function introspectV2(args: IntrospectV2Args): Promise<IntrospectV2
   }
   let manifestLine: ManifestLine | null = null;
   try { manifestLine = JSON.parse(post.stdout.trim().split('\n').filter(Boolean).pop() ?? '') as ManifestLine; } catch { /* file still written */ }
-  if (manifestLine) appendManifestLine(args.runId, manifestLine);
   appendDecision(args.runId, `introspect-v2: ${trace.span_count} spans, ${trace.errors.length} errors, trace_weakest_flow=${trace.trace_weakest_flow ?? '(none)'} console=${trace.phoenix_console_url}`);
 
   void args.dryRun; // introspect() reads DRY_RUN from env via phoenix-client
