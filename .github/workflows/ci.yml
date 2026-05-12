@@ -137,16 +137,20 @@ jobs:
   sanitizer-fixtures:
     name: prompt-injection sanitizer fixtures
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
       - name: Run sanitizer fixtures
-        run: |
-          if [ -x scripts/test-sanitizer.sh ]; then
-            bash scripts/test-sanitizer.sh
-          else
-            echo "::warning::scripts/test-sanitizer.sh not present yet — skipping"
-          fi
+        run: bash scripts/test-sanitizer.sh
 
   # -------------------------------------------------------------------------
   # 6. Secret scanning + SAST
