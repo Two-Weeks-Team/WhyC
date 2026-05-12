@@ -32,6 +32,13 @@ echo '{"artifact_sha256":"abc","artifact_gcs_uri":"gs://x","per_flow":[],"cost_c
 echo '{"judge_prompt_version":"v1","axes":[],"spec_fit":0.9,"weakest_flow":"global","trace_id":"t1","critics":[{"critic":"security","axes":[],"spec_fit":0.9,"security_flag":false,"trace_id":"t1","rationale":"ok"}],"critic_weights":{"pitch_alignment":0.2,"flows_present":0.2,"design_quality":0.2,"implementation":0.2,"security":0.2},"any_security_flag":false}' > "$WORK/judge-clean.json"
 echo '{"judge_prompt_version":"v1","axes":[],"spec_fit":0.9,"weakest_flow":"global","trace_id":"t2","critics":[{"critic":"security","axes":[],"spec_fit":0.4,"security_flag":true,"trace_id":"t2","rationale":"leaks API key"}],"critic_weights":{"pitch_alignment":0.2,"flows_present":0.2,"design_quality":0.2,"implementation":0.2,"security":0.2},"any_security_flag":true}' > "$WORK/judge-flagged.json"
 
+# portable sha256 (shasum may be absent — e.g. slim Docker images have only sha256sum)
+sha256_file() {
+  if command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{print $1}'
+  else echo "no shasum/sha256sum" >&2; return 1; fi
+}
+
 pass=0; fail=0
 expect() { # expect <expected_code> <label> -- <cmd...>
   local exp="$1" label="$2"; shift 3
@@ -50,7 +57,7 @@ expect 0 "on-converge"                -- python3 "$HERE/on-converge.py" "$RUN_DI
 expect 0 "on-cost-ceiling (continue, 0%)"   -- python3 "$HERE/on-cost-ceiling.py" "$RUN_DIR" 0 500
 expect 0 "on-cost-ceiling (downgrade, 80%)" -- python3 "$HERE/on-cost-ceiling.py" "$RUN_DIR" 400 500
 expect 0 "on-cost-ceiling (abort, 100%)"    -- python3 "$HERE/on-cost-ceiling.py" "$RUN_DIR" 500 500
-expect 0 "pre-deploy (matching sha)"  -- bash "$HERE/pre-deploy.sh" "$RUN_DIR" "$(shasum -a 256 "$RUN_DIR/develop-winner.json" | awk '{print $1}')"
+expect 0 "pre-deploy (matching sha)"  -- bash "$HERE/pre-deploy.sh" "$RUN_DIR" "$(sha256_file "$RUN_DIR/develop-winner.json")"
 expect 1 "pre-deploy (tampered sha)"  -- bash "$HERE/pre-deploy.sh" "$RUN_DIR" "0000000000000000000000000000000000000000000000000000000000000000"
 expect 0 "category-gate-security (clean)"   -- python3 "$HERE/category-gate-security.py" "$RUN_DIR" "$WORK/judge-clean.json"
 expect 2 "category-gate-security (flagged)" -- python3 "$HERE/category-gate-security.py" "$RUN_DIR" "$WORK/judge-flagged.json"
