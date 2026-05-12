@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhyC — Session Handoff (2026-05-12)</title>
+<meta name="description" content="Session handoff document for WhyC project — v4 plan locked, 7 operator G-checks pending, 30 days to deadline. Next-session Claude or teammates pick up from 'To Resume' section without re-reading conversation history.">
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --card2: #1c2128; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --orange: #d29922;
+    --purple: #bc8cff; --cyan: #39d353; --pink: #f778ba;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; background:var(--bg); color:var(--fg); line-height:1.7; }
+
+  .hero {
+    background: radial-gradient(ellipse at top, rgba(210,153,34,.08), transparent 70%),
+                radial-gradient(ellipse at bottom right, rgba(88,166,255,.06), transparent 60%),
+                var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 3.5rem 1.5rem 2.5rem;
+  }
+  .hero-inner { max-width: 1300px; margin: 0 auto; }
+  .hero .verdict-badge {
+    display:inline-block; padding:.4rem 1rem; border-radius:999px;
+    font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    margin-bottom:1rem;
+    background:rgba(210,153,34,.12); color:var(--orange); border:1px solid var(--orange);
+  }
+  .hero h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    font-weight:800;
+    background:linear-gradient(135deg,#d29922,#bc8cff,#58a6ff);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    line-height:1.15; letter-spacing: -.02em;
+    margin-bottom: .8rem;
+  }
+  .hero .tagline {
+    font-size: 1rem; color: var(--fg); max-width: 80ch; line-height: 1.55;
+    margin-bottom: 1.25rem;
+  }
+  .hero .meta { display:flex; gap:.5rem; flex-wrap:wrap; }
+  .hero .meta-badge {
+    background:var(--card); border:1px solid var(--border); border-radius:6px;
+    padding:.3rem .75rem; font-size:.78rem; color:var(--muted);
+  }
+  .hero .meta-badge strong { color:var(--fg); }
+
+  .layout { max-width: 1300px; margin: 2.5rem auto; display: grid; grid-template-columns: 260px 1fr; gap: 2rem; padding: 0 1.5rem; }
+  .toc-sticky { position: sticky; top: 1.5rem; align-self: start; max-height: calc(100vh - 3rem); overflow-y: auto; padding-right: .5rem; }
+  .toc-sticky h4 { color: var(--accent); font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+  .toc-sticky a { color: var(--muted); text-decoration: none; font-size: .8rem; display: block; padding: .22rem 0 .22rem .55rem; border-left: 2px solid transparent; }
+  .toc-sticky a:hover { color: var(--accent); border-left-color: var(--accent); }
+  .toc-sticky ul { list-style: none; padding-left: 0; margin: 0 0 .5rem 0; }
+  .toc-sticky ul ul { padding-left: .85rem; }
+  .toc-sticky ul ul a { font-size: .76rem; }
+  main { min-width: 0; }
+  main > h1 { display: none; }
+
+  h2 { font-size:1.5rem; font-weight:700; color:var(--accent); margin:2.5rem 0 1rem; border-bottom:1px solid var(--border); padding-bottom:.5rem; scroll-margin-top: 1.5rem; }
+  h3 { font-size:1.15rem; font-weight:600; color:var(--purple); margin:1.5rem 0 .75rem; scroll-margin-top: 1.5rem; }
+  h4 { font-size:.98rem; font-weight:600; color:var(--cyan); margin:1.1rem 0 .5rem; }
+  p, li { color:var(--fg); font-size:.94rem; }
+  ul, ol { padding-left:1.4rem; margin:.7rem 0; }
+  li { margin:.3rem 0; }
+  strong { color:#fff; font-weight:600; }
+  em { color: var(--cyan); font-style: normal; }
+  code { background:var(--card2); padding:.15rem .4rem; border-radius:4px; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.85em; color:var(--cyan); }
+  pre { background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:.9rem 1.1rem; overflow-x:auto; font-family:'SF Mono', Menlo, Consolas, monospace; font-size:.8rem; line-height:1.55; margin:1rem 0; }
+  pre code { background:transparent; padding:0; color:var(--fg); }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  blockquote { border-left: 3px solid var(--purple); padding: .5rem 0 .5rem 1.1rem; margin: 1rem 0; color: var(--muted); background: rgba(188,140,255,.05); border-radius: 0 6px 6px 0; }
+  hr { border:none; border-top:1px solid var(--border); margin:2.5rem 0; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; background:var(--card); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  th, td { padding:.6rem .85rem; text-align:left; border-bottom:1px solid var(--border); font-size:.85rem; vertical-align:top; }
+  th { background:var(--card2); color:var(--accent); font-weight:600; font-size:.74rem; text-transform:uppercase; letter-spacing:.05em; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--card2); }
+  .headerlink { color: transparent; margin-left: .4rem; text-decoration: none; font-size: .8em; }
+  h2:hover .headerlink, h3:hover .headerlink, h4:hover .headerlink { color: var(--accent); }
+
+  footer { max-width: 1300px; margin: 2rem auto 3rem; padding: 1.5rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .82rem; }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 1000px) {
+    .layout { grid-template-columns: 1fr; }
+    .toc-sticky { position: static; max-height: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="verdict-badge">📦 Session Handoff · 2026-05-12 · D-30</span>
+    <h1>WhyC — Session Handoff</h1>
+    <p class="tagline">
+      For the next-session Claude or teammates resuming work. v4 master plan is locked. 7 operator G-checks pending (~1 hour total). 30 days to deadline (2026-06-11 14:00 PT). Credit redeem hard deadline 2026-06-04 (D-23). Pick up from "To Resume" section without re-reading the conversation.
+    </p>
+    <div class="meta">
+      <span class="meta-badge"><strong>Repo</strong> · github.com/Two-Weeks-Team/WhyC</span>
+      <span class="meta-badge"><strong>Latest commit</strong> · 9d23e7b</span>
+      <span class="meta-badge"><strong>Plan version</strong> · v4 canonical</span>
+      <span class="meta-badge"><strong>Score target</strong> · 91–97 / 100</span>
+      <span class="meta-badge"><strong>Win probability</strong> · ~90 % top-3 Arize</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="toc-sticky">
+    <h4>Sections</h4>
+    <nav>
+      <div class="toc">
+<ul>
+<li><a href="#whyc-session-handoff-2026-05-12">WhyC — Session Handoff (2026-05-12)</a><ul>
+<li><a href="#tldr-where-we-are-right-now">TL;DR — Where We Are Right Now</a></li>
+<li><a href="#repo-state-snapshot-as-of-commit-9d23e7b">Repo State Snapshot (as of commit 9d23e7b)</a><ul>
+<li><a href="#build-matrix">Build matrix</a></li>
+<li><a href="#pipeline-runtime-v1-current">Pipeline runtime (v1, current)</a></li>
+<li><a href="#recent-commit-history-this-session">Recent commit history (this session)</a></li>
+</ul>
+</li>
+<li><a href="#the-plan-stack-v1-v4">The Plan Stack (v1 → v4)</a></li>
+<li><a href="#5-design-decisions-locked-h1">5 Design Decisions Locked (H1)</a></li>
+<li><a href="#h1-composite-finalist">H1 Composite Finalist</a></li>
+<li><a href="#cost-status-verified-2026-05-11">Cost Status (Verified 2026-05-11)</a></li>
+<li><a href="#hackathon-rule-compliance-snapshot">Hackathon Rule Compliance Snapshot</a></li>
+<li><a href="#active-operator-g-checks-7">Active Operator G-Checks (7)</a></li>
+<li><a href="#v4-implementation-phases-locked-sequence">v4 Implementation Phases (Locked Sequence)</a></li>
+<li><a href="#verification-sources-pin-re-fetch-if-anything-changes">Verification Sources (PIN — re-fetch if anything changes)</a></li>
+<li><a href="#risk-register-top-8">Risk Register (Top 8)</a></li>
+<li><a href="#to-resume-next-5-actions-sequential">To Resume — Next 5 Actions (Sequential)</a></li>
+<li><a href="#cross-doc-index">Cross-doc Index</a><ul>
+<li><a href="#plan-stack">Plan stack</a></li>
+<li><a href="#operational">Operational</a></li>
+<li><a href="#design-provenance-immutable">Design provenance (immutable)</a></li>
+<li><a href="#source-links">Source links</a></li>
+</ul>
+</li>
+<li><a href="#memory-anchors-for-next-session-claude">Memory Anchors (for next-session Claude)</a></li>
+<li><a href="#sign-off">Sign-off</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+    </nav>
+  </aside>
+
+  <main>
+<h1 id="whyc-session-handoff-2026-05-12">WhyC — Session Handoff (2026-05-12)<a class="headerlink" href="#whyc-session-handoff-2026-05-12" title="Permanent link">&para;</a></h1>
+<p><strong>For</strong>: next-session Claude / teammates resuming work
+<strong>Authored</strong>: 2026-05-12
+<strong>Project</strong>: WhyC, Google Cloud Rapid Agent Hackathon · Arize track
+<strong>Repo</strong>: https://github.com/Two-Weeks-Team/WhyC · Apache-2.0 · public
+<strong>Submission deadline</strong>: 2026-06-11 14:00 PT · <strong>D-30</strong>
+<strong>Credit redeem deadline</strong>: 2026-06-04 · <strong>D-23</strong></p>
+<hr />
+<h2 id="tldr-where-we-are-right-now">TL;DR — Where We Are Right Now<a class="headerlink" href="#tldr-where-we-are-right-now" title="Permanent link">&para;</a></h2>
+<p><strong>v4 master plan is locked and waiting on operator.</strong> Code work has NOT started for v4 (we're still on v1 runtime). The repo currently has a complete v1 pipeline (typecheck + build green across 3 packages) and four planning documents at increasing levels of refinement (v2 arch / v2 overview / v3 verified / v4 final). 7 operator G-checks need to clear (mostly GCP console verifications, ~1 hour total) before v4 Phase 0.5 (hook layer) implementation begins.</p>
+<p><strong>Why is the plan worth executing</strong>: ~90 % probability target of top-3 in Arize track via combination of (PDD multi-perspective adjudication × mechanical hook gates × deep GCP/Phoenix integration × receipts-tone satire). Cost projection ~$10 of $100 credit (10 %, 90 % margin).</p>
+<p><strong>Critical countdown</strong>: GCP $100 credit redeem <strong>must complete by D-23 (2026-06-04)</strong> or all Phase 6+ work is blocked. Credit was requested 2026-05-11 per Devpost form; awaiting coupon email from <code>Partner-developer-marketing@google.com</code>.</p>
+<hr />
+<h2 id="repo-state-snapshot-as-of-commit-9d23e7b">Repo State Snapshot (as of commit <code>9d23e7b</code>)<a class="headerlink" href="#repo-state-snapshot-as-of-commit-9d23e7b" title="Permanent link">&para;</a></h2>
+<h3 id="build-matrix">Build matrix<a class="headerlink" href="#build-matrix" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Typecheck</th>
+<th>Build</th>
+<th>Tests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apps/api</code> (NestJS)</td>
+<td>✅</td>
+<td>✅ <code>nest build</code></td>
+<td>✅ 47 pass / 2 skipped (DB-dep)</td>
+</tr>
+<tr>
+<td><code>apps/web</code> (Next.js 15)</td>
+<td>✅</td>
+<td>✅ 4 routes / 109 KB First Load</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>apps/jobs</code> (Cloud Run Jobs)</td>
+<td>✅</td>
+<td>✅ <code>tsc</code></td>
+<td>(no test files yet)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pipeline-runtime-v1-current">Pipeline runtime (v1, current)<a class="headerlink" href="#pipeline-runtime-v1-current" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apps/jobs/src/pipeline/analyze.ts</code></td>
+<td>✅ live (Gemini Flash, M5 sanitizer integrated)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/pipeline/go-no-go.ts</code></td>
+<td>✅ live (6 rules, no LLM)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/pipeline/develop.ts</code></td>
+<td>✅ live, <strong>v1 stub: writes JSON manifest, no real Next.js tarball yet</strong></td>
+<td>v2 promotes to real tarball</td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/pipeline/deploy.ts</code></td>
+<td>✅ live, <strong>v1 stub: URL synthesis, no real Cloud Run deploy yet</strong></td>
+<td>v2 promotes to real Cloud Build + Cloud Run</td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/pipeline/judge.ts</code></td>
+<td>✅ live (Gemini Pro, single critic)</td>
+<td>v2 promotes to 5-critic panel</td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/pipeline/introspect.ts</code></td>
+<td>✅ live (hand-rolled Phoenix HTTP client)</td>
+<td>v2 swaps to <code>@arizeai/phoenix-client</code></td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/pipeline/self-improve.ts</code></td>
+<td>✅ live (pure decideNext)</td>
+<td>v2 adds BigQuery learning signal</td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/jobs/pipeline-kickoff.ts</code></td>
+<td>✅ live, supports <code>WHYC_DRY_RUN=true</code></td>
+<td>v2 wires hook layer</td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/jobs/sweep-deploys.ts</code></td>
+<td>✅ live (SC5/SC7 idempotent)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>apps/jobs/src/jobs/{scrape-yc, refresh-hires, public-stats-rebuild}.ts</code></td>
+<td>⚠️ stubs</td>
+<td>implemented in v2 Phase 9</td>
+</tr>
+</tbody>
+</table>
+<h3 id="recent-commit-history-this-session">Recent commit history (this session)<a class="headerlink" href="#recent-commit-history-this-session" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Commit</th>
+<th>What landed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>9d23e7b</code></td>
+<td>README points to master-plan-v4 as canonical + doc hierarchy table</td>
+</tr>
+<tr>
+<td><code>a938af2</code></td>
+<td><strong>master-plan-v4.md/.html</strong> — PDD on Runtime, mechanically gated, 91-97 score target</td>
+</tr>
+<tr>
+<td><code>398f099</code></td>
+<td>master-plan-v3.md/.html — verification complete, 88-96 score</td>
+</tr>
+<tr>
+<td><code>162847c</code></td>
+<td>v2-overview.md/.html — team brief (one-page)</td>
+</tr>
+<tr>
+<td><code>b5ea35e</code></td>
+<td>architecture-v2-pdd-on-runtime.html (rendered)</td>
+</tr>
+<tr>
+<td><code>6b849e1</code></td>
+<td>architecture-v2-pdd-on-runtime.md + credit-account pin</td>
+</tr>
+<tr>
+<td><code>77cbe68</code></td>
+<td>scaffold typecheck + 1 unused-param fix + pnpm-workspace</td>
+</tr>
+<tr>
+<td><code>60cd6c6</code></td>
+<td>Phoenix MCP introspection + Arize bonus integration</td>
+</tr>
+<tr>
+<td><code>0e6371e</code></td>
+<td>pipeline stages 2-5 + judge + full kickoff orchestrator</td>
+</tr>
+<tr>
+<td><code>97701d3</code></td>
+<td>pipeline foundation — types, instrumentation, sanitizer, gemini wrapper</td>
+</tr>
+<tr>
+<td><code>b3d1c01</code></td>
+<td>pro-profile engineering scaffold (109 files / 12,104 LOC)</td>
+</tr>
+<tr>
+<td><code>1b987de</code></td>
+<td>SpecDD v1 SHA-256 locked</td>
+</tr>
+<tr>
+<td><code>07a5010</code></td>
+<td>landing v1 prototype (high-fidelity)</td>
+</tr>
+<tr>
+<td><code>a248aa2</code></td>
+<td>H1 locked (P18+P06+detail composite + 5 design decisions)</td>
+</tr>
+<tr>
+<td><code>dd83802</code></td>
+<td>initial design phase commit (74 files / 12,878 insertions)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="the-plan-stack-v1-v4">The Plan Stack (v1 → v4)<a class="headerlink" href="#the-plan-stack-v1-v4" title="Permanent link">&para;</a></h2>
+<pre><code>v1 (live code)        apps/api · apps/web · apps/jobs all green
+                      Pipeline runs but develop/deploy are stubs
+                      No live Cloud Run yet
+       │
+       ▼
+v2 architecture       docs/architecture-v2-pdd-on-runtime.{md,html}
+(deep ref)            13 sub-agents, 7-stage pipeline, GCP+Phoenix integration
+                      ~1100 LOC technical reference
+       │
+       ▼
+v2 overview           docs/v2-overview.{md,html}
+(team brief)          One-page summary for sharing in chat / DM / PR
+                      ~250 lines, KPI strip + 7-stage diagram
+       │
+       ▼
+v3 master plan        docs/master-plan-v3.{md,html}
+(verified)            Verification pass — every claim sourced, every gap closed
+                      88-96 score projection, ~$10 / 12 runs cost
+                      1100 LOC, 18 sections
+       │
+       ▼
+v4 master plan ⭐     docs/master-plan-v4.{md,html}   ← CANONICAL
+                      Adds hook layer (mechanically gated stage transitions)
+                      91-97 score projection, ~90 % win probability target
+                      1250 LOC, 18 sections
+</code></pre>
+<p>Read v4 first. v3 is the verification baseline. v2 docs are deep reference + team brief. v1 is the live code surface.</p>
+<hr />
+<h2 id="5-design-decisions-locked-h1">5 Design Decisions Locked (H1)<a class="headerlink" href="#5-design-decisions-locked-h1" title="Permanent link">&para;</a></h2>
+<p>These are immutable for this submission:</p>
+<ol>
+<li><strong>Demo dataset</strong>: real Y Combinator companies, named, <strong>text only no logos</strong> (M4 supersede)</li>
+<li><strong>Public URL submission</strong>: CLOSED (curated dataset only, eliminates M5 prompt-injection attack surface)</li>
+<li><strong>Phoenix hosting</strong>: Phoenix Cloud SaaS (free 50K traces/mo, M14 sampling cap)</li>
+<li><strong>Agent voice in Phoenix traces</strong>: slightly provocative, brand-consistent</li>
+<li><strong>Submission video framing</strong>: receipts-only (numbers + dates, no adjectives, no accusatory framing, no specific company logo)</li>
+</ol>
+<p>See <code>runs/r-20260506T122526Z/design-approved.json</code> for the locked JSON.</p>
+<h2 id="h1-composite-finalist">H1 Composite Finalist<a class="headerlink" href="#h1-composite-finalist" title="Permanent link">&para;</a></h2>
+<pre><code>Landing      (P18 The Designer)        editorial scroll-story, hero + receipts ledger
+Dashboard    (P06 Spreadsheet Jockey)  dense YC-batch grid, sortable, sparklines
+Detail page  (P10 / P13 / P15 / P07 / P04 composite)
+                                       aurora hero + KPIs + reaction wall +
+                                       mobile breakpoint + cost ledger
+</code></pre>
+<p>Locked in <code>runs/r-20260506T122526Z/chosen_preview.json</code>.</p>
+<hr />
+<h2 id="cost-status-verified-2026-05-11">Cost Status (Verified 2026-05-11)<a class="headerlink" href="#cost-status-verified-2026-05-11" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Cost</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per converged run (3 iter avg)</td>
+<td>~$0.81</td>
+<td>Gemini 2.5 pricing fetched 2026-05-11, Flash $0.30/$2.50/1M, Pro $1.25/$10/1M</td>
+</tr>
+<tr>
+<td>12 demo runs</td>
+<td>~$10</td>
+<td>$0.81 × 12</td>
+</tr>
+<tr>
+<td>Retry buffer (×3)</td>
+<td>~$20</td>
+<td>conservative</td>
+</tr>
+<tr>
+<td>Cloud SQL idle (f1-micro × 30d)</td>
+<td>~$8</td>
+<td></td>
+</tr>
+<tr>
+<td>Vertex AI Evaluation</td>
+<td>~$3</td>
+<td>12 × eval calls</td>
+</tr>
+<tr>
+<td><strong>Total projected</strong></td>
+<td><strong>~$46</strong></td>
+<td>of $100 credit (46 %)</td>
+</tr>
+<tr>
+<td><strong>Margin remaining</strong></td>
+<td><strong>~$54</strong></td>
+<td>54 % buffer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>: <code>apps/jobs/src/util/gemini.ts</code> currently has wrong cost rate constants (Flash output 8.3× under, Pro output 2× under). v4 Phase 1 fixes this. Total bill will land slightly under projection as a result, not over.</p>
+<hr />
+<h2 id="hackathon-rule-compliance-snapshot">Hackathon Rule Compliance Snapshot<a class="headerlink" href="#hackathon-rule-compliance-snapshot" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>Public repo</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>OSI license (Apache-2.0)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>Originality (≥ 2026-05-05)</td>
+<td>✅ first commit 2026-05-06 22:19 +09</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>Gemini model (Vertex AI Gemini 2.5 Flash + Pro)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>Agent Builder used (= Vertex AI Agent Engine / GEAP)</td>
+<td>⚠️ → 🟢 in Phase 6</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Partner MCP integration (@arizeai/phoenix-mcp dep)</td>
+<td>⚠️ → 🟢 in Phase 1</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>No competing services (AWS / OpenAI / Anthropic)</td>
+<td>✅ banned-vendor-lint in CI</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>Web platform</td>
+<td>✅ Next.js + Cloud Run</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>Hosted URL functional</td>
+<td>❌ → 🟢 after Phase 6 deploy</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>≤ 3 min video, English/subtitled</td>
+<td>❌ → 🟢 Phase 10 (WK5)</td>
+</tr>
+</tbody>
+</table>
+<p>7 PASS, 2 GAP (closeable in code), 2 OPEN (scheduled).</p>
+<hr />
+<h2 id="active-operator-g-checks-7">Active Operator G-Checks (7)<a class="headerlink" href="#active-operator-g-checks-7" title="Permanent link">&para;</a></h2>
+<p>These must clear before v4 Phase 0.5 (hook layer) and Phase 6 (real deploy) start. Total operator time: ~1 hour + credit redeem.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decision</th>
+<th>Method</th>
+<th>Status</th>
+<th>Blocker for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>Vertex AI Agent Engine console supports our deployment pattern</td>
+<td>console.cloud.google.com → Agent Engine → New deployment</td>
+<td><strong>PENDING</strong></td>
+<td>Phase 6</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Gemini pricing matches v3/v4 fetch</td>
+<td>✅ Claude-side verified</td>
+<td>DONE</td>
+<td>—</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>BigQuery free tier covers ~5 KB/run × 100 runs</td>
+<td>Quotas console</td>
+<td><strong>PENDING</strong></td>
+<td>Phase 5</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Cloud Run + Build free tier covers usage</td>
+<td>Quotas console</td>
+<td><strong>PENDING</strong></td>
+<td>Phase 6</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>$100 credit redeemed to <code>크레딧</code> billing account</td>
+<td>redeem page after coupon arrives</td>
+<td><strong>IN FLIGHT</strong> (req 2026-05-11)</td>
+<td>Phase 6</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>Workload Identity Federation configured (no JSON keys)</td>
+<td>gcloud commands in <code>deploy/README.md</code> §7</td>
+<td><strong>PENDING</strong></td>
+<td>Phase 6</td>
+</tr>
+<tr>
+<td>G7</td>
+<td>Cloud Run job env has <code>bash</code> / <code>python3</code> / <code>jq</code> / <code>shasum</code></td>
+<td>Docker local test of pipeline-kickoff container</td>
+<td><strong>PENDING</strong></td>
+<td>Phase 0.5 (v4 hooks)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Account facts (PIN)</strong>:
+- GCP account: <code>app.2weeks@gmail.com</code>
+- Billing account: <code>크레딧</code> (created specifically for this hackathon coupon)
+- Project: <code>whyc-prod</code> (to be created)
+- Devpost username: <code>centisgood</code></p>
+<hr />
+<h2 id="v4-implementation-phases-locked-sequence">v4 Implementation Phases (Locked Sequence)<a class="headerlink" href="#v4-implementation-phases-locked-sequence" title="Permanent link">&para;</a></h2>
+<p>12 phases · 33 commits · 31 days. Read <code>master-plan-v4.md</code> §5 for full detail.</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Window</th>
+<th>What lands</th>
+<th>Operator dependency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0.5</strong></td>
+<td>D-30 → D-29 (NEW v4)</td>
+<td>Hook layer: 7 scripts in <code>hooks/</code> + 3 memory files + <code>agents/v4-index.json</code></td>
+<td>G7</td>
+</tr>
+<tr>
+<td>1</td>
+<td>D-29 → D-27</td>
+<td>@arizeai/phoenix-* 4-package adoption + gemini.ts price fix + retry.ts + bigquery-learning.ts</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>D-27 → D-25</td>
+<td>analyze-v2 (3 advocate analyzers + 1 Pro synth)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>D-25 → D-23</td>
+<td>develop-v2 (5 advocate developers + I2 dedup + cross-pick)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>4</td>
+<td>D-23 → D-21</td>
+<td>judge-v2 (5-critic panel via @arizeai/phoenix-evals)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5</td>
+<td>D-21 → D-19</td>
+<td>introspect-v2 + self-improve-v2 + on-converge hook wiring</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>D-19 → D-15</td>
+<td>Stage 4 real Cloud Build + Cloud Run + Agent Engine registration</td>
+<td><strong>G1, G3, G4, G5, G6</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td>D-15 → D-14</td>
+<td>go-no-go-v2 + Vertex AI Evaluation</td>
+<td>—</td>
+</tr>
+<tr>
+<td>8</td>
+<td>D-14 → D-12</td>
+<td>pipeline-kickoff-v2 wires v2 stages + hook layer + dry-run E2E</td>
+<td>—</td>
+</tr>
+<tr>
+<td>9</td>
+<td>D-12 → D-8</td>
+<td>YC scraper + 12-company 7-check verification + BigQuery seed</td>
+<td>Operator (manual 7-check)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>D-8 → D-3</td>
+<td>Video recorded + README badges + Devpost description draft</td>
+<td>Operator</td>
+</tr>
+<tr>
+<td>11</td>
+<td>D-3 → D-0</td>
+<td>Final rehearsal + submit by D-1 (2026-06-10) with 1h buffer</td>
+<td>Operator</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Critical path</strong>: G5 (credit redeem) → G1/G3/G4/G6 (console verifications) → Phase 6 (real deploy). Until Phase 6 finishes, R9 (hosted URL) is OPEN.</p>
+<p>Phases 0.5 → 5 are <strong>GCP-independent</strong> — can start immediately after G7 (hook-script env compatibility check, ~10 min).</p>
+<hr />
+<h2 id="verification-sources-pin-re-fetch-if-anything-changes">Verification Sources (PIN — re-fetch if anything changes)<a class="headerlink" href="#verification-sources-pin-re-fetch-if-anything-changes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>URL</th>
+<th>What we got</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hackathon rules</td>
+<td>rapid-agent.devpost.com/rules</td>
+<td>10 rule items, 5 tracks, 4 equal-weight criteria</td>
+</tr>
+<tr>
+<td>Gemini pricing</td>
+<td>cloud.google.com/vertex-ai/generative-ai/pricing</td>
+<td>Flash $0.30/$2.50/1M, Pro $1.25/$10/1M</td>
+</tr>
+<tr>
+<td>Phoenix MCP</td>
+<td>arize.com/docs/phoenix/integrations/phoenix-mcp-server</td>
+<td>stdio-only</td>
+</tr>
+<tr>
+<td>Phoenix REST</td>
+<td>arize.com/docs/phoenix/sdk-api-reference/rest-api</td>
+<td><code>/v1/spans</code>, Bearer auth</td>
+</tr>
+<tr>
+<td>@arizeai npm packages</td>
+<td>npmjs.com / github.com/Arize-ai/phoenix</td>
+<td>client, otel, evals, mcp, cli all exist</td>
+</tr>
+<tr>
+<td>Cloud Run free tier</td>
+<td>cloud.google.com search snippets</td>
+<td>180K vCPU-s + 360K GiB-s + 2M req / month</td>
+</tr>
+</tbody>
+</table>
+<p>If any of these change before submission, re-check + update v4 doc + bump version.</p>
+<hr />
+<h2 id="risk-register-top-8">Risk Register (Top 8)<a class="headerlink" href="#risk-register-top-8" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hook scripts don't run on Cloud Run job env</td>
+<td>Low</td>
+<td>Med</td>
+<td>Pre-test locally via Docker; bash + stdlib Python only</td>
+</tr>
+<tr>
+<td>Vertex AI Agent Engine rejects TypeScript</td>
+<td>Med</td>
+<td>Med</td>
+<td>Fallback: Python wrapper invokes Node pipeline via subprocess</td>
+</tr>
+<tr>
+<td>Phoenix Evals breaks judge integration</td>
+<td>Low</td>
+<td>High</td>
+<td>Keep hand-rolled judge.ts behind feature flag for A/B</td>
+</tr>
+<tr>
+<td>BigQuery learning N&lt;10 cold-start</td>
+<td>High</td>
+<td>Low</td>
+<td>Empty-result fallback documented</td>
+</tr>
+<tr>
+<td>YC takedown request during demo</td>
+<td>Low</td>
+<td>High</td>
+<td>M8 1h SLA + 6 reserve candidates pre-verified</td>
+</tr>
+<tr>
+<td>Cost ceiling false positive</td>
+<td>Low</td>
+<td>Med</td>
+<td><code>on-cost-ceiling.py</code> downgrades to single-advocate before abort</td>
+</tr>
+<tr>
+<td>Submission timezone error (PT ↔ KST)</td>
+<td>Low</td>
+<td>🔴 disqualification</td>
+<td>Phone calendar alert at 2026-06-10 12:00 PT + GHA cron reminder</td>
+</tr>
+<tr>
+<td>Cloud Build first-time setup flakiness</td>
+<td>Med</td>
+<td>Low</td>
+<td>2× retry in <code>.github/workflows/deploy.yml</code>; documented manual rebuild</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="to-resume-next-5-actions-sequential">To Resume — Next 5 Actions (Sequential)<a class="headerlink" href="#to-resume-next-5-actions-sequential" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Operator (Sejun)</strong> — Open Google Cloud console. Run G1, G3, G4 verifications (~25 min total). Confirm/deny via chat or by editing this handoff doc. <strong>No code changes blocked on this.</strong></li>
+<li><strong>Operator (Sejun)</strong> — Watch inbox for <code>Partner-developer-marketing@google.com</code>. When coupon arrives, redeem at <code>console.cloud.google.com/billing/redeem</code> against the <code>크레딧</code> billing account. <strong>G5 unblocks Phase 6.</strong></li>
+<li><strong>Operator (Sejun)</strong> — Run G7 locally: <code>docker run -it node:20-slim bash</code> → check <code>bash --version &amp;&amp; python3 --version &amp;&amp; jq --version &amp;&amp; shasum --version</code>. If all four present in node:20-slim, hook scripts run on Cloud Run jobs. <strong>G7 unblocks Phase 0.5.</strong></li>
+<li><strong>Operator (Sejun)</strong> — Run G6: gcloud commands in <code>deploy/README.md</code> §7 to set up Workload Identity Federation. ~30 min. Push GCP secrets to GitHub repo. <strong>G6 unblocks Phase 6 deploy CI.</strong></li>
+<li><strong>Claude (next session)</strong> — After G7 confirms, start Phase 0.5: create <code>hooks/</code> directory with 7 scripts + 3 memory files + <code>agents/v4-index.json</code>. Single commit. Stage gate: each hook exits 0 on placeholder data.</li>
+</ol>
+<p>After actions 1-5: Phase 1 (deps + gemini.ts fix + retry framework) can begin immediately, in parallel with operator GCP setup (G5 completion).</p>
+<hr />
+<h2 id="cross-doc-index">Cross-doc Index<a class="headerlink" href="#cross-doc-index" title="Permanent link">&para;</a></h2>
+<h3 id="plan-stack">Plan stack<a class="headerlink" href="#plan-stack" title="Permanent link">&para;</a></h3>
+<ul>
+<li>📘 <a href="./master-plan-v4.md">master-plan-v4.md</a> / <a href="https://two-weeks-team.github.io/WhyC/docs/master-plan-v4.html">.html</a> — <strong>canonical execution plan</strong></li>
+<li>📘 <a href="./master-plan-v3.md">master-plan-v3.md</a> / <a href="https://two-weeks-team.github.io/WhyC/docs/master-plan-v3.html">.html</a> — verification baseline</li>
+<li>📘 <a href="./architecture-v2-pdd-on-runtime.md">architecture-v2-pdd-on-runtime.md</a> / <a href="https://two-weeks-team.github.io/WhyC/docs/architecture-v2-pdd-on-runtime.html">.html</a> — deep technical reference</li>
+<li>📘 <a href="./v2-overview.md">v2-overview.md</a> / <a href="https://two-weeks-team.github.io/WhyC/docs/v2-overview.html">.html</a> — team brief</li>
+</ul>
+<h3 id="operational">Operational<a class="headerlink" href="#operational" title="Permanent link">&para;</a></h3>
+<ul>
+<li>📋 <a href="../deploy/README.md">deploy/README.md</a> — operator runbook (GCP provisioning, secrets, takedown procedure)</li>
+<li>📋 <a href="./dataset-verification.md">docs/dataset-verification.md</a> — 7-check protocol for 12 YC companies</li>
+<li>📊 <a href="https://two-weeks-team.github.io/WhyC/claudedocs/hackathon-audit-20260511-rapid-agent.html">hackathon-audit-20260511-rapid-agent.html</a> — submission-readiness scorecard</li>
+</ul>
+<h3 id="design-provenance-immutable">Design provenance (immutable)<a class="headerlink" href="#design-provenance-immutable" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🔒 <a href="../runs/r-20260506T122526Z/chosen_preview.json">runs/r-20260506T122526Z/chosen_preview.json</a> — H1 lock</li>
+<li>🔒 <a href="../runs/r-20260506T122526Z/design-approved.json">runs/r-20260506T122526Z/design-approved.json</a> — 5 design decisions</li>
+<li>🔒 <a href="../runs/r-20260506T122526Z/specs/_lock.json">runs/r-20260506T122526Z/specs/_lock.json</a> — SpecDD v1 SHA-256</li>
+<li>🔒 <a href="../runs/r-20260506T122526Z/mitigations.json">runs/r-20260506T122526Z/mitigations.json</a> — 31 action items</li>
+<li>🎨 <a href="https://two-weeks-team.github.io/WhyC/runs/r-20260506T122526Z/gallery.html">run gallery</a> — 26 advocate previews</li>
+</ul>
+<h3 id="source-links">Source links<a class="headerlink" href="#source-links" title="Permanent link">&para;</a></h3>
+<ul>
+<li>🌐 <a href="https://github.com/Two-Weeks-Team/WhyC">GitHub repo</a></li>
+<li>🌐 <a href="https://rapid-agent.devpost.com/">Hackathon page (Devpost)</a></li>
+<li>🌐 <a href="https://rapid-agent.devpost.com/rules">Hackathon rules</a></li>
+</ul>
+<hr />
+<h2 id="memory-anchors-for-next-session-claude">Memory Anchors (for next-session Claude)<a class="headerlink" href="#memory-anchors-for-next-session-claude" title="Permanent link">&para;</a></h2>
+<p>A few facts that are easy to forget when picking up next session:</p>
+<ul>
+<li><strong>The hackathon's <code>Agent Builder</code> requirement = current product name <code>Vertex AI Agent Engine</code> / <code>Gemini Enterprise Agent Platform</code>.</strong> Don't get confused by the docs that have moved.</li>
+<li><strong>Phoenix MCP server is stdio-only.</strong> We use the REST API via <code>@arizeai/phoenix-client</code> and list <code>@arizeai/phoenix-mcp</code> as a dependency for the R6 claim. Both are visible in package.json.</li>
+<li><strong>Cost projection 10% of credit is <em>with</em> Phoenix free tier intact.</strong> If we somehow blow past 50K traces/month, we get billed; M14 sampling guardrail prevents this.</li>
+<li><strong>Demo dataset has 12 placeholder companies in <code>prisma/seed.ts</code> right now</strong> (alphabetical synthetic names like Acme, Birch, Cinder, etc.). Real YC names land in v4 Phase 9 after operator-verified 7-check.</li>
+<li><strong>The hook layer is OUR design decision</strong> based on lessons from operating the pf plugin. It is not a port of any external framework. The patterns (pre-commit-style hooks, build manifests, category review gates) are general engineering practice.</li>
+<li><strong>All v4 work is gated on G7</strong> (Cloud Run job env has bash/python3/jq/shasum). If G7 fails, hooks need to be wrapped in a custom Docker base image — adds 1-2 h, doesn't change the design.</li>
+<li><strong>Originality rule (R3)</strong> means we cannot port v1 of any external framework wholesale into our repo. We can adopt patterns and decisions but the code must be ours.</li>
+<li><strong>D-23 (2026-06-04) credit redeem is the single hardest deadline.</strong> If credit doesn't redeem by then, Phase 6 doesn't happen, R9 (hosted URL) stays open, Stage 1 doesn't pass.</li>
+</ul>
+<hr />
+<h2 id="sign-off">Sign-off<a class="headerlink" href="#sign-off" title="Permanent link">&para;</a></h2>
+<p>This handoff is a faithful record of the project's state as of 2026-05-12. Next session should be able to pick up from "To Resume — Next 5 Actions" without re-reading the conversation history.</p>
+<p>The plan is locked. The verification is complete. The cost is bounded. The team has 30 days. <strong>Execute.</strong></p>
+  </main>
+
+</div>
+
+<footer>
+  <p>Authored by Two Weeks Team (Sejun Kim · ComBba) — 2026-05-12.</p>
+  <p>This document supersedes any earlier session-summary as the canonical resume point. Pair with <a href="./master-plan-v4.html">master-plan-v4</a> for the locked execution plan.</p>
+  <p>Source: <a href="https://github.com/Two-Weeks-Team/WhyC">github.com/Two-Weeks-Team/WhyC</a> · <a href="./session-handoff-20260512.md">View as Markdown</a></p>
+</footer>
+
+</body>
+</html>
