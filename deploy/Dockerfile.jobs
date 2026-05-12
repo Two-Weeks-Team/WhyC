@@ -40,19 +40,12 @@ COPY apps/jobs ./apps/jobs
 COPY prisma ./prisma
 RUN pnpm --filter @whyc/jobs run build
 
-# ---- 4. prune to production deps -------------------------------------------
-FROM base AS prod-deps
-WORKDIR /app
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-COPY apps/jobs/package.json ./apps/jobs/
-COPY prisma/schema.prisma ./prisma/schema.prisma
-# install with devDeps (prisma CLI is a devDep), generate the client, then prune
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod=false --ignore-scripts --filter "@whyc/jobs..." --filter "."
-RUN pnpm --filter @whyc/jobs exec prisma generate --schema=../../prisma/schema.prisma
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm prune --prod
-
-# ---- 5. runtime -------------------------------------------------------------
+# ---- 4. runtime -------------------------------------------------------------
+# NOTE: ship the full (devDeps-included) install from `builder` — the pruned
+# variant produced an image where runtime deps were unresolvable from
+# apps/jobs/dist/main.js (same MODULE_NOT_FOUND class as Dockerfile.api).
+# Copying `builder`'s node_modules verbatim (incl. generated Prisma client) is
+# the reliable path; size cost is acceptable for a job image.
 FROM node:20-slim AS runtime
 ENV NODE_ENV=production \
     NODE_OPTIONS="--enable-source-maps" \
@@ -67,12 +60,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# built JS + the files the runtime reads at execution time
-COPY --from=builder   --chown=whyc:nodejs /app/apps/jobs/dist          ./apps/jobs/dist
-COPY --from=builder   --chown=whyc:nodejs /app/apps/jobs/package.json  ./apps/jobs/package.json
-COPY --from=prod-deps --chown=whyc:nodejs /app/node_modules            ./node_modules
-COPY --from=prod-deps --chown=whyc:nodejs /app/apps/jobs/node_modules  ./apps/jobs/node_modules
-COPY --from=builder   --chown=whyc:nodejs /app/prisma                  ./prisma
+# built JS + node_modules (with generated Prisma client) + the files the runtime reads
+COPY --from=builder --chown=whyc:nodejs /app/apps/jobs/dist          ./apps/jobs/dist
+COPY --from=builder --chown=whyc:nodejs /app/apps/jobs/package.json  ./apps/jobs/package.json
+COPY --from=builder --chown=whyc:nodejs /app/node_modules            ./node_modules
+COPY --from=builder --chown=whyc:nodejs /app/apps/jobs/node_modules  ./apps/jobs/node_modules
+COPY --from=builder --chown=whyc:nodejs /app/prisma                  ./prisma
 # v4 hook layer + agent registry + per-run template (the pipeline shells into these)
 COPY --chown=whyc:nodejs hooks/                                        ./hooks/
 COPY --chown=whyc:nodejs agents/                                       ./agents/
