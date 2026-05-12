@@ -51,3 +51,10 @@ runs/*.tmp/
 # OS misc
 Thumbs.db
 ehthumbs.db
+
+# Pipeline run artifacts — the committed r-20260506T122526Z run is design
+# provenance (referenced by the master plans); new pipeline runs are ephemeral.
+/runs/r-*/
+!/runs/r-20260506T122526Z/
+# pf-plugin scratch
+/runs/.last-check.*
