@@ -1,0 +1,29 @@
+{
+  "_comment": "Intended Vertex AI Agent Engine (Reasoning Engine) registration for the WhyC pipeline — closes hackathon R5 (Agent Builder used). NOT auto-applied: deployment requires a Python agent package; see README.md in this directory. The actual create call goes through vertexai.preview.reasoning_engines.ReasoningEngine.create(...).",
+  "displayName": "WhyC pipeline",
+  "description": "WhyC — the autonomous build-judge-improve pipeline that, for each Y Combinator company, drafts a product spec (multi-analyzer), generates a Next.js preview manifest (multi-developer), deploys a live Cloud Run preview, scores it with a 5-critic Gemini panel, reads its own Arize Phoenix traces back, and decides whether to re-iterate. Runs as a Cloud Run job; all model calls go through Vertex AI Gemini 2.5 (Flash + Pro); every stage is mechanically gated by the hook layer (see hooks/) and traced to Phoenix Cloud.",
+  "project": "whyc-prod",
+  "location": "us-central1",
+  "fronts": {
+    "cloud_run_job": "pipeline-kickoff (WHYC_JOB=pipeline_kickoff_v2)",
+    "service_account": "whyc-jobs-runtime@whyc-prod.iam.gserviceaccount.com"
+  },
+  "class_methods": [
+    {
+      "name": "run_company",
+      "description": "Run the full pipeline for one company: analyze → go/no-go → loop(develop → deploy → judge → introspect → self-improve) until converged or ceiling.",
+      "parameters": {
+        "company_slug": "string — lowercase RFC1035 slug",
+        "source_url": "string — the company's public posting / homepage URL",
+        "body": "string — the public posting text (sanitized before any LLM call)",
+        "iter_limit": "integer (default 7)",
+        "cost_limit_cents": "integer (default 500)"
+      },
+      "returns": "{ status: 'converged'|'ceiling_hit'|'no_go', iterations, total_cost_cents, final_spec_fit, deployed_services[], run_dir }"
+    }
+  ],
+  "requirements_hint": [
+    "google-cloud-run",
+    "google-cloud-aiplatform[reasoningengine]"
+  ]
+}
