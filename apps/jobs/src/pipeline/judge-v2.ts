@@ -11,9 +11,13 @@
 // decides what to do with it).
 //
 // LLM calls go through callModel (OpenInference-instrumented → traces land in
-// Phoenix). Registering these as named @arizeai/phoenix-evals classifiers /
-// Phoenix Experiments is a follow-up refinement; the dep is present and the
-// trace surface is already there.
+// Phoenix). After the panel, the per-critic verdicts + the meta-tally are
+// written back onto the traced spans as Phoenix span annotations
+// (util/phoenix-annotate.ts → @arizeai/phoenix-client.logSpanAnnotations), so
+// the evaluations are queryable in the Phoenix UI. Re-expressing the critics as
+// @arizeai/phoenix-evals ClassificationEvaluator instances additionally needs an
+// `ai`-SDK-compatible Vertex provider as the evaluator model — a follow-up; the
+// evaluation results land in Phoenix via the annotation path either way.
 //
 // Dry-run (WHYC_DRY_RUN=true / no GOOGLE_CLOUD_PROJECT): deterministic
 // synthetic critics derived from the manifest, so the panel runs without GCP.
@@ -27,6 +31,7 @@ import { trace as otelTrace } from '@opentelemetry/api';
 import { callModel } from '../util/gemini.js';
 import { withSpan } from '../instrumentation/index.js';
 import { runHook, hookPassed, runDir, patchRunState, appendDecision } from '../util/memory.js';
+import { logSpanEvals, type SpanEval } from '../util/phoenix-annotate.js';
 import { judgeCritics } from '../util/agents.js';
 import {
   StageError,
@@ -161,6 +166,7 @@ export async function judgeV2(args: JudgeV2Args): Promise<JudgeV2Result> {
 
       const weakestFlow = pickWeakestFlow(args.spec, args.develop);
       const anyFlag = verdicts.some((v) => v.security_flag);
+      const panelSpanId = otelTrace.getActiveSpan()?.spanContext().spanId ?? '';
       const verdict: JudgePanelOutput = {
         judge_prompt_version: args.judge_prompt_version ?? 'v1',
         axes: consensusAxes,
@@ -190,6 +196,22 @@ export async function judgeV2(args: JudgeV2Args): Promise<JudgeV2Result> {
       hookResults.push(gate);
       const escalate = gate.exit_code === 2;
       appendDecision(args.runId, `judge-v2: spec_fit=${specFit.toFixed(4)} weakest=${weakestFlow} security_flag=${anyFlag} gate=${escalate ? 'ESCALATE' : 'clear'}`);
+
+      // ── Phoenix span annotations: write the verdicts back onto the traced
+      //    spans so they're queryable as evaluations (best-effort, non-fatal). ──
+      const evals: SpanEval[] = [];
+      if (panelSpanId) {
+        evals.push({ spanId: panelSpanId, name: 'spec_fit', score: specFit, label: specFit >= 0.92 ? 'converged' : 'below_tau', explanation: `meta-tally of ${verdicts.length} critics; weakest_flow=${weakestFlow}`, metadata: { weakest_flow: weakestFlow, judge_prompt_version: verdict.judge_prompt_version, any_security_flag: anyFlag } });
+        for (const a of consensusAxes) evals.push({ spanId: panelSpanId, name: `axis.${a.axis}`, score: a.score_0_1, metadata: { weight: a.weight } });
+        evals.push({ spanId: panelSpanId, name: 'security', label: anyFlag ? 'flag' : 'clear', explanation: anyFlag ? 'one or more critics raised security_flag' : 'no security concerns raised' });
+      }
+      for (const v of verdicts) {
+        if (!v.trace_id) continue; // runCritic stores the critic span_id here
+        evals.push({ spanId: v.trace_id, name: `critic.${v.critic}.spec_fit`, score: v.spec_fit, explanation: v.rationale });
+        if (v.critic === 'security') evals.push({ spanId: v.trace_id, name: 'security_flag', label: v.security_flag ? 'flag' : 'clear', explanation: v.rationale });
+      }
+      const annotated = await logSpanEvals(evals);
+      if (annotated > 0) appendDecision(args.runId, `judge-v2: ${annotated} Phoenix span annotation(s) written`);
 
       return { verdict, cost_cents: costCents, escalate_security: escalate, manifest_line: manifestLine, hook_results: hookResults };
     },

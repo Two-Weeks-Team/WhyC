@@ -6,10 +6,11 @@
 // pre-stage / post-stage hooks, and it persists the TraceSummary into the run
 // dir so the audit page / replay can read it.
 //
-// The Phoenix read still goes through util/phoenix-client.ts (the hand-rolled
-// REST client, which already works as the degraded path). Swapping to
-// @arizeai/phoenix-client's getSpans({ traceIds }) is a follow-up — the dep is
-// present; this stage's job is the self-query marker + the refined signal.
+// The Phoenix read goes through util/phoenix-client.ts, which now uses
+// @arizeai/phoenix-client's getSpans({ traceIds }). This stage scopes the
+// self-query to the judge panel's recorded trace ID (falling back to the
+// whyc.run_id attribute filter when Phoenix has no trace match), carries the
+// self_query marker, and persists the refined TraceSummary into the run dir.
 //
 // Span: whyc.introspect.v2 (carries whyc.mcp.self_query=true)
 
@@ -50,7 +51,15 @@ export async function introspectV2(args: IntrospectV2Args): Promise<IntrospectV2
   }
 
   // introspect() opens its own whyc.introspect span with the self_query marker.
-  const trace = await introspect({ run_id: args.runId, judge_weakest_flow: args.judge.weakest_flow });
+  // Scope the read to the judge panel's trace (the panel + its 5 critic spans
+  // live there); phoenix-client falls back to the whyc.run_id attribute filter
+  // if that trace ID yields nothing.
+  const judgeTraceIds = [args.judge.trace_id].filter(Boolean);
+  const trace = await introspect({
+    run_id: args.runId,
+    judge_weakest_flow: args.judge.weakest_flow,
+    ...(judgeTraceIds.length ? { trace_ids: judgeTraceIds } : {}),
+  });
 
   const outPath = join(dir, 'stage-6-introspect.output.json');
   writeFileSync(outPath, JSON.stringify(trace, null, 2) + '\n');
