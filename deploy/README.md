@@ -86,13 +86,37 @@ gcloud services enable \
 ### 3. Hackathon $100 credit
 Request via the Devpost portal. Approval window 1–5 business days. **Hard redeem deadline: 2026-06-04**.
 
-**Status (as of 2026-05-11)**: ✅ requested. Awaiting coupon from `Partner-developer-marketing@google.com`.
+**Status (2026-05-12): ✅ REDEEMED** onto billing account `크레딧계정` (`01B677-A6E5C9-B265AF`), under Google account `app.2weeks@gmail.com`.
 
-**Operational facts**:
-- Google Cloud account to attach the coupon: **`app.2weeks@gmail.com`**
-- Billing account to redeem against: the one named **`크레딧`** (created specifically for this hackathon coupon — keep it separate from any other billing account on the same Google login)
-- Redeem path: `console.cloud.google.com/billing/redeem` — paste the coupon onto the `크레딧` billing account only
-- Project to be linked: `whyc-prod` (created in §1 above)
+---
+
+## ✅ Provisioned state (2026-05-12)
+
+The GCP project and the deploy plumbing are set up. Concrete resource names:
+
+| Resource | Value |
+| --- | --- |
+| GCP project | `whyc-prod` (number `687675138316`) |
+| Billing account | `크레딧계정` `01B677-A6E5C9-B265AF` (linked, billing enabled) |
+| Region | `us-central1` · Artifact Registry repo `whyc` (docker) |
+| Enabled APIs | run, cloudbuild, artifactregistry, aiplatform (Agent Platform), bigquery, secretmanager, sqladmin, iam, iamcredentials, sts |
+| Deployer SA (GitHub Actions) | `gha-deployer@whyc-prod.iam.gserviceaccount.com` — roles: run.admin, cloudbuild.builds.editor, artifactregistry.admin, iam.serviceAccountUser, aiplatform.user, bigquery.dataEditor/jobUser, storage.admin, secretmanager.secretAccessor |
+| Runtime SAs | `whyc-api-runtime@…` (cloudsql.client, secretAccessor, cloudtrace.agent) · `whyc-jobs-runtime@…` (+ aiplatform.user, run.admin, cloudbuild.builds.editor, artifactregistry.writer, storage.admin, bigquery.*) |
+| Workload Identity Federation | pool `github` · provider `github-provider` (condition: `repository_owner == 'Two-Weeks-Team'`) · provider resource = `projects/687675138316/locations/global/workloadIdentityPools/github/providers/github-provider` · repo `Two-Weeks-Team/WhyC` bound to impersonate `gha-deployer` |
+| GitHub repo secrets (set) | `GCP_PROJECT_ID=whyc-prod` · `GCP_WIF_PROVIDER=projects/687675138316/.../providers/github-provider` · `GCP_DEPLOYER_SA` and `GCP_SERVICE_ACCOUNT` = `gha-deployer@whyc-prod.iam.gserviceaccount.com` |
+| BigQuery | dataset `whyc_learning` (US) · table `run_outcomes` (run_id, company_slug, outcome, final_spec_fit, iterations, cost_cents, most_regenerated_flow, terminated_at) — backs the self-improve learning signal |
+| Cloud SQL | instance `whyc-pg` (POSTGRES_16, ENTERPRISE edition, `db-f1-micro`, us-central1, 10GB SSD, no backup) — see §4 / §6 below; password in Secret Manager |
+
+### G-check status (master-plan-v4 §14)
+- **G1** Vertex AI Agent Engine — ✅ `aiplatform.googleapis.com` enabled (shows as "Agent Platform API"); Vertex AI endpoint reachable. The "Reasoning Engine"/Agent Engine deployment itself is done via the Vertex AI SDK/REST in Phase 6 #12 (this gcloud build doesn't have the `gcloud ai reasoning-engines` subcommand, but the API works).
+- **G2** Gemini pricing — ✅ (Claude-side verified; `gemini.ts` constants corrected).
+- **G3** BigQuery free tier — ✅ dataset created; ~5 KB/run × ~100 runs ≪ 10 GB storage / 1 TB query free tier.
+- **G4** Cloud Run + Build free tier — ✅ APIs enabled; ~12 short-lived preview deploys ≪ 180K vCPU-s + 360K GiB-s + 2M req/mo (Run) and 120 build-min/day (Build) free tiers.
+- **G5** $100 credit on `크레딧` — ✅ redeemed.
+- **G6** Workload Identity Federation — ✅ pool/provider/SA/binding created; GitHub secrets set (no long-lived JSON keys).
+- **G7** `node:20-slim` has bash/python3/jq/shasum — ⚠️ **partial**: `node:20-slim` (debian bookworm-slim) ships `bash` + `sha256sum` but **not** `python3`, `jq`, or `shasum`. The v4 hooks use `python3` (for JSON parsing) and the `on-*` hooks ARE python3 scripts; the `.sh` hooks already fall back `shasum`→`sha256sum`. ⇒ the Cloud Run **jobs** image (the one running `pipeline-kickoff-v2`) needs a Dockerfile that does `apt-get install -y python3` (jq optional — not used). There is no `deploy/Dockerfile.jobs` yet; create one in Phase 6/8. (The `api`/`web` images don't run hooks, so they're unaffected.)
+
+**Operational facts (PIN)**: Google account `app.2weeks@gmail.com` · billing `크레딧계정` `01B677-A6E5C9-B265AF` · project `whyc-prod` · Devpost username `centisgood`.
 
 ### 4. Cloud SQL (Postgres 16)
 ```bash
