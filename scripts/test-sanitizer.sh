@@ -14,6 +14,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# @whyc/jobs imports @prisma/client (type-only, but tsc still needs the
+# generated client present). On a fresh checkout pnpm install doesn't run the
+# generate postinstall, so do it explicitly — matches the `test` CI job.
+echo "==> generating prisma client"
+pnpm exec prisma generate --schema=prisma/schema.prisma >/dev/null
+
 echo "==> building @whyc/jobs (sanitize lives there)"
 pnpm --filter @whyc/jobs run build >/dev/null
 
