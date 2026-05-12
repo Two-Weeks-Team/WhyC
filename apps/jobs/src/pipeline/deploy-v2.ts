@@ -136,8 +136,8 @@ function gcloudRunDeploySource(o: { svc: string; appDir: string; region: string;
       '--project', o.project,
       '--region', o.region,
       '--allow-unauthenticated',
-      '--port', '3000',
-      '--memory', '512Mi',
+      '--port', '80',
+      '--memory', '256Mi',
       '--cpu', '1',
       '--max-instances', '2',
       '--min-instances', '0',
@@ -180,115 +180,84 @@ function hashString(s: string): number {
 }
 
 // ─── preview-shell generator ─────────────────────────────────────────────────
+//
+// We deploy the simplest robust thing: one static index.html served by nginx.
+// `gcloud run deploy --source` then just builds a tiny `FROM nginx` image — no
+// language-buildpack guesswork (the Next.js buildpack route was flaky on
+// fresh projects). The page renders the ProductSpec + manifest + cost ledger;
+// nginx adds the `X-Robots-Tag` header.
 
 function esc(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 }
 
-function generatePreviewShell(appDir: string, args: DeployV2Args): void {
-  const name = args.companyName ?? args.companySlug;
+function previewHtml(args: DeployV2Args): string {
+  const name = esc(args.companyName ?? args.companySlug);
   const spec = args.spec;
   const perFlow = args.develop.per_flow;
   const totalFiles = perFlow.reduce((n, e) => n + e.files_written, 0);
-  const data = {
-    name, slug: args.companySlug, runId: args.runId,
-    pitch: spec.pitch, persona: spec.persona, jtbd: spec.jtbd_functional,
-    flows: spec.flows.map((f) => ({ name: f.name, trigger: f.trigger, outcome: f.outcome })),
-    perFlow: perFlow.map((e) => ({ flow: e.flow, files: e.files_written })),
-    totalFiles, manifestSha: args.develop.manifest_sha256,
-    costCents: args.totalCostCents ?? args.develop.cost_cents,
-    iterations: args.iterations ?? null,
-  };
+  const costCents = args.totalCostCents ?? args.develop.cost_cents;
+  const iters = args.iterations;
+  const flowRows = spec.flows.map((f, i) => `
+    <div class="flow">
+      <div class="flow-name">${i + 1}. ${esc(f.name)}</div>
+      <div class="flow-meta"><b>trigger:</b> ${esc(f.trigger)}</div>
+      <div class="flow-meta"><b>outcome:</b> ${esc(f.outcome)}</div>
+    </div>`).join('');
+  const fileRows = perFlow.map((e, i) => `<tr${i ? ' class="brd"' : ''}><td>${esc(e.flow)}</td><td class="r">${e.files_written} files</td></tr>`).join('');
+  const receipts = [
+    `<div class="rcpt"><div class="big">$${(costCents / 100).toFixed(2)}</div><div class="lbl">pipeline cost</div></div>`,
+    iters != null ? `<div class="rcpt"><div class="big">${iters}</div><div class="lbl">iterations</div></div>` : '',
+    `<div class="rcpt"><div class="big mono">${esc(args.runId)}</div><div class="lbl">run id</div></div>`,
+  ].join('');
+  return `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>WhyC preview — ${name}</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0b0d12;color:#e6e9ef;line-height:1.5}
+main{max-width:880px;margin:0 auto;padding:48px 24px 80px}
+.eyebrow{font-size:12px;color:#6b7280;letter-spacing:.1em;text-transform:uppercase}
+h1{font-size:34px;margin:6px 0 4px;font-weight:700}
+.pitch{font-size:18px;color:#aab3c5;margin:0}
+.card{background:#12151c;border:1px solid #232a36;border-radius:12px;padding:20px;margin-top:16px}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#8a93a6;margin:0 0 10px}
+.flow{padding:12px 0;border-top:1px solid #1c2230}.flow:first-of-type{border-top:0}
+.flow-name{font-weight:600;margin-bottom:4px}.flow-meta{font-size:14px;color:#9aa3b5}.flow-meta b{color:#7e8a9e;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px}td{padding:8px 0;color:#cdd3df}td.r{text-align:right;color:#8a93a6}tr.brd td{border-top:1px solid #1c2230}
+.sha{margin-top:12px;font-size:12px;color:#5f6878;font-family:ui-monospace,monospace;word-break:break-all}
+.rcpts{display:flex;gap:32px;flex-wrap:wrap}.rcpt .big{font-size:28px;font-weight:700}.rcpt .lbl{font-size:12px;color:#7e8a9e}.mono{font-family:ui-monospace,monospace;font-size:18px}
+footer{margin-top:32px;font-size:12px;color:#4b5260}
+</style></head><body><main>
+<header><div class="eyebrow">WhyC · autonomous preview</div><h1>${name}</h1><p class="pitch">${esc(spec.pitch)}</p></header>
+<section class="card"><h2>Who it's for</h2><p style="margin:0 0 12px">${esc(spec.persona)}</p><h2>Job to be done</h2><p style="margin:0">${esc(spec.jtbd_functional)}</p></section>
+<section class="card"><h2>Flows the agent built</h2>${flowRows}</section>
+<section class="card"><h2>What was generated · ${totalFiles} files</h2><table><tbody>${fileRows}</tbody></table><div class="sha">manifest sha256: ${esc(args.develop.manifest_sha256)}</div></section>
+<section class="card"><h2>Receipts</h2><div class="rcpts">${receipts}</div></section>
+<footer>Generated by the WhyC pipeline. No-index. Expires 24h after deploy.</footer>
+</main></body></html>`;
+}
 
-  write(appDir, 'package.json', JSON.stringify({
-    name: `whyc-preview-${args.companySlug}`,
-    private: true,
-    version: '0.0.0',
-    scripts: { build: 'next build', start: 'next start -p ${PORT:-3000}' },
-    dependencies: { next: '15.0.3', react: '19.0.0', 'react-dom': '19.0.0' },
-    devDependencies: { typescript: '5.6.3', '@types/react': '18.3.12', '@types/node': '22.9.0' },
-  }, null, 2) + '\n');
-
-  write(appDir, 'next.config.mjs', `/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'standalone',
-  async headers() {
-    return [{ source: '/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }] }];
-  },
-};
-export default nextConfig;
-`);
-
-  write(appDir, 'tsconfig.json', JSON.stringify({
-    compilerOptions: { target: 'ES2022', lib: ['dom', 'dom.iterable', 'ES2022'], jsx: 'preserve', module: 'esnext', moduleResolution: 'bundler', strict: true, noEmit: true, esModuleInterop: true, resolveJsonModule: true, isolatedModules: true, incremental: true, plugins: [{ name: 'next' }] },
-    include: ['next-env.d.ts', '**/*.ts', '**/*.tsx', '.next/types/**/*.ts'],
-    exclude: ['node_modules'],
-  }, null, 2) + '\n');
-
-  write(appDir, '.gitignore', 'node_modules/\n.next/\n');
-  write(appDir, 'next-env.d.ts', '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n');
-
-  write(appDir, join('app', 'layout.tsx'), `export const metadata = { title: ${JSON.stringify(`WhyC preview — ${name}`)}, robots: { index: false, follow: false } };
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (<html lang="en"><body style={{ margin: 0, fontFamily: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', background: '#0b0d12', color: '#e6e9ef' }}>{children}</body></html>);
+function generatePreviewShell(appDir: string, args: DeployV2Args): void {
+  write(appDir, 'index.html', previewHtml(args));
+  // nginx adds the X-Robots-Tag header on every response
+  write(appDir, 'default.conf', `server {
+  listen 80;
+  server_name _;
+  root /usr/share/nginx/html;
+  add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+  location / { try_files $uri $uri/ /index.html; }
 }
 `);
-
-  write(appDir, join('app', 'page.tsx'), `// Generated by WhyC deploy-v2 — a static "preview shell" for ${esc(name)}.
-const data = ${JSON.stringify(data)} as const;
-const card: React.CSSProperties = { background: '#12151c', border: '1px solid #232a36', borderRadius: 12, padding: 20, marginBottom: 16 };
-const h2: React.CSSProperties = { fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8a93a6', margin: '0 0 10px' };
-export default function Page() {
-  return (
-    <main style={{ maxWidth: 880, margin: '0 auto', padding: '48px 24px 80px' }}>
-      <header style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 12, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase' }}>WhyC · autonomous preview</div>
-        <h1 style={{ fontSize: 34, margin: '6px 0 4px', fontWeight: 700 }}>{data.name}</h1>
-        <p style={{ fontSize: 18, color: '#aab3c5', margin: 0, lineHeight: 1.5 }}>{data.pitch}</p>
-      </header>
-      <section style={card}>
-        <h2 style={h2}>Who it's for</h2>
-        <p style={{ margin: '0 0 12px' }}>{data.persona}</p>
-        <h2 style={h2}>Job to be done</h2>
-        <p style={{ margin: 0 }}>{data.jtbd}</p>
-      </section>
-      <section style={card}>
-        <h2 style={h2}>Flows the agent built</h2>
-        {data.flows.map((f, i) => (
-          <div key={i} style={{ padding: '12px 0', borderTop: i ? '1px solid #1c2230' : 'none' }}>
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>{i + 1}. {f.name}</div>
-            <div style={{ fontSize: 14, color: '#9aa3b5' }}><b style={{ color: '#7e8a9e' }}>trigger:</b> {f.trigger}</div>
-            <div style={{ fontSize: 14, color: '#9aa3b5' }}><b style={{ color: '#7e8a9e' }}>outcome:</b> {f.outcome}</div>
-          </div>
-        ))}
-      </section>
-      <section style={card}>
-        <h2 style={h2}>What was generated · {data.totalFiles} files</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-          <tbody>
-            {data.perFlow.map((e, i) => (
-              <tr key={i} style={{ borderTop: i ? '1px solid #1c2230' : 'none' }}>
-                <td style={{ padding: '8px 0', color: '#cdd3df' }}>{e.flow}</td>
-                <td style={{ padding: '8px 0', textAlign: 'right', color: '#8a93a6' }}>{e.files} files</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ marginTop: 12, fontSize: 12, color: '#5f6878', fontFamily: 'ui-monospace, monospace' }}>manifest sha256: {data.manifestSha}</div>
-      </section>
-      <section style={{ ...card, marginBottom: 0 }}>
-        <h2 style={h2}>Receipts</h2>
-        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-          <div><div style={{ fontSize: 28, fontWeight: 700 }}>{'$' + (data.costCents / 100).toFixed(2)}</div><div style={{ fontSize: 12, color: '#7e8a9e' }}>pipeline cost</div></div>
-          {data.iterations != null && <div><div style={{ fontSize: 28, fontWeight: 700 }}>{data.iterations}</div><div style={{ fontSize: 12, color: '#7e8a9e' }}>iterations</div></div>}
-          <div><div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }}>{data.runId}</div><div style={{ fontSize: 12, color: '#7e8a9e' }}>run id</div></div>
-        </div>
-      </section>
-      <footer style={{ marginTop: 32, fontSize: 12, color: '#4b5260' }}>Generated by the WhyC pipeline. No-index. Expires 24h after deploy.</footer>
-    </main>
-  );
-}
+  write(appDir, 'Dockerfile', `FROM nginx:1.27-alpine
+COPY default.conf /etc/nginx/conf.d/default.conf
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
 `);
+  write(appDir, '.dockerignore', 'Dockerfile\n.dockerignore\n');
 }
 
 function write(base: string, rel: string, content: string): void {
