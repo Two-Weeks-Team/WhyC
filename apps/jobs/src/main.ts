@@ -13,6 +13,7 @@ const sdk = startTelemetry();
 
 const KNOWN_JOBS = new Set([
   'pipeline-kickoff',
+  'pipeline-kickoff-v2',
   'scrape-yc',
   'sweep-deploys',
   'refresh-hires',
@@ -29,6 +30,8 @@ async function loadJob(name: JobName): Promise<{ run: () => Promise<void> }> {
   switch (name) {
     case 'pipeline-kickoff':
       return await import('./jobs/pipeline-kickoff.js');
+    case 'pipeline-kickoff-v2':
+      return await import('./jobs/pipeline-kickoff-v2.js');
     case 'scrape-yc':
       return await import('./jobs/scrape-yc.js');
     case 'sweep-deploys':

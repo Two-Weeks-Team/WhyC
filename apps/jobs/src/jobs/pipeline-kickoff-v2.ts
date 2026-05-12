@@ -153,3 +153,26 @@ export async function pipelineKickoffV2(args: KickoffV2Args): Promise<KickoffV2R
     },
   );
 }
+
+/** Cloud Run Jobs entry point — dispatched by main.ts on WHYC_JOB=pipeline-kickoff-v2.
+ *  Reads the run parameters from WHYC_* env vars. */
+export async function run(): Promise<void> {
+  const companySlug = process.env['WHYC_COMPANY_SLUG'];
+  const sourceUrl = process.env['WHYC_SOURCE_URL'];
+  const body = process.env['WHYC_BODY'];
+  if (!companySlug || !sourceUrl || !body) {
+    throw new Error('pipeline-kickoff-v2: WHYC_COMPANY_SLUG, WHYC_SOURCE_URL and WHYC_BODY are all required');
+  }
+  const runId = process.env['WHYC_RUN_ID'] ?? `r-${new Date().toISOString().replace(/[-:.]/g, '').replace('T', 'T').replace('Z', 'Z')}`;
+  const r = await pipelineKickoffV2({
+    runId,
+    companySlug,
+    sourceUrl,
+    body,
+    ...(process.env['WHYC_COMPANY_NAME'] ? { companyName: process.env['WHYC_COMPANY_NAME'] } : {}),
+    ...(process.env['WHYC_ITER_LIMIT'] ? { iterLimit: Number(process.env['WHYC_ITER_LIMIT']) } : {}),
+    ...(process.env['WHYC_COST_LIMIT_CENTS'] ? { costLimitCents: Number(process.env['WHYC_COST_LIMIT_CENTS']) } : {}),
+    ...(process.env['WHYC_DRY_RUN'] === 'true' ? { dryRun: true } : {}),
+  });
+  console.log(`[pipeline-kickoff-v2] run=${runId} → ${r.status} · ${r.iterations} iter · ${r.total_cost_cents}c · spec_fit=${r.final_spec_fit ?? 'n/a'} · services=[${r.deployed_services.join(', ')}]`);
+}
