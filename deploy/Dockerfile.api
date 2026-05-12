@@ -8,7 +8,8 @@ ENV PNPM_HOME=/pnpm \
     PATH=/pnpm:$PATH \
     NODE_ENV=production \
     CI=true
-RUN corepack enable && corepack prepare pnpm@9.1.0 --activate
+# keep this in sync with package.json's "packageManager" field
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates openssl tini \
  && rm -rf /var/lib/apt/lists/*
@@ -19,9 +20,12 @@ WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY prisma/schema.prisma ./prisma/schema.prisma
-# Full install incl. devDeps (we need nest cli + ts-patch for build)
+# Full install incl. devDeps (we need nest cli + ts-patch for build).
+# --prod=false: the base image sets NODE_ENV=production, which would make pnpm
+# skip devDependencies — force them on. The api `prepare` (ts-patch install -s)
+# then runs with ts-patch present.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@whyc/api..." --filter "."
+    pnpm install --frozen-lockfile --prod=false --filter "@whyc/api..." --filter "."
 # Generate Prisma client into node_modules so it can be copied into runtime
 RUN pnpm --filter @whyc/api exec prisma generate --schema=../../prisma/schema.prisma
 
@@ -38,9 +42,14 @@ WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY prisma/schema.prisma ./prisma/schema.prisma
+# Install with devDeps (the `prisma` CLI is a devDep), generate the Prisma
+# client, THEN prune devDeps — the generated client lives inside @prisma/client
+# (a production dep) so it survives the prune. --ignore-scripts: skip the api
+# `prepare` (ts-patch) — not needed at runtime.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod --filter "@whyc/api..." --filter "."
+    pnpm install --frozen-lockfile --prod=false --ignore-scripts --filter "@whyc/api..." --filter "."
 RUN pnpm --filter @whyc/api exec prisma generate --schema=../../prisma/schema.prisma
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm prune --prod
 
 # ---- 5. runtime -------------------------------------------------------------
 FROM node:20-slim AS runtime

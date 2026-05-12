@@ -32,12 +32,16 @@ const MODEL_NAMES: Record<ModelTier, string> = {
   pro: 'gemini-2.5-pro',
 };
 
-/** Approximate per-1k-token costs in USD-cents. Conservative.
+/** Per-1k-token costs in USD-cents, derived from Vertex AI Gemini 2.5 list pricing
+ *  (fetched 2026-05-11 from cloud.google.com/vertex-ai/generative-ai/pricing):
+ *    - Gemini 2.5 Flash: $0.30 / 1M input, $2.50 / 1M output
+ *    - Gemini 2.5 Pro:   $1.25 / 1M input, $10.00 / 1M output
+ *  $X per 1M tokens → (X / 1000) cents per 1k tokens.
  *  Used for the `Run.totalCostCents` ledger and the cost ceiling check (M7).
- *  Refresh quarterly. */
+ *  Refresh quarterly or whenever the pricing page changes. */
 const COST_CENTS_PER_1K_TOKENS: Record<ModelTier, { input: number; output: number }> = {
-  flash: { input: 0.0075, output: 0.030 },
-  pro: { input: 0.125, output: 0.500 },
+  flash: { input: 0.03, output: 0.25 },
+  pro: { input: 0.125, output: 1.0 },
 };
 
 export interface ModelCallResult<T> {
