@@ -8,7 +8,8 @@ ENV PNPM_HOME=/pnpm \
     PATH=/pnpm:$PATH \
     NODE_ENV=production \
     CI=true
-RUN corepack enable && corepack prepare pnpm@9.1.0 --activate
+# keep this in sync with package.json's "packageManager" field
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates openssl tini \
  && rm -rf /var/lib/apt/lists/*
@@ -19,9 +20,12 @@ WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY prisma/schema.prisma ./prisma/schema.prisma
-# Full install incl. devDeps (we need nest cli + ts-patch for build)
+# Full install incl. devDeps (we need nest cli + ts-patch for build).
+# --ignore-scripts: the `prepare` lifecycle (ts-patch install -s) can't run
+# mid-install before its own bin is linked; we run it explicitly right after.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@whyc/api..." --filter "."
+    pnpm install --frozen-lockfile --ignore-scripts --filter "@whyc/api..." --filter "."
+RUN pnpm --filter @whyc/api exec ts-patch install -s
 # Generate Prisma client into node_modules so it can be copied into runtime
 RUN pnpm --filter @whyc/api exec prisma generate --schema=../../prisma/schema.prisma
 
@@ -38,9 +42,12 @@ WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY prisma/schema.prisma ./prisma/schema.prisma
+# prod stage: no devDeps, so skip lifecycle scripts (ts-patch isn't here and
+# isn't needed at runtime). The generated Prisma client is copied in from the
+# builder stage in the runtime image (the `prisma` CLI is a devDep, so we can't
+# regenerate it here).
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod --filter "@whyc/api..." --filter "."
-RUN pnpm --filter @whyc/api exec prisma generate --schema=../../prisma/schema.prisma
+    pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@whyc/api..." --filter "."
 
 # ---- 5. runtime -------------------------------------------------------------
 FROM node:20-slim AS runtime
@@ -60,6 +67,9 @@ COPY --from=builder   --chown=whyc:nodejs /app/apps/api/dist            ./apps/a
 COPY --from=builder   --chown=whyc:nodejs /app/apps/api/package.json    ./apps/api/package.json
 COPY --from=prod-deps --chown=whyc:nodejs /app/node_modules             ./node_modules
 COPY --from=prod-deps --chown=whyc:nodejs /app/apps/api/node_modules    ./apps/api/node_modules
+# the generated Prisma client (deps stage ran `prisma generate`)
+COPY --from=deps      --chown=whyc:nodejs /app/node_modules/.prisma     ./node_modules/.prisma
+COPY --from=deps      --chown=whyc:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder   --chown=whyc:nodejs /app/prisma                   ./prisma
 
 USER whyc:nodejs

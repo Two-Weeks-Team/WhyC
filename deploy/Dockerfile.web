@@ -9,7 +9,8 @@ ENV PNPM_HOME=/pnpm \
     NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     CI=true
-RUN corepack enable && corepack prepare pnpm@9.1.0 --activate
+# keep this in sync with package.json's "packageManager" field
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates openssl tini \
  && rm -rf /var/lib/apt/lists/*
