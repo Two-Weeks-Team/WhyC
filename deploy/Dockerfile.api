@@ -22,8 +22,7 @@ COPY apps/api/package.json ./apps/api/
 COPY prisma/schema.prisma ./prisma/schema.prisma
 # Full install incl. devDeps (we need nest cli + ts-patch for build).
 # --prod=false: the base image sets NODE_ENV=production, which would make pnpm
-# skip devDependencies — force them on. The api `prepare` (ts-patch install -s)
-# then runs with ts-patch present.
+# skip devDependencies — force them on.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod=false --filter "@whyc/api..." --filter "."
 # Generate Prisma client into node_modules so it can be copied into runtime
@@ -34,6 +33,11 @@ FROM deps AS builder
 WORKDIR /app
 COPY apps/api ./apps/api
 COPY prisma ./prisma
+# Apply the typia + @nestia/core TS transforms (the api's `prepare` script).
+# pnpm install does NOT run `prepare` for workspace packages, so without this
+# `nest build` emits untransformed JS and @nestia/core's TypedRoute throws
+# "no transform has been configured" at runtime → Cloud Run health-check fail.
+RUN pnpm --filter @whyc/api exec ts-patch install -s
 RUN pnpm --filter @whyc/api run build
 
 # ---- 4. runtime -------------------------------------------------------------
