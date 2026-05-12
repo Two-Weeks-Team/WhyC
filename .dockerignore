@@ -9,6 +9,9 @@
 .git
 .github
 runs
+# but keep the per-run template — Dockerfile.jobs copies it in
+!runs/.template
+!runs/.template/**
 hackathon
 *.log
 .env
