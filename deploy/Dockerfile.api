@@ -21,11 +21,11 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY prisma/schema.prisma ./prisma/schema.prisma
 # Full install incl. devDeps (we need nest cli + ts-patch for build).
-# --ignore-scripts: the `prepare` lifecycle (ts-patch install -s) can't run
-# mid-install before its own bin is linked; we run it explicitly right after.
+# --prod=false: the base image sets NODE_ENV=production, which would make pnpm
+# skip devDependencies — force them on. The api `prepare` (ts-patch install -s)
+# then runs with ts-patch present.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --ignore-scripts --filter "@whyc/api..." --filter "."
-RUN pnpm --filter @whyc/api exec ts-patch install -s
+    pnpm install --frozen-lockfile --prod=false --filter "@whyc/api..." --filter "."
 # Generate Prisma client into node_modules so it can be copied into runtime
 RUN pnpm --filter @whyc/api exec prisma generate --schema=../../prisma/schema.prisma
 

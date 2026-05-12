@@ -44,11 +44,13 @@ paths = [
   '''(?i)^deploy/docker-compose\.yml$''',
   '''(?i)^deploy/README\.md$''',
   '''(?i)^README\.md$''',
+  '''(?i)^prisma/README\.md$''',
   '''(?i)^runs/.*''',
 ]
 regexes = [
   '''postgresql:\/\/whyc:whyc-local-dev-only@''',     # docker-compose default
   '''postgresql:\/\/whyc:CHANGE_ME@''',                # .env.example placeholder
+  '''postgresql:\/\/whyc:whyc@localhost''',            # prisma/README local-dev example
   '''CHANGE_ME''',
   '''AIzaSy[A-Za-z0-9\-_]{0,5}\.\.\.''',               # truncated examples
 ]

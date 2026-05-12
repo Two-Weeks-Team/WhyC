@@ -20,8 +20,10 @@ FROM base AS deps
 WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/web/package.json ./apps/web/
+# --prod=false: the base image sets NODE_ENV=production; force devDeps on so
+# `next build` has typescript / @types / tailwind available.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@whyc/web..." --filter "."
+    pnpm install --frozen-lockfile --prod=false --filter "@whyc/web..." --filter "."
 
 # ---- 3. builder -------------------------------------------------------------
 FROM deps AS builder
