@@ -1,10 +1,12 @@
 # Dataset Verification Protocol
 
-**Status**: protocol defined · dataset NOT yet verified · placeholder seed in `prisma/seed.ts`.
+**Status**: protocol defined · scraper implemented · dataset NOT yet verified · placeholder seed in `prisma/seed.ts`.
 **Owner**: Sejun Kim · `centisgood@gmail.com`
 **Target completion**: WK3 (2026-05-21 → 2026-05-27)
 
 This document is the gate every YC company must pass before being inserted into the production dataset that ships in the demo + judging window. The current `prisma/seed.ts` contains 12 alphabetical placeholder rows tagged `(TBD)`; they exist only to validate the schema, repository queries, and N+1 contract.
+
+**Tooling**: `apps/jobs/src/jobs/scrape-yc.ts` (the `scrape_yc` Cloud Run job, or `WHYC_YC_SLUGS=a,b,c node apps/jobs/dist/jobs/scrape-yc.js` locally) fetches each candidate slug's public workatastartup.com page (robots.txt honored), pulls name + ≤200-word public description + batch + open-roles count with source-URL + access-timestamp provenance, and writes `data/yc-candidates.json`. It is **input to** this protocol, not a substitute — Checks 1–7 below (especially 5–7: takedown history, defamatory-framing review, IP-in-preview review) are operator judgements that must still be recorded by hand in `data/dataset-evidence.jsonl`. Pick the W25/S25/W26 slugs from the current YC batch directory, run the scraper on them, then work through the seven checks.
 
 ---
 

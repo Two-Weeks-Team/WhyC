@@ -58,3 +58,5 @@ ehthumbs.db
 !/runs/r-20260506T122526Z/
 # pf-plugin scratch
 /runs/.last-check.*
+/data/yc-candidates.json
+/data/dataset-evidence.jsonl

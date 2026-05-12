@@ -23,21 +23,24 @@
 // Span: whyc.pipeline.v2
 
 import { withSpan } from '../instrumentation/index.js';
-import { seedRunDir, patchRunState, runDir, runHook, updateSessionHandoff } from '../util/memory.js';
+import { seedRunDir, patchRunState, runDir, updateSessionHandoff } from '../util/memory.js';
 import { loadLearningSignal } from '../util/bigquery-learning.js';
 import { analyzeV2 } from '../pipeline/analyze-v2.js';
 import { goNoGoV2 } from '../pipeline/go-no-go-v2.js';
 import { developV2 } from '../pipeline/develop-v2.js';
+import { deployV2 } from '../pipeline/deploy-v2.js';
 import { judgeV2 } from '../pipeline/judge-v2.js';
 import { introspectV2 } from '../pipeline/introspect-v2.js';
 import { selfImproveV2 } from '../pipeline/self-improve-v2.js';
-import { StageError, type GoNoGoDecision } from '../pipeline/types.js';
+import type { GoNoGoDecision } from '../pipeline/types.js';
 
 export interface KickoffV2Args {
   runId: string;
   companySlug: string;
   sourceUrl: string;
   body: string;
+  /** Display name for the preview page (falls back to companySlug). */
+  companyName?: string;
   iterLimit?: number;
   costLimitCents?: number;
   dryRun?: boolean;
@@ -49,6 +52,8 @@ export interface KickoffV2Result {
   iterations: number;
   total_cost_cents: number;
   final_spec_fit: number | null;
+  /** Cloud Run services created (one per iteration); the sweeper revokes them at TTL. */
+  deployed_services: string[];
   run_dir: string;
 }
 
@@ -71,6 +76,7 @@ export async function pipelineKickoffV2(args: KickoffV2Args): Promise<KickoffV2R
       updateSessionHandoff(args.runId, { status: 'starting', last_stage: '', iter: 0, logLine: `kickoff company=${args.companySlug} dry=${dry}` });
 
       let totalCost = 0;
+      const deployedServices: string[] = [];
       const learning = await loadLearningSignal(args.companySlug);
 
       // ── Stage 1: analyze ──
@@ -84,7 +90,7 @@ export async function pipelineKickoffV2(args: KickoffV2Args): Promise<KickoffV2R
       if (g.decision.verdict === 'no_go') {
         patchRunState(args.runId, { status: 'no_go' });
         updateSessionHandoff(args.runId, { status: 'no_go', last_stage: 'go_no_go', iter: 0, logLine: `NO_GO ${g.decision.code}` });
-        return { status: 'no_go', no_go: g.decision, iterations: 0, total_cost_cents: totalCost, final_spec_fit: null, run_dir: dir };
+        return { status: 'no_go', no_go: g.decision, iterations: 0, total_cost_cents: totalCost, final_spec_fit: null, run_dir: dir, deployed_services: deployedServices };
       }
 
       // ── loop ──
@@ -102,12 +108,15 @@ export async function pipelineKickoffV2(args: KickoffV2Args): Promise<KickoffV2R
         priorManifestSha = d.result.manifest_sha256;
         totalCost += d.cost_cents;
 
-        // Stage 4: deploy (v1 stub — Phase 6 makes this a real Cloud Build + Cloud Run)
-        const deployUrl = `https://${args.companySlug}-r${iter}.preview.example.run.app`; // synthetic; replaced in Phase 6
-        const pd = await runHook('pre-deploy', [dir, d.result.manifest_sha256]);
-        if (pd.exit_code !== 0) {
-          throw new StageError('deploy', 'deploy.pre_hook_refused', `pre-deploy hook refused (manifest tamper?): ${pd.stderr || pd.stdout}`, false);
-        }
+        // Stage 4: deploy — real Cloud Run (preview shell). deployV2 owns the
+        // pre-deploy hook (re-verifies the winner manifest SHA-256).
+        const dep = await deployV2({
+          spec: a.spec, develop: d.result, runId: args.runId, iterationId,
+          companySlug: args.companySlug, ...(args.companyName ? { companyName: args.companyName } : {}),
+          totalCostCents: totalCost, iterations: iter + 1, dryRun: dry,
+        });
+        const deployUrl = dep.result.url;
+        deployedServices.push(dep.result.service_name);
 
         // Stage 5: judge
         const j = await judgeV2({ spec: a.spec, develop: d.result, deploy_url: deployUrl, runId: args.runId, iterationId, dryRun: dry });
@@ -129,10 +138,10 @@ export async function pipelineKickoffV2(args: KickoffV2Args): Promise<KickoffV2R
         if (si.downgrade === 'single_advocate') advocateMode = 'single';
 
         if (si.decision.kind === 'converged') {
-          return { status: 'converged', iterations: iter + 1, total_cost_cents: totalCost, final_spec_fit: lastSpecFit, run_dir: dir };
+          return { status: 'converged', iterations: iter + 1, total_cost_cents: totalCost, final_spec_fit: lastSpecFit, run_dir: dir, deployed_services: deployedServices };
         }
         if (si.decision.kind === 'ceiling_hit') {
-          return { status: 'ceiling_hit', iterations: iter + 1, total_cost_cents: totalCost, final_spec_fit: lastSpecFit, run_dir: dir };
+          return { status: 'ceiling_hit', iterations: iter + 1, total_cost_cents: totalCost, final_spec_fit: lastSpecFit, run_dir: dir, deployed_services: deployedServices };
         }
         mostRegen = si.decision.flow;
       }
@@ -140,7 +149,7 @@ export async function pipelineKickoffV2(args: KickoffV2Args): Promise<KickoffV2R
       // ran out of iterations without a terminal decision (shouldn't happen —
       // decideNext returns ceiling_hit at iter_limit — but be defensive)
       patchRunState(args.runId, { status: 'ceiling_hit' });
-      return { status: 'ceiling_hit', iterations: iterLimit, total_cost_cents: totalCost, final_spec_fit: lastSpecFit, run_dir: dir };
+      return { status: 'ceiling_hit', iterations: iterLimit, total_cost_cents: totalCost, final_spec_fit: lastSpecFit, run_dir: dir, deployed_services: deployedServices };
     },
   );
 }
