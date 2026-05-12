@@ -189,7 +189,7 @@ jobs:
             --port=8080 \
             --set-cloudsql-instances="${{ secrets.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:whyc-pg" \
             --set-secrets="DATABASE_URL=whyc-database-url:latest,GEMINI_API_KEY=whyc-gemini-api-key:latest,ARIZE_PHOENIX_API_KEY=whyc-arize-phoenix-api-key:latest,ARIZE_PHOENIX_ENDPOINT=whyc-arize-phoenix-endpoint:latest,CORS_ALLOWED_ORIGIN=whyc-cors-allowed-origin:latest,JUDGE_PROMPT_VERSION=whyc-judge-prompt-version:latest" \
-            --set-env-vars="NODE_ENV=production,PORT=8080,WEB_BASE_URL=https://${{ env.CLOUD_RUN_SERVICE_WEB }}-${{ env.GCP_PROJECT_NUMBER }}.${{ env.GCP_REGION }}.run.app,RATE_LIMIT_COMPANIES_PER_MIN=60,RATE_LIMIT_HEALTH_PER_MIN=600"
+            --set-env-vars="NODE_ENV=production,WEB_BASE_URL=https://${{ env.CLOUD_RUN_SERVICE_WEB }}-${{ env.GCP_PROJECT_NUMBER }}.${{ env.GCP_REGION }}.run.app,RATE_LIMIT_COMPANIES_PER_MIN=60,RATE_LIMIT_HEALTH_PER_MIN=600"
           URL=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE_API }} \
                   --project="${{ secrets.GCP_PROJECT_ID }}" \
                   --region="${{ env.GCP_REGION }}" --format='value(status.url)')
@@ -242,7 +242,7 @@ jobs:
             --concurrency=80 \
             --timeout=30 \
             --port=3000 \
-            --set-env-vars="NODE_ENV=production,PORT=3000,NEXT_PUBLIC_API_BASE=https://${{ env.CLOUD_RUN_SERVICE_API }}-${{ env.GCP_PROJECT_NUMBER }}.${{ env.GCP_REGION }}.run.app/api/v1"
+            --set-env-vars="NODE_ENV=production,NEXT_PUBLIC_API_BASE=https://${{ env.CLOUD_RUN_SERVICE_API }}-${{ env.GCP_PROJECT_NUMBER }}.${{ env.GCP_REGION }}.run.app/api/v1"
           URL=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE_WEB }} \
                   --project="${{ secrets.GCP_PROJECT_ID }}" \
                   --region="${{ env.GCP_REGION }}" --format='value(status.url)')
