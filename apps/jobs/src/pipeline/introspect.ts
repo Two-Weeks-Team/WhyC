@@ -29,6 +29,10 @@ export interface IntrospectArgs {
   run_id: string;
   /** Whatever the judge surfaced.  introspect may override. */
   judge_weakest_flow: string;
+  /** Optional: trace IDs to scope the self-query to (e.g. the judge panel's
+   *  trace). When empty, querySpans falls back to the whyc.run_id attribute
+   *  filter (covers every pipeline span of the run). */
+  trace_ids?: string[];
 }
 
 export async function introspect(args: IntrospectArgs): Promise<TraceSummary> {
@@ -43,7 +47,8 @@ export async function introspect(args: IntrospectArgs): Promise<TraceSummary> {
       'whyc.mcp.self_query': true,
     },
     async () => {
-      const spans = await querySpans({ run_id: args.run_id, name_prefix: 'whyc.', limit: 100 });
+      const traceIds = (args.trace_ids ?? []).filter(Boolean);
+      const spans = await querySpans({ run_id: args.run_id, name_prefix: 'whyc.', limit: 200, ...(traceIds.length ? { trace_ids: traceIds } : {}) });
       const project = projectRef();
 
       const summary: TraceSummary = {

@@ -1,0 +1,91 @@
+# Cloud Run Job: pipeline-kickoff-v2 — the v4 "PDD on Runtime" pipeline.
+#
+# This is the v2 successor to pipeline-kickoff.yaml. Differences:
+#   - image:   whyc-jobs (deploy/Dockerfile.jobs — bash+python3+jq for the hook
+#              layer), NOT the pre-v4 whyc-pipeline scaffold image.
+#   - SA:      whyc-jobs-runtime@PROJECT_ID (the real provisioned runtime SA).
+#   - entry:   apps/jobs/dist/main.js — dispatches on WHYC_JOB; here we set
+#              WHYC_JOB=pipeline-kickoff-v2 → pipelineKickoffV2() which reads the
+#              run parameters from WHYC_* env vars (slug / source URL / body /
+#              iter & cost ceilings). Those four are NOT baked here — they are
+#              supplied per-execution via `gcloud run jobs execute … --update-env-vars`
+#              (or via the Vertex AI Reasoning Engine front in deploy/agent-engine/).
+#   - secrets: the actual Secret Manager names on whyc-prod
+#              (whyc-arize-phoenix-*, whyc-gemini-api-key, whyc-judge-prompt-version,
+#              whyc-database-url-writer).
+#
+# Placeholders (PROJECT_ID / REGION / GIT_SHA) are substituted by
+# .github/workflows/deploy.yml at apply time.
+#
+# NOTE (known follow-up, see claudedocs handoff §8.2): deploy-v2 shells out to
+# `gcloud run deploy --source`, and this image does not bundle the gcloud SDK —
+# so an in-job preview deploy currently degrades. Either add gcloud to
+# deploy/Dockerfile.jobs or switch deploy-v2 to the @google-cloud/run +
+# Cloud Build APIs. Everything else in the pipeline runs in-job as-is.
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: pipeline-kickoff-v2
+  namespace: PROJECT_ID
+  labels:
+    app: whyc
+    tier: job
+    pipeline: v2
+spec:
+  template:
+    spec:
+      parallelism: 1
+      taskCount: 1
+      template:
+        spec:
+          serviceAccountName: whyc-jobs-runtime@PROJECT_ID.iam.gserviceaccount.com
+          maxRetries: 0           # the hook layer + run-dir state make a clean retry non-trivial
+          timeoutSeconds: 3600    # 1h cap (≤12 companies × ≤7 iter)
+          containers:
+            - name: pipeline-kickoff-v2
+              image: REGION-docker.pkg.dev/PROJECT_ID/whyc/whyc-jobs:GIT_SHA
+              # CMD from the image is `node apps/jobs/dist/main.js`; WHYC_JOB drives dispatch.
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: 2Gi
+              env:
+                - name: NODE_ENV
+                  value: production
+                - name: WHYC_JOB
+                  value: pipeline-kickoff-v2
+                - name: GOOGLE_CLOUD_PROJECT
+                  value: PROJECT_ID         # enables Vertex AI Gemini (real, non-dry) calls
+                - name: GCP_REGION
+                  value: REGION
+                - name: GCP_PROJECT_ID
+                  value: PROJECT_ID
+                - name: WHYC_ITER_LIMIT
+                  value: "7"
+                - name: WHYC_COST_LIMIT_CENTS
+                  value: "500"              # $5 per run
+                - name: WHYC_JUDGE_PROMPT_VERSION
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-judge-prompt-version
+                      key: latest
+                - name: ARIZE_PHOENIX_ENDPOINT
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-arize-phoenix-endpoint
+                      key: latest
+                - name: ARIZE_PHOENIX_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-arize-phoenix-api-key
+                      key: latest
+                - name: GEMINI_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-gemini-api-key
+                      key: latest
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: whyc-database-url-writer
+                      key: latest

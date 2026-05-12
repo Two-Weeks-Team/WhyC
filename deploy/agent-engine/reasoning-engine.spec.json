@@ -1,11 +1,11 @@
 {
-  "_comment": "Intended Vertex AI Agent Engine (Reasoning Engine) registration for the WhyC pipeline — closes hackathon R5 (Agent Builder used). NOT auto-applied: deployment requires a Python agent package; see README.md in this directory. The actual create call goes through vertexai.preview.reasoning_engines.ReasoningEngine.create(...).",
+  "_comment": "Vertex AI Agent Engine (Reasoning Engine) registration manifest for the WhyC pipeline — closes hackathon R5 (Agent Builder used). The Python agent package is deploy/agent-engine/agent_engine/; the create/update call is deploy/agent-engine/register.py (vertexai.preview.reasoning_engines.ReasoningEngine.create(...)). NOT auto-applied — needs operator ADC; see README.md.",
   "displayName": "WhyC pipeline",
   "description": "WhyC — the autonomous build-judge-improve pipeline that, for each Y Combinator company, drafts a product spec (multi-analyzer), generates a Next.js preview manifest (multi-developer), deploys a live Cloud Run preview, scores it with a 5-critic Gemini panel, reads its own Arize Phoenix traces back, and decides whether to re-iterate. Runs as a Cloud Run job; all model calls go through Vertex AI Gemini 2.5 (Flash + Pro); every stage is mechanically gated by the hook layer (see hooks/) and traced to Phoenix Cloud.",
   "project": "whyc-prod",
   "location": "us-central1",
   "fronts": {
-    "cloud_run_job": "pipeline-kickoff (WHYC_JOB=pipeline_kickoff_v2)",
+    "cloud_run_job": "pipeline-kickoff-v2 (image whyc-jobs; WHYC_JOB=pipeline-kickoff-v2)",
     "service_account": "whyc-jobs-runtime@whyc-prod.iam.gserviceaccount.com"
   },
   "class_methods": [
