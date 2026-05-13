@@ -1,5 +1,4 @@
-import { Controller, Query, Res } from '@nestjs/common';
-import { TypedRoute } from '@nestia/core';
+import { Controller, Get, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { CommentsService } from '@/services/comments.service';
 import { errors } from '@/util/errors';
@@ -15,7 +14,7 @@ export class CommentsController {
    * `company_slug` is REQUIRED by spec; missing it returns 410 Gone with
    * `code: comments.use_company_path` (deprecated alias guard).
    */
-  @TypedRoute.Get()
+  @Get()
   async list(
     @Query('company_slug') companySlug: string | undefined,
     @Query('cursor') cursor: string | undefined,

@@ -1,5 +1,4 @@
-import { Controller, Res } from '@nestjs/common';
-import { TypedRoute } from '@nestia/core';
+import { Controller, Get, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { HealthService } from '@/services/health.service';
 import type { Health } from '@/dto/health.dto';
@@ -12,7 +11,7 @@ export class HealthController {
    * GET /api/v1/health — liveness.
    * Cache-Control: no-store. No ETag (no caching).
    */
-  @TypedRoute.Get()
+  @Get()
   async getHealth(@Res({ passthrough: true }) res: Response): Promise<Health> {
     res.setHeader('Cache-Control', 'no-store');
     return this.health.getHealth();

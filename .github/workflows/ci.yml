@@ -47,6 +47,8 @@ jobs:
         run: pnpm --filter @whyc/api run lint
       - name: API typecheck
         run: pnpm --filter @whyc/api run typecheck
+      - name: API build
+        run: pnpm --filter @whyc/api run build
       - name: Jobs typecheck
         if: hashFiles('apps/jobs/package.json') != ''
         run: pnpm --filter @whyc/jobs run typecheck

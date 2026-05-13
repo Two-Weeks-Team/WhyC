@@ -1,5 +1,4 @@
-import { Controller, Res } from '@nestjs/common';
-import { TypedRoute } from '@nestia/core';
+import { Controller, Get, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { StatsService } from '@/services/stats.service';
 import type { PublicStats } from '@/dto/stats.dto';
@@ -12,7 +11,7 @@ export class StatsController {
    * GET /api/v1/stats — public ledger for landing receipts.
    * Cache-Control: public, max-age=3600, stale-while-revalidate=86400.
    */
-  @TypedRoute.Get()
+  @Get()
   async getStats(@Res({ passthrough: true }) res: Response): Promise<PublicStats | undefined> {
     const { body, etag, cacheControl } = await this.stats.getStats();
     if (res.locals.applyEtag?.(etag, cacheControl)) return undefined;

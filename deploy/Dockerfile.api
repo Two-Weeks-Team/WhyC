@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# WhyC API (NestJS + @nestia/core + Prisma) — multi-stage image
+# WhyC API (NestJS + Prisma) — multi-stage image
 # Build context: repo root.  Build:  docker build -f deploy/Dockerfile.api -t whyc-api .
 
 # ---- 1. base ----------------------------------------------------------------
@@ -20,7 +20,7 @@ WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY prisma/schema.prisma ./prisma/schema.prisma
-# Full install incl. devDeps (we need nest cli + ts-patch for build).
+# Full install incl. devDeps (we need the nest cli for `nest build`).
 # --prod=false: the base image sets NODE_ENV=production, which would make pnpm
 # skip devDependencies — force them on.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
@@ -33,11 +33,8 @@ FROM deps AS builder
 WORKDIR /app
 COPY apps/api ./apps/api
 COPY prisma ./prisma
-# Apply the typia + @nestia/core TS transforms (the api's `prepare` script).
-# pnpm install does NOT run `prepare` for workspace packages, so without this
-# `nest build` emits untransformed JS and @nestia/core's TypedRoute throws
-# "no transform has been configured" at runtime → Cloud Run health-check fail.
-RUN pnpm --filter @whyc/api exec ts-patch install -s
+# Plain `nest build` — the API uses only stock @nestjs/common decorators
+# (no @nestia/core TS transform), so no ts-patch step is needed.
 RUN pnpm --filter @whyc/api run build
 
 # ---- 4. runtime -------------------------------------------------------------

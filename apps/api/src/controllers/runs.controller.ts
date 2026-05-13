@@ -1,5 +1,4 @@
-import { Controller, Res } from '@nestjs/common';
-import { TypedParam, TypedRoute } from '@nestia/core';
+import { Controller, Get, Param, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { RunsService } from '@/services/runs.service';
 import { IterationsService } from '@/services/iterations.service';
@@ -18,9 +17,9 @@ export class RunsController {
    * Cache-Control varies by status: terminal → immutable; non-terminal → max-age=30.
    * Sends `Warning: 299` when status ∈ {ceiling_hit, aborted}.
    */
-  @TypedRoute.Get(':run_id')
+  @Get(':run_id')
   async getOne(
-    @TypedParam('run_id') runId: string,
+    @Param('run_id') runId: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<Run | undefined> {
     const { body, etag, cacheControl, warning } = await this.runs.getById(runId);
@@ -32,9 +31,9 @@ export class RunsController {
   /**
    * GET /api/v1/runs/{run_id}/iterations.
    */
-  @TypedRoute.Get(':run_id/iterations')
+  @Get(':run_id/iterations')
   async listIterations(
-    @TypedParam('run_id') runId: string,
+    @Param('run_id') runId: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<IterationList | undefined> {
     const { body, etag, cacheControl } = await this.iterations.listForRun(runId);
