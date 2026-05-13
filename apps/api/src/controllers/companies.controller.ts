@@ -1,5 +1,4 @@
-import { Controller, Query, Res } from '@nestjs/common';
-import { TypedParam, TypedRoute } from '@nestia/core';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { CompaniesService } from '@/services/companies.service';
 import { RunsService } from '@/services/runs.service';
@@ -20,7 +19,7 @@ export class CompaniesController {
    * GET /api/v1/companies — sortable, filterable dashboard list.
    * SC6 B7: companies + currentRun resolved via single LEFT JOIN.
    */
-  @TypedRoute.Get()
+  @Get()
   async list(
     @Query('batch_id') batchId: string | undefined,
     @Query('status') status: string | undefined,
@@ -46,9 +45,9 @@ export class CompaniesController {
   /**
    * GET /api/v1/companies/{slug}.
    */
-  @TypedRoute.Get(':slug')
+  @Get(':slug')
   async getOne(
-    @TypedParam('slug') slug: string,
+    @Param('slug') slug: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<Company | undefined> {
     const { body, etag, cacheControl } = await this.companies.getBySlug(slug);
@@ -59,9 +58,9 @@ export class CompaniesController {
   /**
    * GET /api/v1/companies/{slug}/runs.
    */
-  @TypedRoute.Get(':slug/runs')
+  @Get(':slug/runs')
   async listRuns(
-    @TypedParam('slug') slug: string,
+    @Param('slug') slug: string,
     @Query('cursor') cursor: string | undefined,
     @Query('limit') limit: string | undefined,
     @Res({ passthrough: true }) res: Response,
@@ -85,9 +84,9 @@ export class CompaniesController {
    * (BE_LEAD note: spec keeps the flat path canonical for backward compat
    * per SC2 LOW; FE may use either freely).
    */
-  @TypedRoute.Get(':slug/comments')
+  @Get(':slug/comments')
   async listComments(
-    @TypedParam('slug') slug: string,
+    @Param('slug') slug: string,
     @Query('cursor') cursor: string | undefined,
     @Query('limit') limit: string | undefined,
     @Res({ passthrough: true }) res: Response,

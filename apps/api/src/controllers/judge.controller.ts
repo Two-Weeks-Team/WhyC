@@ -1,5 +1,4 @@
-import { Controller, Headers, Res } from '@nestjs/common';
-import { TypedParam, TypedRoute } from '@nestia/core';
+import { Controller, Get, Headers, Param, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { JudgeService } from '@/services/judge.service';
 import { errors } from '@/util/errors';
@@ -20,9 +19,9 @@ export class JudgeController {
    * Vary: Accept set so the markdown and JSON representations cache
    * independently per the openapi.yaml description.
    */
-  @TypedRoute.Get(':version')
+  @Get(':version')
   async getOne(
-    @TypedParam('version') version: string,
+    @Param('version') version: string,
     @Headers('accept') accept: string | undefined,
     @Res({ passthrough: true }) res: Response,
   ): Promise<JudgePrompt | string | undefined> {

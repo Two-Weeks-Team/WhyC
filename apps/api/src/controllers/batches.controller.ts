@@ -1,5 +1,4 @@
-import { Controller, Query, Res } from '@nestjs/common';
-import { TypedParam, TypedRoute } from '@nestia/core';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { BatchesService } from '@/services/batches.service';
 import type { Batch, BatchList } from '@/dto/batch.dto';
@@ -11,7 +10,7 @@ export class BatchesController {
   /**
    * GET /api/v1/batches — list YC batches.
    */
-  @TypedRoute.Get()
+  @Get()
   async list(
     @Query('cursor') cursor: string | undefined,
     @Query('limit') limit: string | undefined,
@@ -29,9 +28,9 @@ export class BatchesController {
   /**
    * GET /api/v1/batches/{batch_id}.
    */
-  @TypedRoute.Get(':batch_id')
+  @Get(':batch_id')
   async getOne(
-    @TypedParam('batch_id') batchId: string,
+    @Param('batch_id') batchId: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<Batch | undefined> {
     const { body, etag, cacheControl } = await this.batches.getById(batchId);

@@ -6,8 +6,10 @@ landing receipts. Implements every path in
 
 ## Stack
 
-- **NestJS 10** + **@nestia/core** (TypedRoute / TypedParam)
-- **typia** for tag-based runtime validation (no class-validator anywhere)
+- **NestJS 10** (stock `@nestjs/common` decorators — `@Get` / `@Param`; built
+  with plain `nest build`, no TS-transform plugin)
+- **typia** type tags (`tags.Format<…>` etc.) for DTO documentation — type-level
+  only, no runtime validation layer (no class-validator anywhere)
 - **Prisma** client over Postgres (Cloud SQL); read-only DB credentials at
   runtime — pipeline jobs hold the writer role
 - **TypeScript 5.4** strict, `paths` alias `@/*` → `src/*`
@@ -21,7 +23,7 @@ src/
   app.module.ts              # DI wiring
   prisma/                    # singleton PrismaService
   dto/                       # typia-tagged DTOs (1:1 with openapi.yaml schemas)
-  controllers/               # @TypedRoute thin controllers
+  controllers/               # thin @Get/@Param controllers
   services/                  # business logic (ETag derivation, error mapping)
   repositories/              # Prisma wrappers (no raw SQL except cron paths)
   middleware/
