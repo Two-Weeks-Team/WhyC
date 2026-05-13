@@ -133,7 +133,11 @@ function isDryRun(explicit?: boolean): boolean {
 
 function syntheticSpec(persona: AdvocatePersona, sanitized: SanitizedInput, companySlug: string): ProductSpec {
   const words = sanitized.body.split(/\s+/).filter(Boolean);
-  const stealth = new Set(words.map((w) => w.toLowerCase())).size < 50;
+  // Dry-run synthetic specs never flag stealth — a short test body would otherwise
+  // trip the go_no_go `stealth` rule and the pipeline would never reach `go`,
+  // leaving judge-v2 / introspect-v2 / self-improve unexercised end-to-end.
+  // (The real analyze path derives stealth from the LLM advocate drafts, not here.)
+  const stealth = false;
   const lensFlow: Record<AdvocatePersona, { name: string; trigger: string; outcome: string }> = {
     designer: { name: 'Hero story', trigger: 'open the landing page', outcome: 'a one-screen editorial pitch with the receipts ledger' },
     spreadsheet_jockey: { name: 'Batch grid', trigger: 'open the dashboard', outcome: 'a sortable dense table with sparklines per row' },
